@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Plus, Edit, Trash2, Calendar, Weight } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ArrowLeft, Plus, Edit, Trash2, Calendar, Weight, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -43,6 +44,9 @@ const Pets = () => {
     notes: "",
   });
 
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
   useEffect(() => {
     fetchPets();
   }, []);
@@ -71,6 +75,38 @@ const Pets = () => {
     }
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const uploadImage = async (petId: string): Promise<string | null> => {
+    if (!imageFile) return null;
+
+    const fileExt = imageFile.name.split('.').pop();
+    const fileName = `${petId}-${Date.now()}.${fileExt}`;
+    const filePath = `${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('pet-images')
+      .upload(filePath, imageFile);
+
+    if (uploadError) throw uploadError;
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('pet-images')
+      .getPublicUrl(filePath);
+
+    return publicUrl;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -78,6 +114,8 @@ const Pets = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Chưa đăng nhập");
+
+      let imageUrl = editingPet?.image_url || null;
 
       const petData = {
         user_id: user.id,
@@ -89,9 +127,16 @@ const Pets = () => {
         birth_date: formData.birth_date || null,
         weight: formData.weight ? parseFloat(formData.weight) : null,
         notes: formData.notes || null,
+        image_url: imageUrl,
       };
 
       if (editingPet) {
+        // Upload new image if selected
+        if (imageFile) {
+          imageUrl = await uploadImage(editingPet.id);
+          petData.image_url = imageUrl;
+        }
+
         const { error } = await supabase
           .from("pets")
           .update(petData)
@@ -100,8 +145,26 @@ const Pets = () => {
         if (error) throw error;
         toast({ title: "Cập nhật thành công!" });
       } else {
-        const { error } = await supabase.from("pets").insert([petData]);
-        if (error) throw error;
+        // Insert pet first to get ID
+        const { data: newPet, error: insertError } = await supabase
+          .from("pets")
+          .insert([petData])
+          .select()
+          .single();
+
+        if (insertError) throw insertError;
+
+        // Upload image if selected
+        if (imageFile && newPet) {
+          imageUrl = await uploadImage(newPet.id);
+          const { error: updateError } = await supabase
+            .from("pets")
+            .update({ image_url: imageUrl })
+            .eq("id", newPet.id);
+
+          if (updateError) throw updateError;
+        }
+
         toast({ title: "Thêm thú cưng thành công! 🐾" });
       }
 
@@ -131,6 +194,8 @@ const Pets = () => {
       weight: pet.weight?.toString() || "",
       notes: pet.notes || "",
     });
+    setImagePreview(pet.image_url || null);
+    setImageFile(null);
     setIsDialogOpen(true);
   };
 
@@ -163,6 +228,8 @@ const Pets = () => {
       notes: "",
     });
     setEditingPet(null);
+    setImageFile(null);
+    setImagePreview(null);
   };
 
   const getPetIcon = (type: string) => {
@@ -221,6 +288,34 @@ const Pets = () => {
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
+                  {/* Image Upload */}
+                  <div className="space-y-2">
+                    <Label>Ảnh thú cưng</Label>
+                    <div className="flex items-center gap-4">
+                      <Avatar className="w-24 h-24">
+                        <AvatarImage src={imagePreview || undefined} />
+                        <AvatarFallback className="text-3xl">
+                          {getPetIcon(formData.type)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <Input
+                          id="image"
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageChange}
+                          className="hidden"
+                        />
+                        <Label htmlFor="image" className="cursor-pointer">
+                          <div className="flex items-center gap-2 px-4 py-2 border border-border rounded-md hover:bg-accent transition-colors">
+                            <Upload className="w-4 h-4" />
+                            <span>Tải ảnh lên</span>
+                          </div>
+                        </Label>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="name">Tên thú cưng *</Label>
@@ -347,7 +442,12 @@ const Pets = () => {
               <Card key={pet.id} className="p-6 hover:shadow-lg transition-shadow">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="text-4xl">{getPetIcon(pet.type)}</div>
+                    <Avatar className="w-16 h-16">
+                      <AvatarImage src={pet.image_url || undefined} />
+                      <AvatarFallback className="text-3xl">
+                        {getPetIcon(pet.type)}
+                      </AvatarFallback>
+                    </Avatar>
                     <div>
                       <h3 className="text-xl font-bold">{pet.name}</h3>
                       {pet.nickname && (
