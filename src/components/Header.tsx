@@ -39,13 +39,14 @@ const Header = ({
   ];
 
   const userMenuItems = [
-    { icon: Store, label: "Marketplace", href: "#marketplace" },
-    { icon: MessageSquare, label: "Trợ lý AI", href: "#ai-assistant" },
-    { icon: FileText, label: "Hồ sơ Thú cưng", href: "#pet-profiles" },
-    { icon: Users, label: "Cộng đồng", href: "#community" },
-    { icon: ShoppingCart, label: "Giỏ hàng", href: "#cart" },
-    { icon: Package, label: "Đơn hàng của tôi", href: "#orders" },
-    { icon: Settings, label: "Cài đặt tài khoản", href: "#settings" },
+    { icon: Store, label: "Marketplace", href: "/marketplace" },
+    { icon: MessageSquare, label: "Trợ lý AI", href: "/ai-chat" },
+    { icon: FileText, label: "Hồ sơ Thú cưng", href: "/pets" },
+    { icon: Users, label: "Cộng đồng", href: "/community" },
+    { icon: ShoppingCart, label: "Giỏ hàng", href: "/cart" },
+    { icon: Package, label: "Đơn hàng", href: "/orders" },
+    { icon: User, label: "Tài khoản", href: "/profile" },
+    { icon: Settings, label: "Seller Dashboard", href: "/seller-dashboard" },
   ];
 
   const handleMenuItemClick = (href: string) => {
@@ -54,6 +55,8 @@ const Header = ({
       if (element) {
         element.scrollIntoView({ behavior: 'smooth' });
       }
+    } else if (href.startsWith('/')) {
+      window.location.href = href;
     }
     setMobileMenuOpen(false);
   };

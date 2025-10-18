@@ -9,6 +9,9 @@ import Pets from "./pages/Pets";
 import Marketplace from "./pages/Marketplace";
 import Cart from "./pages/Cart";
 import Orders from "./pages/Orders";
+import Community from "./pages/Community";
+import Profile from "./pages/Profile";
+import SellerDashboard from "./pages/SellerDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +29,9 @@ const App = () => (
           <Route path="/marketplace" element={<Marketplace />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/orders" element={<Orders />} />
+          <Route path="/community" element={<Community />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/seller-dashboard" element={<SellerDashboard />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
