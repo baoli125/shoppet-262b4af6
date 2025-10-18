@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Heart, MessageCircle, Send, Trash2 } from "lucide-react";
+import { Heart, MessageCircle, Send, Trash2, Image as ImageIcon, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
@@ -31,6 +31,8 @@ const Community = () => {
   const [profile, setProfile] = useState<any>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [newPost, setNewPost] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
   const navigate = useNavigate();
@@ -101,6 +103,37 @@ const Community = () => {
     }
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const uploadPostImage = async (postId: string): Promise<string | null> => {
+    if (!imageFile) return null;
+
+    const fileExt = imageFile.name.split('.').pop();
+    const fileName = `post-${postId}-${Date.now()}.${fileExt}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('pet-images')
+      .upload(fileName, imageFile);
+
+    if (uploadError) throw uploadError;
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('pet-images')
+      .getPublicUrl(fileName);
+
+    return publicUrl;
+  };
+
   // Define validation schema for posts
   const postSchema = z.object({
     content: z.string()
@@ -117,14 +150,34 @@ const Community = () => {
       // Validate content before posting
       const validatedData = postSchema.parse({ content: newPost });
 
-      const { error } = await supabase.from("posts").insert({
-        user_id: user.id,
-        content: validatedData.content,
-      });
+      // Insert post first
+      const { data: newPostData, error: insertError } = await supabase
+        .from("posts")
+        .insert({
+          user_id: user.id,
+          content: validatedData.content,
+        })
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (insertError) throw insertError;
+
+      // Upload image if selected
+      if (imageFile && newPostData) {
+        const imageUrl = await uploadPostImage(newPostData.id);
+        if (imageUrl) {
+          const { error: updateError } = await supabase
+            .from("posts")
+            .update({ image_url: imageUrl })
+            .eq("id", newPostData.id);
+
+          if (updateError) throw updateError;
+        }
+      }
 
       setNewPost("");
+      setImageFile(null);
+      setImagePreview(null);
       toast({
         title: "Đã đăng! 🎉",
         description: "Bài viết của bạn đã được chia sẻ với cộng đồng.",
@@ -223,10 +276,55 @@ const Community = () => {
                 onChange={(e) => setNewPost(e.target.value)}
                 className="min-h-[100px]"
               />
-              <Button onClick={handleCreatePost} disabled={!newPost.trim() || isSubmitting} className="w-full">
-                <Send className="h-4 w-4 mr-2" />
-                Đăng bài
-              </Button>
+              
+              {/* Image Preview */}
+              {imagePreview && (
+                <div className="relative">
+                  <img 
+                    src={imagePreview} 
+                    alt="Preview" 
+                    className="rounded-lg max-h-64 object-cover"
+                  />
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    className="absolute top-2 right-2"
+                    onClick={() => {
+                      setImageFile(null);
+                      setImagePreview(null);
+                    }}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+              
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => document.getElementById('post-image-upload')?.click()}
+                  type="button"
+                >
+                  <ImageIcon className="h-4 w-4 mr-2" />
+                  Thêm ảnh
+                </Button>
+                <input
+                  id="post-image-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                />
+                <Button 
+                  onClick={handleCreatePost} 
+                  disabled={!newPost.trim() || isSubmitting} 
+                  className="flex-1"
+                >
+                  <Send className="h-4 w-4 mr-2" />
+                  Đăng bài
+                </Button>
+              </div>
             </div>
           </div>
         </Card>
