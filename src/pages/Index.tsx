@@ -1,76 +1,116 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import HeroCarousel from "@/components/HeroCarousel";
 import WelcomeSection from "@/components/WelcomeSection";
-import LoginModal from "@/components/LoginModal";
+import AuthModal from "@/components/AuthModal";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import type { User } from "@supabase/supabase-js";
 
 const Index = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [loginMessage, setLoginMessage] = useState("");
+  const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<any>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
-  const handleLogin = () => {
-    // TODO: Implement actual login logic
-    setShowLoginModal(false);
-    toast({
-      title: "Chức năng đang phát triển",
-      description: "Tính năng đăng nhập sẽ sớm được hoàn thiện!",
+  useEffect(() => {
+    // Check initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchProfile(session.user.id);
+        fetchCartCount(session.user.id);
+      }
     });
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchProfile(session.user.id);
+        fetchCartCount(session.user.id);
+      } else {
+        setProfile(null);
+        setCartCount(0);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const fetchProfile = async (userId: string) => {
+    const { data } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", userId)
+      .single();
+    setProfile(data);
   };
 
-  const handleRegister = () => {
-    // TODO: Implement actual register logic
-    toast({
-      title: "Chức năng đang phát triển",
-      description: "Tính năng đăng ký sẽ sớm được hoàn thiện!",
-    });
+  const fetchCartCount = async (userId: string) => {
+    const { data } = await supabase
+      .from("cart_items")
+      .select("quantity", { count: "exact" })
+      .eq("user_id", userId);
+    
+    const total = data?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0;
+    setCartCount(total);
   };
 
-  const handleLogout = () => {
-    setIsLoggedIn(false);
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     toast({
       title: "Đăng xuất thành công",
       description: "Hẹn gặp lại bạn!",
     });
   };
 
+  const handleAuthSuccess = () => {
+    toast({
+      title: "Chào mừng!",
+      description: "Bạn đã đăng nhập thành công vào Shoppet 🐾",
+    });
+  };
+
   const handleQuickAction = (action: string) => {
-    if (!isLoggedIn) {
-      const messages: Record<string, string> = {
-        marketplace: "Đăng nhập để khám phá Marketplace và mua sắm sản phẩm cho thú cưng của bạn",
-        "ai-assistant": "Đăng nhập để trò chuyện với trợ lý AI và nhận tư vấn sức khỏe 24/7",
-        "pet-profiles": "Đăng nhập để quản lý hồ sơ và theo dõi sức khỏe thú cưng của bạn",
-        community: "Đăng nhập để tham gia cộng đồng và kết nối với những người yêu thú cưng"
+    if (!user) {
+      setShowAuthModal(true);
+    } else {
+      // Navigate to respective sections
+      const routes: Record<string, string> = {
+        marketplace: "/marketplace",
+        "ai-assistant": "/ai-chat",
+        "pet-profiles": "/pets",
+        community: "/community"
       };
       
-      setLoginMessage(messages[action] || "Vui lòng đăng nhập để sử dụng tính năng này");
-      setShowLoginModal(true);
-    } else {
-      // TODO: Navigate to respective sections when logged in
-      toast({
-        title: "Đang chuyển hướng...",
-        description: `Chuyển đến ${action}`,
-      });
+      if (routes[action]) {
+        navigate(routes[action]);
+      }
     }
   };
 
   return (
     <div className="min-h-screen bg-background">
       <Header
-        isLoggedIn={isLoggedIn}
-        userName="Lazy Beo"
-        cartCount={3}
-        onLoginClick={() => setShowLoginModal(true)}
-        onRegisterClick={handleRegister}
+        isLoggedIn={!!user}
+        userName={profile?.display_name || user?.email || "User"}
+        userAvatar={profile?.avatar_url}
+        cartCount={cartCount}
+        onLoginClick={() => setShowAuthModal(true)}
+        onRegisterClick={() => setShowAuthModal(true)}
         onLogoutClick={handleLogout}
       />
 
       <main>
         <HeroCarousel />
         
-        {!isLoggedIn && (
+        {!user && (
           <WelcomeSection onActionClick={handleQuickAction} />
         )}
 
@@ -155,11 +195,10 @@ const Index = () => {
         </footer>
       </main>
 
-      <LoginModal
-        isOpen={showLoginModal}
-        onClose={() => setShowLoginModal(false)}
-        onLoginClick={handleLogin}
-        message={loginMessage}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onSuccess={handleAuthSuccess}
       />
     </div>
   );
