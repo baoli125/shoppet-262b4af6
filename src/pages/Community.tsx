@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
+import { z } from "zod";
 
 interface Post {
   id: string;
@@ -71,7 +72,7 @@ const Community = () => {
       .from("posts")
       .select(`
         *,
-        profiles (display_name, avatar_url)
+        public_profiles!inner(display_name, avatar_url)
       `)
       .order("created_at", { ascending: false });
 
@@ -80,7 +81,13 @@ const Community = () => {
       return;
     }
 
-    setPosts(data || []);
+    // Transform the data to match the expected structure
+    const transformedData = data?.map(post => ({
+      ...post,
+      profiles: post.public_profiles
+    })) || [];
+
+    setPosts(transformedData as any);
   };
 
   const fetchLikedPosts = async (userId: string) => {
@@ -94,14 +101,25 @@ const Community = () => {
     }
   };
 
+  // Define validation schema for posts
+  const postSchema = z.object({
+    content: z.string()
+      .trim()
+      .min(1, "Nội dung không được để trống")
+      .max(5000, "Nội dung không được vượt quá 5000 ký tự")
+  });
+
   const handleCreatePost = async () => {
     if (!newPost.trim() || isSubmitting) return;
 
     setIsSubmitting(true);
     try {
+      // Validate content before posting
+      const validatedData = postSchema.parse({ content: newPost });
+
       const { error } = await supabase.from("posts").insert({
         user_id: user.id,
-        content: newPost.trim(),
+        content: validatedData.content,
       });
 
       if (error) throw error;
@@ -112,12 +130,20 @@ const Community = () => {
         description: "Bài viết của bạn đã được chia sẻ với cộng đồng.",
       });
     } catch (error) {
-      console.error("Error creating post:", error);
-      toast({
-        title: "Lỗi",
-        description: "Không thể tạo bài viết. Vui lòng thử lại.",
-        variant: "destructive",
-      });
+      if (error instanceof z.ZodError) {
+        toast({
+          title: "Lỗi nội dung",
+          description: error.errors[0].message,
+          variant: "destructive",
+        });
+      } else {
+        console.error("Error creating post:", error);
+        toast({
+          title: "Lỗi",
+          description: "Không thể tạo bài viết. Vui lòng thử lại.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }

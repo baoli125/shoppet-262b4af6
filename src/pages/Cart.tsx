@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { ArrowLeft, Plus, Minus, Trash2, ShoppingBag } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { z } from "zod";
 
 interface CartItem {
   id: string;
@@ -136,11 +137,31 @@ const Cart = () => {
     }, 0);
   };
 
+  // Define validation schema
+  const checkoutSchema = z.object({
+    shipping_address: z.string()
+      .trim()
+      .min(10, "Địa chỉ quá ngắn (tối thiểu 10 ký tự)")
+      .max(500, "Địa chỉ không được vượt quá 500 ký tự"),
+    phone_number: z.string()
+      .trim()
+      .regex(/^[0-9+\s()-]{8,20}$/, "Số điện thoại không hợp lệ (8-20 ký tự, chỉ số và ký tự +()-)")
+      .transform(s => s.replace(/[\s()-]/g, '')),
+    customer_notes: z.string()
+      .trim()
+      .max(1000, "Ghi chú không được vượt quá 1000 ký tự")
+      .optional()
+      .transform(s => s || null)
+  });
+
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
+      // Validate input BEFORE database operation
+      const validatedData = checkoutSchema.parse(checkoutForm);
+
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Chưa đăng nhập");
 
@@ -157,7 +178,7 @@ const Cart = () => {
 
       const totalAmount = calculateTotal();
 
-      // Create order
+      // Create order with validated data
       const { data: order, error: orderError } = await supabase
         .from("orders")
         .insert({
@@ -165,9 +186,9 @@ const Cart = () => {
           seller_id: firstProduct?.seller_id || user.id,
           total_amount: totalAmount,
           status: "pending",
-          shipping_address: checkoutForm.shipping_address,
-          phone_number: checkoutForm.phone_number,
-          customer_notes: checkoutForm.customer_notes || null,
+          shipping_address: validatedData.shipping_address,
+          phone_number: validatedData.phone_number,
+          customer_notes: validatedData.customer_notes,
         })
         .select()
         .single();
@@ -206,11 +227,20 @@ const Cart = () => {
       setIsCheckoutOpen(false);
       navigate("/orders");
     } catch (error: any) {
-      toast({
-        title: "Lỗi",
-        description: error.message || "Không thể đặt hàng",
-        variant: "destructive",
-      });
+      if (error instanceof z.ZodError) {
+        // Handle validation errors
+        toast({
+          title: "Lỗi thông tin đặt hàng",
+          description: error.errors[0].message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Lỗi",
+          description: error.message || "Không thể đặt hàng",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsLoading(false);
     }
