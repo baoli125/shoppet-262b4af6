@@ -2,8 +2,9 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import HeroCarousel from "@/components/HeroCarousel";
-import WelcomeSection from "@/components/WelcomeSection";
 import AuthModal from "@/components/AuthModal";
+import FloatingChatbot from "@/components/FloatingChatbot";
+import OnboardingModal from "@/components/OnboardingModal";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
@@ -12,6 +13,8 @@ const Index = () => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<any>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [isNewUser, setIsNewUser] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -50,6 +53,11 @@ const Index = () => {
       .eq("id", userId)
       .single();
     setProfile(data);
+    
+    // Check if user needs onboarding
+    if (data && !data.has_completed_onboarding) {
+      setShowOnboarding(true);
+    }
   };
 
   const fetchCartCount = async (userId: string) => {
@@ -77,22 +85,9 @@ const Index = () => {
     });
   };
 
-  const handleQuickAction = (action: string) => {
-    if (!user) {
-      setShowAuthModal(true);
-    } else {
-      // Navigate to respective sections
-      const routes: Record<string, string> = {
-        marketplace: "/marketplace",
-        "ai-assistant": "/ai-chat",
-        "pet-profiles": "/pets",
-        community: "/community"
-      };
-      
-      if (routes[action]) {
-        navigate(routes[action]);
-      }
-    }
+  const handleOnboardingComplete = (newUser: boolean) => {
+    setIsNewUser(newUser);
+    setShowOnboarding(false);
   };
 
   return (
@@ -109,10 +104,6 @@ const Index = () => {
 
       <main>
         <HeroCarousel />
-        
-        {!user && (
-          <WelcomeSection onActionClick={handleQuickAction} />
-        )}
 
         {/* About Section */}
         <section id="about" className="py-20 bg-card">
@@ -200,6 +191,15 @@ const Index = () => {
         onClose={() => setShowAuthModal(false)}
         onSuccess={handleAuthSuccess}
       />
+
+      {showOnboarding && (
+        <OnboardingModal 
+          open={showOnboarding}
+          onComplete={handleOnboardingComplete}
+        />
+      )}
+
+      {user && <FloatingChatbot isNewUser={isNewUser} />}
     </div>
   );
 };

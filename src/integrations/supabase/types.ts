@@ -370,6 +370,7 @@ export type Database = {
           created_at: string | null
           display_name: string
           email: string | null
+          has_completed_onboarding: boolean | null
           id: string
           phone: string | null
           points: number | null
@@ -380,6 +381,7 @@ export type Database = {
           created_at?: string | null
           display_name: string
           email?: string | null
+          has_completed_onboarding?: boolean | null
           id: string
           phone?: string | null
           points?: number | null
@@ -390,6 +392,7 @@ export type Database = {
           created_at?: string | null
           display_name?: string
           email?: string | null
+          has_completed_onboarding?: boolean | null
           id?: string
           phone?: string | null
           points?: number | null

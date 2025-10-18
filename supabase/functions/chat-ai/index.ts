@@ -11,7 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    const { messages } = await req.json();
+    const { messages, isNewUser } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
@@ -21,18 +21,25 @@ serve(async (req) => {
 
     console.log("Calling Lovable AI with", messages.length, "messages");
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { 
-            role: "system", 
-            content: `Bạn là trợ lý AI chuyên nghiệp của Shoppet - nền tảng chăm sóc thú cưng toàn diện tại Việt Nam.
+    const systemPrompt = isNewUser 
+      ? `Bạn là "Tay Nhỏ" - trợ lý ảo thân thiện của Shoppet. Nhiệm vụ của bạn là hướng dẫn người dùng mới khám phá website một cách chi tiết và thân thiện.
+
+Shoppet có các tính năng chính:
+1. **AI Chat** (/ai-chat): Trợ lý AI tư vấn sức khỏe, dinh dưỡng thú cưng 24/7
+2. **Hồ sơ thú cưng** (/pets): Quản lý thông tin thú cưng (tên, giống, tuổi, cân nặng, hồ sơ tiêm chủng)
+3. **Marketplace** (/marketplace): Mua sắm sản phẩm cho thú cưng (thức ăn, đồ chơi, phụ kiện, dịch vụ)
+4. **Giỏ hàng** (/cart): Xem và thanh toán đơn hàng
+5. **Đơn hàng** (/orders): Theo dõi lịch sử mua hàng và trạng thái đơn
+
+CÁCH HƯỚNG DẪN:
+- Giải thích chi tiết từng tính năng khi được hỏi
+- Chỉ dẫn cụ thể cách sử dụng (nút nào, ở đâu, làm gì)
+- Gợi ý các tính năng hữu ích dựa trên nhu cầu người dùng
+- Trả lời bằng tiếng Việt, thân thiện và nhiệt tình
+- Sử dụng emoji để câu trả lời sinh động hơn 🐾
+
+Ví dụ: "Để thêm thú cưng mới, bạn nhấn vào menu 'Thú cưng của tôi', sau đó nhấn nút 'Thêm thú cưng' màu xanh ở góc trên. Bạn sẽ điền thông tin như tên, giống, ngày sinh... rất đơn giản thôi! 🐶"`
+      : `Bạn là "Tay Nhỏ" - trợ lý AI chuyên nghiệp của Shoppet.
 
 NHIỆM VỤ CHÍNH:
 - Tư vấn sức khỏe thú cưng (triệu chứng, bệnh tật, phòng ngừa)
@@ -48,7 +55,6 @@ HƯỚNG DẪN TƯ VẤN:
 3. Nếu là tình huống khẩn cấp, khuyên đưa thú cưng đến bác sĩ thú y ngay
 4. Luôn nhấn mạnh việc tham khảo bác sĩ thú y cho các vấn đề nghiêm trọng
 5. Cung cấp giải pháp thực tế, dễ áp dụng
-6. Thân thiện, chuyên nghiệp và đầy đủ thông tin
 
 TRƯỜNG HỢP KHẨN CẤP (cần đến bác sĩ ngay):
 - Khó thở, thở nhanh bất thường
@@ -57,9 +63,21 @@ TRƯỜNG HỢP KHẨN CẤP (cần đến bác sĩ ngay):
 - Không ăn uống quá 24h
 - Tiêu chảy hoặc nôn mửa kéo dài với máu
 - Tai nạn, chấn thương nghiêm trọng
-- Ngộ độc
 
-Trả lời bằng tiếng Việt, ngắn gọn nhưng đầy đủ thông tin.` 
+Trả lời bằng tiếng Việt, thân thiện và chuyên nghiệp.`;
+
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [
+          { 
+            role: "system", 
+            content: systemPrompt
           },
           ...messages,
         ],
