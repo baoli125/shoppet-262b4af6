@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Search, ShoppingCart, Plus, Minus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Product {
   id: string;
@@ -30,6 +31,7 @@ const Marketplace = () => {
   const [cartItems, setCartItems] = useState<Record<string, number>>({});
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   useEffect(() => {
     fetchProducts();
@@ -49,8 +51,8 @@ const Marketplace = () => {
 
     if (error) {
       toast({
-        title: "Lỗi",
-        description: "Không thể tải sản phẩm",
+        title: t('common.error'),
+        description: t('marketplace.noProductsDesc'),
         variant: "destructive",
       });
     } else {
@@ -101,8 +103,8 @@ const Marketplace = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       toast({
-        title: "Vui lòng đăng nhập",
-        description: "Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng",
+        title: t('marketplace.loginRequired'),
+        description: t('marketplace.loginRequiredDesc'),
         variant: "destructive",
       });
       return;
@@ -121,14 +123,14 @@ const Marketplace = () => {
 
     if (error) {
       toast({
-        title: "Lỗi",
-        description: "Không thể thêm vào giỏ hàng",
+        title: t('common.error'),
+        description: t('marketplace.noProductsDesc'),
         variant: "destructive",
       });
     } else {
       setCartItems({ ...cartItems, [productId]: newQty });
       toast({
-        title: "Đã thêm vào giỏ hàng! 🛒",
+        title: t('marketplace.addedToCart'),
       });
       // Dispatch custom event to update header cart count
       window.dispatchEvent(new CustomEvent('cartUpdated'));
@@ -172,26 +174,11 @@ const Marketplace = () => {
   };
 
   const getCategoryLabel = (category: string) => {
-    const labels: Record<string, string> = {
-      food: "Thức ăn",
-      toy: "Đồ chơi",
-      accessory: "Phụ kiện",
-      medicine: "Thuốc",
-      grooming: "Vệ sinh",
-      other: "Khác",
-    };
-    return labels[category] || category;
+    return t(`marketplace.categories.${category}`) || category;
   };
 
   const getPetTypeLabel = (type: string) => {
-    const labels: Record<string, string> = {
-      dog: "🐕 Chó",
-      cat: "🐈 Mèo",
-      bird: "🦜 Chim",
-      fish: "🐠 Cá",
-      other: "🐾 Khác",
-    };
-    return labels[type] || type;
+    return t(`marketplace.petTypes.${type}`) || type;
   };
 
   const totalCartItems = Object.values(cartItems).reduce((sum, qty) => sum + qty, 0);
@@ -207,16 +194,16 @@ const Marketplace = () => {
                 <ArrowLeft className="w-5 h-5" />
               </Button>
               <div>
-                <h1 className="text-2xl font-bold text-foreground">Marketplace</h1>
+                <h1 className="text-2xl font-bold text-foreground">{t('marketplace.title')}</h1>
                 <p className="text-sm text-muted-foreground">
-                  Sản phẩm chất lượng cho thú cưng
+                  {t('marketplace.subtitle')}
                 </p>
               </div>
             </div>
 
             <Button className="btn-hero relative" onClick={() => navigate("/cart")}>
               <ShoppingCart className="w-5 h-5 mr-2" />
-              Giỏ hàng
+              {t('header.cart')}
               {totalCartItems > 0 && (
                 <Badge className="absolute -top-2 -right-2 bg-destructive">
                   {totalCartItems}
@@ -235,7 +222,7 @@ const Marketplace = () => {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
-                  placeholder="Tìm kiếm sản phẩm..."
+                  placeholder={t('marketplace.searchPlaceholder')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10"
@@ -245,28 +232,28 @@ const Marketplace = () => {
 
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
               <SelectTrigger>
-                <SelectValue placeholder="Danh mục" />
+                <SelectValue placeholder={t('marketplace.category')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tất cả danh mục</SelectItem>
-                <SelectItem value="food">Thức ăn</SelectItem>
-                <SelectItem value="toy">Đồ chơi</SelectItem>
-                <SelectItem value="accessory">Phụ kiện</SelectItem>
-                <SelectItem value="medicine">Thuốc</SelectItem>
-                <SelectItem value="grooming">Vệ sinh</SelectItem>
+                <SelectItem value="all">{t('marketplace.allCategories')}</SelectItem>
+                <SelectItem value="food">{t('marketplace.categories.food')}</SelectItem>
+                <SelectItem value="toy">{t('marketplace.categories.toy')}</SelectItem>
+                <SelectItem value="accessory">{t('marketplace.categories.accessory')}</SelectItem>
+                <SelectItem value="medicine">{t('marketplace.categories.medicine')}</SelectItem>
+                <SelectItem value="grooming">{t('marketplace.categories.grooming')}</SelectItem>
               </SelectContent>
             </Select>
 
             <Select value={selectedPetType} onValueChange={setSelectedPetType}>
               <SelectTrigger>
-                <SelectValue placeholder="Loại thú cưng" />
+                <SelectValue placeholder={t('marketplace.petType')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tất cả</SelectItem>
-                <SelectItem value="dog">🐕 Chó</SelectItem>
-                <SelectItem value="cat">🐈 Mèo</SelectItem>
-                <SelectItem value="bird">🦜 Chim</SelectItem>
-                <SelectItem value="fish">🐠 Cá</SelectItem>
+                <SelectItem value="all">{t('marketplace.allPets')}</SelectItem>
+                <SelectItem value="dog">{t('marketplace.petTypes.dog')}</SelectItem>
+                <SelectItem value="cat">{t('marketplace.petTypes.cat')}</SelectItem>
+                <SelectItem value="bird">{t('marketplace.petTypes.bird')}</SelectItem>
+                <SelectItem value="fish">{t('marketplace.petTypes.fish')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -278,9 +265,9 @@ const Marketplace = () => {
         {filteredProducts.length === 0 ? (
           <div className="text-center py-12">
             <div className="text-6xl mb-4">🛍️</div>
-            <h2 className="text-2xl font-bold mb-2">Không tìm thấy sản phẩm</h2>
+            <h2 className="text-2xl font-bold mb-2">{t('marketplace.noProducts')}</h2>
             <p className="text-muted-foreground">
-              Thử điều chỉnh bộ lọc hoặc tìm kiếm khác
+              {t('marketplace.noProductsDesc')}
             </p>
           </div>
         ) : (
@@ -319,7 +306,7 @@ const Marketplace = () => {
                       {product.price.toLocaleString()}đ
                     </span>
                     <span className="text-sm text-muted-foreground">
-                      Còn {product.stock}
+                      {t('marketplace.stock')} {product.stock}
                     </span>
                   </div>
 
@@ -351,7 +338,7 @@ const Marketplace = () => {
                       disabled={product.stock === 0}
                     >
                       <ShoppingCart className="w-4 h-4 mr-2" />
-                      Thêm vào giỏ
+                      {t('marketplace.addToCart')}
                     </Button>
                   )}
                 </div>
