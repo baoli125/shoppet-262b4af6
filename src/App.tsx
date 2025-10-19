@@ -20,12 +20,13 @@ import FloatingChatbot from "@/components/FloatingChatbot";
 import GuidedTour from "@/components/GuidedTour";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import type { User } from "@supabase/supabase-js";
+import type { User, Session } from "@supabase/supabase-js";
 
 const queryClient = new QueryClient();
 
 const AppContent = () => {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<any>(null);
   const [isNewUser, setIsNewUser] = useState(false);
   const [cartCount, setCartCount] = useState(0);
@@ -35,26 +36,32 @@ const AppContent = () => {
   const location = useLocation();
 
   useEffect(() => {
-    // Check initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id);
-        fetchCartCount(session.user.id);
-      }
-    });
-
-    // Listen for auth changes
+    // Listen for auth changes FIRST (best practice)
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id);
-        fetchCartCount(session.user.id);
+    } = supabase.auth.onAuthStateChange((_event, currentSession) => {
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
+      
+      if (currentSession?.user) {
+        // Defer Supabase calls to avoid deadlock
+        setTimeout(() => {
+          fetchProfile(currentSession.user.id);
+          fetchCartCount(currentSession.user.id);
+        }, 0);
       } else {
         setProfile(null);
         setCartCount(0);
+      }
+    });
+
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
+      if (currentSession?.user) {
+        fetchProfile(currentSession.user.id);
+        fetchCartCount(currentSession.user.id);
       }
     });
 
@@ -107,11 +114,37 @@ const AppContent = () => {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    toast({
-      title: "Đăng xuất thành công",
-      description: "Hẹn gặp lại bạn!",
-    });
+    try {
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error("Logout error:", error);
+        toast({
+          title: "Lỗi đăng xuất",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Clear local state
+      setUser(null);
+      setSession(null);
+      setProfile(null);
+      setCartCount(0);
+      
+      toast({
+        title: "Đăng xuất thành công",
+        description: "Hẹn gặp lại bạn!",
+      });
+    } catch (err) {
+      console.error("Unexpected logout error:", err);
+      toast({
+        title: "Lỗi không mong đợi",
+        description: "Vui lòng thử lại",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleAuthSuccess = () => {
