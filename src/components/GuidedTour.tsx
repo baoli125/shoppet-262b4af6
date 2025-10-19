@@ -104,15 +104,15 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       if (step.requireDropdownOpen) {
         const dropdownTrigger = document.querySelector('[data-tour="user-dropdown"]') as HTMLElement;
         if (dropdownTrigger) {
-          // Check if dropdown is already open
+          // Check if dropdown is already open by looking for the menu content
           const dropdownContent = document.querySelector('[role="menu"]');
           if (!dropdownContent) {
             console.log("Opening dropdown for tour step");
             dropdownTrigger.click();
-            // Wait longer for dropdown to fully render
+            // Wait longer for dropdown animation and rendering
             setTimeout(() => {
               findAndHighlightElement();
-            }, 300);
+            }, 500); // Increased from 300ms to 500ms
             return;
           }
         }
@@ -150,13 +150,22 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
         element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
       } else {
         console.warn(`Element not found for selector: ${step.selector}`);
-        // If element not found after 3 seconds, skip to next step
-        setTimeout(() => {
-          if (!document.querySelector(step.selector!)) {
-            console.log("Skipping step due to missing element");
+        // If element not found, retry a few times before skipping
+        let retryCount = 0;
+        const maxRetries = 5;
+        const retryInterval = setInterval(() => {
+          retryCount++;
+          const retryElement = document.querySelector(step.selector!) as HTMLElement;
+          if (retryElement) {
+            console.log(`Found element on retry ${retryCount}`);
+            clearInterval(retryInterval);
+            findAndHighlightElement();
+          } else if (retryCount >= maxRetries) {
+            console.log("Skipping step due to missing element after retries");
+            clearInterval(retryInterval);
             nextStep();
           }
-        }, 3000);
+        }, 600); // Check every 600ms
       }
     };
 
