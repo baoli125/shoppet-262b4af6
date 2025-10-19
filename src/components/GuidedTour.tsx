@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { X } from "lucide-react";
+import { X, Sparkles } from "lucide-react";
 
 interface GuidedTourProps {
   isActive: boolean;
@@ -12,45 +12,46 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [targetElement, setTargetElement] = useState<HTMLElement | null>(null);
   const [highlightPosition, setHighlightPosition] = useState({ top: 0, left: 0, width: 0, height: 0 });
+  const clickListenerRef = useRef<((e: MouseEvent) => void) | null>(null);
 
   const steps = [
     {
       id: 'chatbot',
       selector: '[data-tour="chatbot"]',
-      title: "Chatbot Tay Nhỏ 🤖",
-      description: "Đây là trợ lý AI của bạn! Click vào đây bất cứ khi nào cần hỗ trợ về thú cưng.",
+      title: "Trợ lý AI Thông Minh 🤖",
+      description: "Đây là trợ lý AI 24/7 của Shoppet! Bạn có thể hỏi bất kỳ câu hỏi nào về sức khỏe, dinh dưỡng, hoặc chăm sóc thú cưng.",
       position: 'bottom-right' as const,
       forceClick: true,
     },
     {
       id: 'marketplace-menu',
       selector: '[data-tour="marketplace-menu"]',
-      title: "Marketplace 🛍️",
-      description: "Nơi bạn có thể mua sắm các sản phẩm chất lượng cho thú cưng của mình.",
+      title: "Marketplace - Mua sắm Thông minh 🛍️",
+      description: "Tại đây bạn có thể mua tất cả sản phẩm cho thú cưng: thức ăn, đồ chơi, phụ kiện với giá tốt nhất.",
       position: 'left' as const,
       forceClick: true,
     },
     {
       id: 'user-dropdown',
       selector: '[data-tour="user-dropdown"]',
-      title: "Menu Người Dùng 👤",
-      description: "Đây là nơi bạn có thể thao tác để xem chi tiết từng phần. Hãy click vào để xem các tính năng!",
+      title: "Menu Quản lý Tài khoản 👤",
+      description: "Đây là trung tâm điều khiển! Bạn có thể quản lý hồ sơ, đơn hàng, cài đặt và nhiều tính năng khác. Hãy click để xem!",
       position: 'bottom' as const,
       forceClick: true,
     },
     {
       id: 'ai-chat-menu',
       selector: '[data-tour="ai-chat-menu"]',
-      title: "Trợ lý AI 🤖",
-      description: "Tư vấn về chăm sóc thú cưng, dinh dưỡng, sức khỏe và nhiều hơn nữa!",
+      title: "Trợ lý AI Tư vấn 🤖",
+      description: "Nhận tư vấn sức khỏe, dinh dưỡng cá nhân hóa cho từng loại thú cưng của bạn.",
       position: 'left' as const,
       forceClick: true,
     },
     {
       id: 'pets-menu',
       selector: '[data-tour="pets-menu"]',
-      title: "Hồ sơ Thú cưng 🐾",
-      description: "Quản lý thông tin về các bé cưng của bạn, lịch chích ngừa, khám bệnh...",
+      title: "Hồ sơ Thú cưng 📋",
+      description: "Quản lý thông tin sức khỏe, lịch tiêm phòng, bệnh án của tất cả thú cưng trong một nơi.",
       position: 'left' as const,
       forceClick: true,
     },
@@ -58,23 +59,23 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       id: 'add-pet-prompt',
       selector: null,
       title: "Thêm Thú Cưng Đầu Tiên! 🎉",
-      description: "Hãy thêm thông tin về thú cưng của bạn để nhận được các tư vấn và chăm sóc phù hợp nhất!",
+      description: "Hãy thêm thông tin về thú cưng của bạn để nhận được các tư vấn và chăm sóc phù hợp nhất! Click vào mục 'Hồ sơ Thú cưng' bên trên để bắt đầu.",
       position: 'center' as const,
       forceClick: false,
     },
     {
       id: 'community-menu',
       selector: '[data-tour="community-menu"]',
-      title: "Cộng đồng 👥",
-      description: "Kết nối với những người yêu thú cưng khác, chia sẻ kinh nghiệm và câu chuyện!",
+      title: "Cộng đồng Yêu thú cưng 👥",
+      description: "Kết nối, chia sẻ kinh nghiệm với hàng ngàn người yêu thú cưng khác.",
       position: 'left' as const,
       forceClick: true,
     },
     {
       id: 'cart-orders-menu',
       selector: '[data-tour="cart-menu"]',
-      title: "Giỏ hàng & Đơn hàng 🛒",
-      description: "Bạn có thể truy cập vào đây để kiểm tra giỏ hàng và đơn hàng khi mua hoặc click vào icon giỏ hàng ở bên cạnh.",
+      title: "Giỏ hàng & Theo dõi Đơn hàng 🛒",
+      description: "Theo dõi giỏ hàng và đơn hàng của bạn tại đây. Bạn cũng có thể xem nhanh bằng icon giỏ hàng trên header!",
       position: 'left' as const,
       forceClick: false,
       showCartIcon: true,
@@ -120,25 +121,42 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
   }, [currentStep, isActive]);
 
   useEffect(() => {
-    if (!isActive || !targetElement) return;
+    if (!isActive) return;
 
     const step = steps[currentStep];
-    if (!step.forceClick) return;
+    if (!step.forceClick || !targetElement) return;
+
+    // Remove previous listener if exists
+    if (clickListenerRef.current) {
+      document.removeEventListener('click', clickListenerRef.current, true);
+    }
 
     const handleClick = (e: MouseEvent) => {
-      if (targetElement.contains(e.target as Node)) {
+      const target = e.target as Node;
+      
+      // Check if click is on the target element or its children
+      if (targetElement.contains(target)) {
         e.stopPropagation();
+        e.preventDefault();
+        
+        // Visual feedback
+        targetElement.style.transform = 'scale(0.95)';
         setTimeout(() => {
+          if (targetElement) {
+            targetElement.style.transform = '';
+          }
           nextStep();
-        }, 300);
+        }, 150);
       }
     };
 
-    // Listen for clicks on the target element
+    clickListenerRef.current = handleClick;
     document.addEventListener('click', handleClick, true);
 
     return () => {
-      document.removeEventListener('click', handleClick, true);
+      if (clickListenerRef.current) {
+        document.removeEventListener('click', clickListenerRef.current, true);
+      }
     };
   }, [targetElement, currentStep, isActive]);
 
@@ -167,26 +185,57 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
 
   return (
     <>
-      {/* Overlay */}
-      <div className="fixed inset-0 bg-black/60 z-[100] transition-opacity" />
+      {/* Overlay with blur */}
+      <div 
+        className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[100] transition-all duration-300" 
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }}
+      />
 
       {/* Highlight */}
       {targetElement && (
         <>
-          {/* Pulsing highlight */}
+          {/* Animated pulsing rings */}
           <div
-            className="fixed z-[101] pointer-events-none transition-all duration-300"
+            className="fixed z-[101] pointer-events-none transition-all duration-500"
             style={{
-              top: `${highlightPosition.top - 8}px`,
-              left: `${highlightPosition.left - 8}px`,
-              width: `${highlightPosition.width + 16}px`,
-              height: `${highlightPosition.height + 16}px`,
+              top: `${highlightPosition.top - 12}px`,
+              left: `${highlightPosition.left - 12}px`,
+              width: `${highlightPosition.width + 24}px`,
+              height: `${highlightPosition.height + 24}px`,
             }}
           >
-            <div className="w-full h-full rounded-lg border-4 border-primary animate-pulse shadow-[0_0_30px_rgba(var(--primary),0.6)]" />
+            {/* Outer pulsing ring */}
+            <div 
+              className="absolute inset-0 rounded-xl border-4 border-primary"
+              style={{
+                animation: 'blink-highlight 1.5s infinite ease-in-out',
+                boxShadow: '0 0 40px hsl(var(--primary) / 0.6), inset 0 0 20px hsl(var(--primary) / 0.3)'
+              }}
+            />
+            
+            {/* Inner glow */}
+            <div 
+              className="absolute inset-2 rounded-lg bg-primary/10"
+              style={{
+                animation: 'pulse 2s infinite ease-in-out'
+              }}
+            />
+            
+            {/* Corner sparkles */}
+            <Sparkles 
+              className="absolute -top-2 -right-2 w-6 h-6 text-primary animate-pulse" 
+              style={{ animationDelay: '0s' }}
+            />
+            <Sparkles 
+              className="absolute -bottom-2 -left-2 w-5 h-5 text-secondary animate-pulse" 
+              style={{ animationDelay: '0.5s' }}
+            />
           </div>
 
-          {/* Clickable area */}
+          {/* Clickable transparent area to capture clicks */}
           <div
             className="fixed z-[102] cursor-pointer"
             style={{
@@ -201,47 +250,57 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
 
       {/* Tooltip */}
       <Card
-        className="fixed z-[103] p-6 shadow-2xl max-w-md animate-fade-in"
-        style={tooltipPosition}
+        className="fixed z-[103] p-6 shadow-2xl max-w-md border-2 border-primary/20"
+        style={{
+          ...tooltipPosition,
+          animation: 'slide-in-tooltip 0.4s ease-out'
+        }}
       >
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
-            <h3 className="text-lg font-bold mb-2">{currentStepData.title}</h3>
-            <p className="text-sm text-muted-foreground">{currentStepData.description}</p>
+            <div className="flex items-center gap-2 mb-2">
+              <h3 className="text-lg font-bold text-primary">{currentStepData.title}</h3>
+            </div>
+            <p className="text-sm leading-relaxed">{currentStepData.description}</p>
           </div>
           <Button
             variant="ghost"
             size="icon"
             onClick={skipTour}
-            className="ml-2 -mt-2 -mr-2"
+            className="ml-2 -mt-2 -mr-2 hover:bg-destructive/10 hover:text-destructive"
+            title="Bỏ qua hướng dẫn"
           >
             <X className="w-4 h-4" />
           </Button>
         </div>
 
         {currentStepData.showCartIcon && (
-          <div className="mb-4 p-3 bg-primary/10 rounded-lg">
-            <p className="text-sm">
-              👆 Sau khi xem xong ở đây, hãy chú ý đến icon giỏ hàng ở góc trên!
+          <div className="mb-4 p-3 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg border border-primary/20">
+            <p className="text-sm font-medium flex items-center gap-2">
+              <span className="text-lg">👆</span>
+              <span>Sau khi xem xong ở đây, hãy chú ý đến icon giỏ hàng nhấp nháy ở góc trên!</span>
             </p>
           </div>
         )}
 
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">
-            Bước {currentStep + 1}/{steps.length}
-          </span>
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-muted-foreground">
+              Bước {currentStep + 1}/{steps.length}
+            </span>
+          </div>
           
           {!currentStepData.forceClick && (
-            <Button onClick={nextStep} className="btn-hero">
-              {currentStep === steps.length - 1 ? "Hoàn thành" : "Tiếp theo"}
+            <Button onClick={nextStep} className="btn-hero shadow-lg">
+              {currentStep === steps.length - 1 ? "🎉 Hoàn thành" : "Tiếp theo →"}
             </Button>
           )}
           
           {currentStepData.forceClick && (
-            <span className="text-sm font-medium text-primary">
-              Click vào phần được đánh dấu để tiếp tục
-            </span>
+            <div className="flex items-center gap-2 text-sm font-medium text-primary animate-pulse">
+              <span className="inline-block w-2 h-2 bg-primary rounded-full animate-ping"></span>
+              <span>Click vào phần được đánh dấu</span>
+            </div>
           )}
         </div>
 
@@ -259,13 +318,18 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
         <div
           className="fixed z-[101] pointer-events-none"
           style={{
-            top: '20px',
-            right: '20px',
+            top: '16px',
+            right: window.innerWidth < 768 ? '60px' : '240px', // Adjust for mobile
           }}
         >
-          <div className="animate-bounce">
-            <div className="w-12 h-12 rounded-full border-4 border-primary shadow-[0_0_30px_rgba(var(--primary),0.8)]" />
+          <div style={{ animation: 'blink-highlight 1.5s infinite ease-in-out' }}>
+            <div className="w-14 h-14 rounded-full border-4 border-primary shadow-[0_0_40px_hsl(var(--primary)/0.8)]" />
           </div>
+          {/* Pulse rings */}
+          <div 
+            className="absolute inset-0 w-14 h-14 rounded-full border-2 border-primary/50"
+            style={{ animation: 'pulse-ring 2s infinite ease-out' }}
+          />
         </div>
       )}
     </>
