@@ -27,6 +27,16 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
   const clickListenerRef = useRef<((e: MouseEvent) => void) | null>(null);
   const retryIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  // CRITICAL: Reset to step 0 when tour becomes active
+  useEffect(() => {
+    if (isActive) {
+      console.log("🎬 Guided tour activated - resetting to step 0");
+      setCurrentStep(0);
+      setIsProcessingClick(false);
+      setTargetElement(null);
+    }
+  }, [isActive]);
+
   const steps = [
     {
       id: 'chatbot',
@@ -236,22 +246,39 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
     if (!isActive) return;
 
     const step = steps[currentStep];
-    if (!step.forceClick || !targetElement) return;
+    
+    // Safety check
+    if (!step) {
+      console.error("Invalid step in click handler:", currentStep);
+      return;
+    }
+    
+    // Only add click listener if step requires forced click AND element exists
+    if (!step.forceClick || !targetElement) {
+      console.log(`Step ${currentStep} doesn't require force click or no target element`);
+      return;
+    }
 
     // Remove previous listener if exists
     if (clickListenerRef.current) {
       document.removeEventListener('click', clickListenerRef.current, true);
+      targetElement.removeEventListener('click', clickListenerRef.current, true);
       clickListenerRef.current = null;
     }
 
     const handleClick = (e: MouseEvent) => {
-      // Prevent multiple rapid clicks
+      // CRITICAL: Prevent multiple rapid clicks
       if (isProcessingClick) {
-        console.log("Already processing a click, ignoring...");
+        console.log("🛑 Already processing a click, ignoring...");
+        e.stopPropagation();
+        e.preventDefault();
         return;
       }
 
       const target = e.target as HTMLElement;
+      
+      // Check if it's the target element or its children
+      const isTargetOrChild = targetElement.contains(target);
       
       // More flexible click detection - check if click is within highlight area
       const rect = targetElement.getBoundingClientRect();
@@ -264,51 +291,65 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
         clickY >= rect.top - 5 && 
         clickY <= rect.bottom + 5;
       
-      // Check if it's the target element or its children
-      const isTargetOrChild = targetElement.contains(target);
-      
       if (isWithinBounds || isTargetOrChild) {
-        console.log(`Click detected on step ${currentStep}:`, step.id);
+        console.log(`✓ Valid click detected on step ${currentStep}:`, step.id);
         
+        // STOP event propagation immediately
         e.stopPropagation();
         e.preventDefault();
         
+        // Set processing flag FIRST
         setIsProcessingClick(true);
         
         // Visual feedback
         targetElement.style.transform = 'scale(0.95)';
         
+        // Move to next step after animation
         setTimeout(() => {
           if (targetElement) {
             targetElement.style.transform = '';
           }
+          
+          console.log(`➡️ Advancing from step ${currentStep} to ${currentStep + 1}`);
           nextStep();
+          
           // Reset processing flag after step changes
-          setTimeout(() => setIsProcessingClick(false), 500);
+          setTimeout(() => {
+            setIsProcessingClick(false);
+          }, 500);
         }, 200);
+      } else {
+        console.log(`❌ Click outside target area, ignoring`);
       }
     };
 
     clickListenerRef.current = handleClick;
     
-    // Add listener with high priority
+    // Add listener with high priority (capture phase)
     document.addEventListener('click', handleClick, { capture: true });
-    
-    // Also listen on the target element directly
     targetElement.addEventListener('click', handleClick, { capture: true });
 
-    console.log(`Waiting for click on step ${currentStep}:`, step.id);
+    console.log(`👆 Waiting for click on step ${currentStep}:`, step.id);
 
     return () => {
       if (clickListenerRef.current) {
         document.removeEventListener('click', clickListenerRef.current, true);
-        targetElement.removeEventListener('click', clickListenerRef.current, true);
+        if (targetElement) {
+          targetElement.removeEventListener('click', clickListenerRef.current, true);
+        }
+        clickListenerRef.current = null;
       }
     };
   }, [targetElement, currentStep, isActive, isProcessingClick]);
 
   const nextStep = () => {
-    console.log(`Moving from step ${currentStep} to ${currentStep + 1}`);
+    // CRITICAL: Prevent multiple calls
+    if (isProcessingClick) {
+      console.log("🛑 nextStep called while processing, ignoring");
+      return;
+    }
+    
+    console.log(`➡️ Moving from step ${currentStep} to ${currentStep + 1}`);
     
     // Reset previous element's z-index
     if (targetElement) {
