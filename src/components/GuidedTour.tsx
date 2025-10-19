@@ -23,6 +23,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [targetElement, setTargetElement] = useState<HTMLElement | null>(null);
   const [highlightPosition, setHighlightPosition] = useState({ top: 0, left: 0, width: 0, height: 0 });
+  const [isProcessingClick, setIsProcessingClick] = useState(false);
   const clickListenerRef = useRef<((e: MouseEvent) => void) | null>(null);
 
   const steps = [
@@ -112,14 +113,15 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       if (step.requireDropdownOpen) {
         const dropdownTrigger = document.querySelector('[data-tour="user-dropdown"]') as HTMLElement;
         if (dropdownTrigger) {
-          // Simulate click to open dropdown if not already open
+          // Check if dropdown is already open
           const dropdownContent = document.querySelector('[role="menu"]');
           if (!dropdownContent) {
+            console.log("Opening dropdown for tour step");
             dropdownTrigger.click();
-            // Wait for dropdown to open
+            // Wait longer for dropdown to fully render
             setTimeout(() => {
               findAndHighlightElement();
-            }, 200);
+            }, 300);
             return;
           }
         }
@@ -133,13 +135,19 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       const element = document.querySelector(step.selector!) as HTMLElement;
       
       if (element) {
+        console.log(`Found element for step ${currentStep}:`, step.id);
         setTargetElement(element);
         
         // Boost z-index to ensure element is clickable above overlay
         element.style.position = 'relative';
         element.style.zIndex = '102';
         
+        // Force reflow to ensure position update
+        element.offsetHeight;
+        
         const rect = element.getBoundingClientRect();
+        console.log('Element position:', rect);
+        
         setHighlightPosition({
           top: rect.top,
           left: rect.left,
@@ -147,29 +155,37 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
           height: rect.height,
         });
 
-        // Scroll to element
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Scroll to element with more padding
+        element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
       } else {
         console.warn(`Element not found for selector: ${step.selector}`);
-        // If element not found after 2 seconds, skip to next step
+        // If element not found after 3 seconds, skip to next step
         setTimeout(() => {
           if (!document.querySelector(step.selector!)) {
             console.log("Skipping step due to missing element");
             nextStep();
           }
-        }, 2000);
+        }, 3000);
       }
     };
 
+    // Initial highlight
     updateHighlight();
 
-    // Update on window resize or scroll
-    window.addEventListener('resize', updateHighlight);
-    window.addEventListener('scroll', updateHighlight, true);
+    // Update on window resize or scroll with debounce
+    let resizeTimeout: NodeJS.Timeout;
+    const debouncedUpdate = () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(updateHighlight, 100);
+    };
+
+    window.addEventListener('resize', debouncedUpdate);
+    window.addEventListener('scroll', debouncedUpdate, true);
 
     return () => {
-      window.removeEventListener('resize', updateHighlight);
-      window.removeEventListener('scroll', updateHighlight, true);
+      window.removeEventListener('resize', debouncedUpdate);
+      window.removeEventListener('scroll', debouncedUpdate, true);
+      clearTimeout(resizeTimeout);
     };
   }, [currentStep, isActive]);
 
@@ -192,46 +208,85 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
     // Remove previous listener if exists
     if (clickListenerRef.current) {
       document.removeEventListener('click', clickListenerRef.current, true);
+      clickListenerRef.current = null;
     }
 
     const handleClick = (e: MouseEvent) => {
-      const target = e.target as Node;
+      // Prevent multiple rapid clicks
+      if (isProcessingClick) {
+        console.log("Already processing a click, ignoring...");
+        return;
+      }
+
+      const target = e.target as HTMLElement;
       
-      // Check if click is on the target element or its children
-      if (targetElement.contains(target)) {
+      // More flexible click detection - check if click is within highlight area
+      const rect = targetElement.getBoundingClientRect();
+      const clickX = e.clientX;
+      const clickY = e.clientY;
+      
+      const isWithinBounds = 
+        clickX >= rect.left - 5 && 
+        clickX <= rect.right + 5 && 
+        clickY >= rect.top - 5 && 
+        clickY <= rect.bottom + 5;
+      
+      // Check if it's the target element or its children
+      const isTargetOrChild = targetElement.contains(target);
+      
+      if (isWithinBounds || isTargetOrChild) {
+        console.log(`Click detected on step ${currentStep}:`, step.id);
+        
         e.stopPropagation();
         e.preventDefault();
         
+        setIsProcessingClick(true);
+        
         // Visual feedback
         targetElement.style.transform = 'scale(0.95)';
+        
         setTimeout(() => {
           if (targetElement) {
             targetElement.style.transform = '';
           }
           nextStep();
-        }, 150);
+          // Reset processing flag after step changes
+          setTimeout(() => setIsProcessingClick(false), 500);
+        }, 200);
       }
     };
 
     clickListenerRef.current = handleClick;
-    document.addEventListener('click', handleClick, true);
+    
+    // Add listener with high priority
+    document.addEventListener('click', handleClick, { capture: true });
+    
+    // Also listen on the target element directly
+    targetElement.addEventListener('click', handleClick, { capture: true });
+
+    console.log(`Waiting for click on step ${currentStep}:`, step.id);
 
     return () => {
       if (clickListenerRef.current) {
         document.removeEventListener('click', clickListenerRef.current, true);
+        targetElement.removeEventListener('click', clickListenerRef.current, true);
       }
     };
-  }, [targetElement, currentStep, isActive]);
+  }, [targetElement, currentStep, isActive, isProcessingClick]);
 
   const nextStep = () => {
+    console.log(`Moving from step ${currentStep} to ${currentStep + 1}`);
+    
     // Reset previous element's z-index
     if (targetElement) {
       targetElement.style.zIndex = '';
       targetElement.style.position = '';
+      targetElement.style.transform = '';
     }
     
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
+      setIsProcessingClick(false);
     } else {
       handleComplete();
     }
@@ -336,9 +391,23 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
               style={{
                 animation: 'blink-highlight 1.5s infinite ease-in-out',
                 boxShadow: '0 0 40px hsl(var(--primary) / 0.6)',
-                background: 'transparent', // Rỗng hoàn toàn
+                background: 'transparent',
               }}
             />
+            
+            {/* Click indicator for forceClick steps */}
+            {currentStepData.forceClick && (
+              <div 
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+                style={{
+                  animation: 'pulse 1s infinite ease-in-out'
+                }}
+              >
+                <div className="bg-primary text-primary-foreground px-4 py-2 rounded-full shadow-lg text-sm font-bold whitespace-nowrap">
+                  👆 Click vào đây
+                </div>
+              </div>
+            )}
             
             {/* Corner sparkles */}
             <Sparkles 
@@ -350,8 +419,6 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
               style={{ animationDelay: '0.5s' }}
             />
           </div>
-
-          {/* KHÔNG có overlay che nút - để nút hoàn toàn clickable */}
         </>
       )}
 
