@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface OnboardingModalProps {
   open: boolean;
@@ -18,6 +19,7 @@ interface OnboardingModalProps {
 const OnboardingModal = ({ open, onComplete }: OnboardingModalProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const handleChoice = async (isNewUser: boolean) => {
     setIsLoading(true);
@@ -44,7 +46,7 @@ const OnboardingModal = ({ open, onComplete }: OnboardingModalProps) => {
       
       if (isNewUser) {
         toast({
-          title: "Chào mừng! 🎉",
+          title: t('onboarding.welcome') + " 🎉",
           description: "Tay Nhỏ sẽ hướng dẫn bạn khám phá Shoppet ngay bây giờ!",
           duration: 3000,
         });
@@ -73,10 +75,10 @@ const OnboardingModal = ({ open, onComplete }: OnboardingModalProps) => {
       <DialogContent className="sm:max-w-md [&>button]:hidden">
         <DialogHeader>
           <DialogTitle className="text-center text-2xl">
-            Chào mừng đến với Shoppet! 🐾
+            {t('onboarding.welcome')} 🐾
           </DialogTitle>
           <DialogDescription className="text-center pt-4">
-            Hãy cho chúng tôi biết về bạn để có trải nghiệm tốt nhất
+            {t('onboarding.description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -87,9 +89,9 @@ const OnboardingModal = ({ open, onComplete }: OnboardingModalProps) => {
             className="w-full h-auto py-6 flex flex-col gap-2 bg-gradient-to-br from-primary to-primary/80 hover:scale-105 transition-transform"
           >
             <span className="text-3xl">🌟</span>
-            <span className="font-semibold text-lg">Tôi là người mới</span>
+            <span className="font-semibold text-lg">{t('onboarding.petOwner')}</span>
             <span className="text-xs opacity-90 font-normal">
-              Hướng dẫn tôi khám phá Shoppet
+              {t('onboarding.petOwnerDesc')}
             </span>
           </Button>
 
@@ -100,9 +102,9 @@ const OnboardingModal = ({ open, onComplete }: OnboardingModalProps) => {
             className="w-full h-auto py-6 flex flex-col gap-2 hover:scale-105 transition-transform"
           >
             <span className="text-3xl">🚀</span>
-            <span className="font-semibold text-lg">Tôi đã quen rồi</span>
+            <span className="font-semibold text-lg">{t('onboarding.seller')}</span>
             <span className="text-xs opacity-70 font-normal">
-              Tôi muốn tự khám phá
+              {t('onboarding.sellerDesc')}
             </span>
           </Button>
         </div>

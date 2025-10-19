@@ -17,6 +17,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "@/contexts/LanguageContext";
 import type { User } from "@supabase/supabase-js";
 
 interface Message {
@@ -37,6 +38,7 @@ const FloatingChatbot = ({ user, isNewUser }: FloatingChatbotProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   // Reset chatbot state when user logs out
   useEffect(() => {
@@ -65,10 +67,10 @@ const FloatingChatbot = ({ user, isNewUser }: FloatingChatbotProps) => {
   };
 
   const quickActions = [
-    { icon: ShoppingBag, label: "Khám phá Marketplace", path: "/marketplace" },
-    { icon: Bot, label: "Hỏi Trợ lý AI", path: "/ai-chat" },
-    { icon: PawPrint, label: "Quản lý Hồ sơ Thú cưng", path: "/pets" },
-    { icon: Users, label: "Vào Cộng đồng", path: "/community" },
+    { icon: ShoppingBag, label: t('chatbot.exploreMarketplace'), path: "/marketplace" },
+    { icon: Bot, label: t('chatbot.askAI'), path: "/ai-chat" },
+    { icon: PawPrint, label: t('chatbot.managePets'), path: "/pets" },
+    { icon: Users, label: t('chatbot.joinCommunity'), path: "/community" },
   ];
 
   const handleQuickAction = (path: string) => {
@@ -140,8 +142,8 @@ const FloatingChatbot = ({ user, isNewUser }: FloatingChatbotProps) => {
     } catch (error) {
       console.error("Error sending message:", error);
       toast({
-        title: "Lỗi",
-        description: "Không thể gửi tin nhắn. Vui lòng thử lại.",
+        title: t('chatbot.error'),
+        description: t('chatbot.errorDesc'),
         variant: "destructive",
       });
     } finally {
@@ -176,15 +178,15 @@ const FloatingChatbot = ({ user, isNewUser }: FloatingChatbotProps) => {
       <AlertDialog open={showLoginAlert} onOpenChange={setShowLoginAlert}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Vui lòng Đăng nhập</AlertDialogTitle>
+            <AlertDialogTitle>{t('chatbot.loginRequired')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Vui lòng đăng nhập để sử dụng tính năng này
+              {t('chatbot.loginRequiredDesc')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Đóng</AlertDialogCancel>
+            <AlertDialogCancel>{t('chatbot.close')}</AlertDialogCancel>
             <AlertDialogAction onClick={handleLoginRedirect}>
-              Đăng nhập
+              {t('header.login')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -197,8 +199,8 @@ const FloatingChatbot = ({ user, isNewUser }: FloatingChatbotProps) => {
             <div className="flex items-center gap-2">
               <span className="text-2xl">🐾</span>
               <div>
-                <h3 className="font-semibold">Tay Nhỏ</h3>
-                <p className="text-xs opacity-90">Trợ lý ảo Shoppet</p>
+                <h3 className="font-semibold">{t('chatbot.title')}</h3>
+                <p className="text-xs opacity-90">{t('chatbot.subtitle')}</p>
               </div>
             </div>
           </div>
@@ -209,23 +211,22 @@ const FloatingChatbot = ({ user, isNewUser }: FloatingChatbotProps) => {
                 <p className="text-4xl mb-4">👋</p>
                 {isNewUser ? (
                   <>
-                    <p className="font-semibold">Chào mừng bạn đến với Shoppet!</p>
+                    <p className="font-semibold">{t('chatbot.welcomeNew')}</p>
                     <p className="text-sm">
-                      Tôi là Tay Nhỏ, tôi sẽ hướng dẫn bạn khám phá tất cả tính năng trên website.
-                      Hãy hỏi tôi bất cứ điều gì!
+                      {t('chatbot.welcomeNewDesc')}
                     </p>
                   </>
                 ) : (
                   <>
-                    <p className="font-semibold">Chúc bạn một ngày tốt lành!</p>
+                    <p className="font-semibold">{t('chatbot.welcomeBack')}</p>
                     <p className="text-sm">
-                      Nếu cần hỗ trợ gì, cứ nhấn vào tôi nhé! 🐾
+                      {t('chatbot.welcomeBackDesc')}
                     </p>
                   </>
                 )}
                 
                 <div className="mt-6 space-y-2">
-                  <p className="text-xs font-medium text-foreground">Truy cập nhanh:</p>
+                  <p className="text-xs font-medium text-foreground">{t('chatbot.quickAccess')}</p>
                   {quickActions.map((action, idx) => (
                     <Button
                       key={idx}
@@ -267,7 +268,7 @@ const FloatingChatbot = ({ user, isNewUser }: FloatingChatbotProps) => {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Nhập tin nhắn..."
+                placeholder={t('chatbot.placeholder')}
                 disabled={isLoading}
               />
               <Button onClick={sendMessage} disabled={isLoading || !input.trim()}>

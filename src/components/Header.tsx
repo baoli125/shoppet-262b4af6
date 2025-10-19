@@ -11,6 +11,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useLanguage } from "@/contexts/LanguageContext";
 import shoppetLogo from "@/assets/logo.png";
 
 interface HeaderProps {
@@ -33,28 +34,28 @@ const Header = ({
   onLogoutClick
 }: HeaderProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [language, setLanguage] = useState<'vi' | 'en'>('vi');
+  const { language, setLanguage, t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
 
   const toggleLanguage = () => {
-    setLanguage(prev => prev === 'vi' ? 'en' : 'vi');
+    setLanguage(language === 'vi' ? 'en' : 'vi');
   };
 
   const menuItems = [
-    { label: "Trang Chủ", href: "#home", active: true },
-    { label: "Giới Thiệu", href: "#about", active: false },
+    { label: t('header.home'), href: "#home", active: true },
+    { label: t('header.about'), href: "#about", active: false },
   ];
 
   const userMenuItems = [
-    { icon: Store, label: "Marketplace", href: "/marketplace" },
-    { icon: MessageSquare, label: "Trợ lý AI", href: "/ai-chat" },
-    { icon: FileText, label: "Hồ sơ Thú cưng", href: "/pets" },
-    { icon: Users, label: "Cộng đồng", href: "/community" },
-    { icon: ShoppingCart, label: "Giỏ hàng", href: "/cart" },
-    { icon: Package, label: "Đơn hàng", href: "/orders" },
-    { icon: User, label: "Tài khoản", href: "/profile" },
-    { icon: Settings, label: "Seller Dashboard", href: "/seller-dashboard" },
+    { icon: Store, label: t('header.marketplace'), href: "/marketplace" },
+    { icon: MessageSquare, label: t('header.aiChat'), href: "/ai-chat" },
+    { icon: FileText, label: t('header.pets'), href: "/pets" },
+    { icon: Users, label: t('header.community'), href: "/community" },
+    { icon: ShoppingCart, label: t('header.cart'), href: "/cart" },
+    { icon: Package, label: t('header.orders'), href: "/orders" },
+    { icon: User, label: t('header.account'), href: "/profile" },
+    { icon: Settings, label: t('header.sellerDashboard'), href: "/seller-dashboard" },
   ];
 
   const handleMenuItemClick = (href: string) => {
@@ -136,13 +137,13 @@ const Header = ({
                   onClick={onLoginClick}
                   className="btn-solid-blue"
                 >
-                  {language === 'vi' ? 'Đăng nhập' : 'Login'}
+                  {t('header.login')}
                 </Button>
                 <Button 
                   onClick={onRegisterClick}
                   className="btn-outline-blue"
                 >
-                  {language === 'vi' ? 'Đăng ký' : 'Register'}
+                  {t('header.register')}
                 </Button>
               </>
             ) : (
@@ -215,7 +216,7 @@ const Header = ({
                       className="cursor-pointer text-destructive"
                     >
                       <LogOut className="w-4 h-4 mr-2" />
-                      Đăng xuất
+                      {t('header.logout')}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -270,16 +271,16 @@ const Header = ({
                 >
                   <span className="flex items-center gap-2">
                     <Globe className="w-5 h-5" />
-                    {language === 'vi' ? 'Ngôn ngữ' : 'Language'}
+                    {t('header.language')}
                   </span>
                   <span className="text-sm font-medium">{language.toUpperCase()}</span>
                 </button>
                 
                 <Button onClick={onLoginClick} className="btn-solid-blue w-full">
-                  {language === 'vi' ? 'Đăng nhập' : 'Login'}
+                  {t('header.login')}
                 </Button>
                 <Button onClick={onRegisterClick} className="btn-outline-blue w-full">
-                  {language === 'vi' ? 'Đăng ký' : 'Register'}
+                  {t('header.register')}
                 </Button>
               </div>
             ) : (
@@ -291,7 +292,7 @@ const Header = ({
                 >
                   <span className="flex items-center gap-2">
                     <Globe className="w-5 h-5" />
-                    {language === 'vi' ? 'Ngôn ngữ' : 'Language'}
+                    {t('header.language')}
                   </span>
                   <span className="text-sm font-medium">{language.toUpperCase()}</span>
                 </button>
@@ -303,7 +304,7 @@ const Header = ({
                 >
                   <span className="flex items-center gap-2">
                     <ShoppingCart className="w-5 h-5" />
-                    {language === 'vi' ? 'Giỏ hàng' : 'Cart'}
+                    {t('header.cart')}
                   </span>
                   {cartCount > 0 && (
                     <Badge className="bg-destructive text-destructive-foreground">
@@ -329,7 +330,7 @@ const Header = ({
                   className="flex items-center gap-2 px-4 py-2 hover:bg-destructive/10 rounded-lg transition-colors text-destructive"
                 >
                   <LogOut className="w-5 h-5" />
-                  Đăng xuất
+                  {t('header.logout')}
                 </button>
               </div>
             )}

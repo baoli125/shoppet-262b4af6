@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
 import heroPetCare from "@/assets/hero-pet-care.jpg";
 import heroAiAssistant from "@/assets/hero-ai-assistant.jpg";
 import heroCommunity from "@/assets/hero-community.jpg";
@@ -8,42 +9,43 @@ import heroCommunity from "@/assets/hero-community.jpg";
 interface Slide {
   id: number;
   image: string;
-  title: string;
-  subtitle: string;
-  buttonText: string;
+  titleKey: string;
+  subtitleKey: string;
+  buttonTextKey: string;
   buttonAction: string;
 }
-
-const slides: Slide[] = [
-  {
-    id: 1,
-    image: heroPetCare,
-    title: "Người bạn đồng hành tin cậy",
-    subtitle: "Chăm sóc toàn diện cho thú cưng của bạn",
-    buttonText: "Bắt đầu ngay",
-    buttonAction: "#get-started"
-  },
-  {
-    id: 2,
-    image: heroAiAssistant,
-    title: "Trợ lý AI 24/7",
-    subtitle: "Tư vấn sức khỏe & dinh dưỡng thông minh",
-    buttonText: "Trải nghiệm AI",
-    buttonAction: "#ai-assistant"
-  },
-  {
-    id: 3,
-    image: heroCommunity,
-    title: "Cộng đồng yêu thú cưng",
-    subtitle: "Kết nối và chia sẻ với những người cùng đam mê",
-    buttonText: "Tham gia ngay",
-    buttonAction: "#community"
-  }
-];
 
 const HeroCarousel = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const { t } = useLanguage();
+
+  const slides: Slide[] = [
+    {
+      id: 1,
+      image: heroPetCare,
+      titleKey: "hero.slide1.title",
+      subtitleKey: "hero.slide1.subtitle",
+      buttonTextKey: "hero.slide1.cta",
+      buttonAction: "#get-started"
+    },
+    {
+      id: 2,
+      image: heroAiAssistant,
+      titleKey: "hero.slide2.title",
+      subtitleKey: "hero.slide2.subtitle",
+      buttonTextKey: "hero.slide2.cta",
+      buttonAction: "#ai-assistant"
+    },
+    {
+      id: 3,
+      image: heroCommunity,
+      titleKey: "hero.slide3.title",
+      subtitleKey: "hero.slide3.subtitle",
+      buttonTextKey: "hero.slide3.cta",
+      buttonAction: "#community"
+    }
+  ];
 
   useEffect(() => {
     if (!isAutoPlaying) return;
@@ -104,17 +106,17 @@ const HeroCarousel = () => {
             <div className="relative h-full container mx-auto px-4 flex items-center">
               <div className="max-w-2xl text-white animate-fade-in-up">
                 <h1 className="text-4xl md:text-6xl font-bold mb-4 leading-tight">
-                  {slide.title}
+                  {t(slide.titleKey)}
                 </h1>
                 <p className="text-lg md:text-2xl mb-8 text-white/90">
-                  {slide.subtitle}
+                  {t(slide.subtitleKey)}
                 </p>
                 <Button 
                   onClick={() => handleButtonClick(slide.buttonAction)}
                   className="btn-hero text-lg"
                   size="lg"
                 >
-                  {slide.buttonText}
+                  {t(slide.buttonTextKey)}
                 </Button>
               </div>
             </div>

@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import HeroCarousel from "@/components/HeroCarousel";
 import OnboardingModal from "@/components/OnboardingModal";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
 
 const Index = () => {
   const [user, setUser] = useState<User | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const { t } = useLanguage();
 
   useEffect(() => {
     // Check initial session
@@ -81,33 +83,31 @@ const Index = () => {
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
               <h2 className="text-3xl md:text-4xl font-bold mb-6 text-foreground">
-                Về Shoppet
+                {t('about.title')}
               </h2>
               <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                Shoppet là nền tảng toàn diện dành cho người yêu thú cưng tại Việt Nam. 
-                Chúng tôi kết hợp công nghệ AI tiên tiến với kiến thức chuyên môn về chăm sóc thú cưng 
-                để mang đến trải nghiệm tốt nhất cho bạn và người bạn bốn chân của bạn.
+                {t('about.subtitle')}
               </p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
                 <div className="p-6 bg-background rounded-2xl">
                   <div className="text-4xl mb-4">🛍️</div>
-                  <h3 className="text-xl font-semibold mb-2 text-foreground">Marketplace</h3>
+                  <h3 className="text-xl font-semibold mb-2 text-foreground">{t('about.marketplace.title')}</h3>
                   <p className="text-muted-foreground">
-                    Mua sắm sản phẩm & đặt dịch vụ chất lượng cao
+                    {t('about.marketplace.description')}
                   </p>
                 </div>
                 <div className="p-6 bg-background rounded-2xl">
                   <div className="text-4xl mb-4">🤖</div>
-                  <h3 className="text-xl font-semibold mb-2 text-foreground">AI Assistant</h3>
+                  <h3 className="text-xl font-semibold mb-2 text-foreground">{t('about.aiAssistant.title')}</h3>
                   <p className="text-muted-foreground">
-                    Tư vấn thông minh 24/7 về sức khỏe & dinh dưỡng
+                    {t('about.aiAssistant.description')}
                   </p>
                 </div>
                 <div className="p-6 bg-background rounded-2xl">
                   <div className="text-4xl mb-4">👥</div>
-                  <h3 className="text-xl font-semibold mb-2 text-foreground">Community</h3>
+                  <h3 className="text-xl font-semibold mb-2 text-foreground">{t('about.community.title')}</h3>
                   <p className="text-muted-foreground">
-                    Cộng đồng sôi động với hàng nghìn thành viên
+                    {t('about.community.description')}
                   </p>
                 </div>
               </div>
@@ -120,13 +120,15 @@ const Index = () => {
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
               <div>
-                <h4 className="text-lg font-semibold mb-4 text-foreground">Về Shoppet</h4>
+                <h4 className="text-lg font-semibold mb-4 text-foreground">{t('about.title')}</h4>
                 <p className="text-muted-foreground text-sm">
-                  Nền tảng chăm sóc thú cưng toàn diện, kết hợp công nghệ AI và cộng đồng người yêu thú cưng.
+                  {t('footer.description')}
                 </p>
               </div>
               <div>
-                <h4 className="text-lg font-semibold mb-4 text-foreground">Liên hệ</h4>
+                <h4 className="text-lg font-semibold mb-4 text-foreground">
+                  {t('header.language') === 'Ngôn ngữ' ? 'Liên hệ' : 'Contact'}
+                </h4>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li>📧 ShoppetLazyBeo@gmail.com</li>
                   <li>📞 0900 123 456</li>
@@ -134,7 +136,7 @@ const Index = () => {
                 </ul>
               </div>
               <div>
-                <h4 className="text-lg font-semibold mb-4 text-foreground">Theo dõi</h4>
+                <h4 className="text-lg font-semibold mb-4 text-foreground">{t('footer.followUs')}</h4>
                 <div className="flex gap-4">
                   <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
                     Facebook
@@ -150,7 +152,7 @@ const Index = () => {
             </div>
             <div className="text-center pt-8 border-t border-border">
               <p className="text-sm text-muted-foreground">
-                © 2025 Shoppet. All rights reserved.
+                © 2025 Shoppet. {t('footer.allRightsReserved')}
               </p>
             </div>
           </div>
