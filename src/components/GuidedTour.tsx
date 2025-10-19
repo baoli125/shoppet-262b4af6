@@ -8,6 +8,17 @@ interface GuidedTourProps {
   onComplete: () => void;
 }
 
+interface TourStep {
+  id: string;
+  selector: string | null;
+  title: string;
+  description: string;
+  position: 'top' | 'bottom' | 'left' | 'right' | 'center' | 'bottom-right';
+  forceClick: boolean;
+  requireDropdownOpen?: boolean;
+  showCartIcon?: boolean;
+}
+
 const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [targetElement, setTargetElement] = useState<HTMLElement | null>(null);
@@ -24,20 +35,21 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       forceClick: true,
     },
     {
+      id: 'user-dropdown',
+      selector: '[data-tour="user-dropdown"]',
+      title: "Menu Quản lý Tài khoản 👤",
+      description: "Đây là trung tâm điều khiển! Click vào đây để mở menu và xem tất cả các tính năng.",
+      position: 'bottom' as const,
+      forceClick: true,
+    },
+    {
       id: 'marketplace-menu',
       selector: '[data-tour="marketplace-menu"]',
       title: "Marketplace - Mua sắm Thông minh 🛍️",
       description: "Tại đây bạn có thể mua tất cả sản phẩm cho thú cưng: thức ăn, đồ chơi, phụ kiện với giá tốt nhất.",
       position: 'left' as const,
       forceClick: true,
-    },
-    {
-      id: 'user-dropdown',
-      selector: '[data-tour="user-dropdown"]',
-      title: "Menu Quản lý Tài khoản 👤",
-      description: "Đây là trung tâm điều khiển! Bạn có thể quản lý hồ sơ, đơn hàng, cài đặt và nhiều tính năng khác. Hãy click để xem!",
-      position: 'bottom' as const,
-      forceClick: true,
+      requireDropdownOpen: true,
     },
     {
       id: 'ai-chat-menu',
@@ -46,6 +58,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       description: "Nhận tư vấn sức khỏe, dinh dưỡng cá nhân hóa cho từng loại thú cưng của bạn.",
       position: 'left' as const,
       forceClick: true,
+      requireDropdownOpen: true,
     },
     {
       id: 'pets-menu',
@@ -54,6 +67,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       description: "Quản lý thông tin sức khỏe, lịch tiêm phòng, bệnh án của tất cả thú cưng trong một nơi.",
       position: 'left' as const,
       forceClick: true,
+      requireDropdownOpen: true,
     },
     {
       id: 'add-pet-prompt',
@@ -70,6 +84,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       description: "Kết nối, chia sẻ kinh nghiệm với hàng ngàn người yêu thú cưng khác.",
       position: 'left' as const,
       forceClick: true,
+      requireDropdownOpen: true,
     },
     {
       id: 'cart-orders-menu',
@@ -79,6 +94,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       position: 'left' as const,
       forceClick: false,
       showCartIcon: true,
+      requireDropdownOpen: true,
     },
   ];
 
@@ -92,7 +108,30 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
         return;
       }
 
-      const element = document.querySelector(step.selector) as HTMLElement;
+      // If step requires dropdown to be open, make sure it's visible
+      if (step.requireDropdownOpen) {
+        const dropdownTrigger = document.querySelector('[data-tour="user-dropdown"]') as HTMLElement;
+        if (dropdownTrigger) {
+          // Simulate click to open dropdown if not already open
+          const dropdownContent = document.querySelector('[role="menu"]');
+          if (!dropdownContent) {
+            dropdownTrigger.click();
+            // Wait for dropdown to open
+            setTimeout(() => {
+              findAndHighlightElement();
+            }, 200);
+            return;
+          }
+        }
+      }
+
+      findAndHighlightElement();
+    };
+
+    const findAndHighlightElement = () => {
+      const step = steps[currentStep];
+      const element = document.querySelector(step.selector!) as HTMLElement;
+      
       if (element) {
         setTargetElement(element);
         const rect = element.getBoundingClientRect();
@@ -105,6 +144,15 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
 
         // Scroll to element
         element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        console.warn(`Element not found for selector: ${step.selector}`);
+        // If element not found after 2 seconds, skip to next step
+        setTimeout(() => {
+          if (!document.querySelector(step.selector!)) {
+            console.log("Skipping step due to missing element");
+            nextStep();
+          }
+        }, 2000);
       }
     };
 
@@ -173,7 +221,8 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
   };
 
   const skipTour = () => {
-    if (confirm("Bạn có chắc muốn bỏ qua hướng dẫn?")) {
+    const confirmed = window.confirm("Bạn có chắc muốn bỏ qua hướng dẫn? Bạn có thể xem lại sau trong phần cài đặt.");
+    if (confirmed) {
       handleComplete();
     }
   };

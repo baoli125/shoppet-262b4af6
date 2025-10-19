@@ -75,7 +75,18 @@ const AppContent = () => {
       }
     });
 
-    return () => subscription.unsubscribe();
+    // Listen for guided tour trigger from onboarding
+    const handleStartGuidedTour = () => {
+      console.log("Guided tour triggered by onboarding");
+      setShowGuidedTour(true);
+    };
+    
+    window.addEventListener('startGuidedTour', handleStartGuidedTour);
+
+    return () => {
+      subscription.unsubscribe();
+      window.removeEventListener('startGuidedTour', handleStartGuidedTour);
+    };
   }, [navigate]);
 
   // Refetch cart count when location changes or cart updated
@@ -112,13 +123,8 @@ const AppContent = () => {
       
       if (data?.is_new_user !== undefined) {
         setIsNewUser(data.is_new_user);
-        // Show guided tour for new users who have completed onboarding
-        if (data.is_new_user && data.has_completed_onboarding) {
-          // Small delay to ensure UI is ready
-          setTimeout(() => {
-            setShowGuidedTour(true);
-          }, 500);
-        }
+        // Note: Guided tour is now triggered by custom event from Index.tsx
+        // after user completes onboarding, not here
       }
     } catch (err) {
       console.error("Unexpected error fetching profile:", err);

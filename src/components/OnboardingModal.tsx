@@ -23,29 +23,45 @@ const OnboardingModal = ({ open, onComplete }: OnboardingModalProps) => {
     setIsLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("No user found");
+      if (!user) {
+        throw new Error("No user found");
+      }
+
+      console.log(`User chose: ${isNewUser ? 'New User' : 'Experienced User'}`);
 
       const { error } = await supabase
         .from("profiles")
         .update({ has_completed_onboarding: true })
         .eq("id", user.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error updating profile:", error);
+        throw error;
+      }
 
+      console.log("Onboarding status updated successfully");
       onComplete(isNewUser);
       
-      toast({
-        title: "Chào mừng! 🎉",
-        description: isNewUser 
-          ? "Tay Nhỏ sẽ hướng dẫn bạn khám phá Shoppet!"
-          : "Chúc bạn có trải nghiệm tuyệt vời!",
-      });
+      if (isNewUser) {
+        toast({
+          title: "Chào mừng! 🎉",
+          description: "Tay Nhỏ sẽ hướng dẫn bạn khám phá Shoppet ngay bây giờ!",
+          duration: 3000,
+        });
+      } else {
+        toast({
+          title: "Chúc bạn có trải nghiệm tuyệt vời! 🚀",
+          description: "Hãy khám phá Shoppet theo cách của bạn!",
+          duration: 3000,
+        });
+      }
     } catch (error) {
-      console.error("Error updating onboarding status:", error);
+      console.error("Error in handleChoice:", error);
       toast({
         title: "Lỗi",
-        description: "Không thể cập nhật trạng thái. Vui lòng thử lại.",
+        description: "Không thể cập nhật trạng thái. Vui lòng thử lại hoặc liên hệ hỗ trợ.",
         variant: "destructive",
+        duration: 5000,
       });
     } finally {
       setIsLoading(false);

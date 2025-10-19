@@ -42,17 +42,25 @@ const Index = () => {
     }
   };
 
-  const handleOnboardingComplete = async (newUser: boolean) => {
+  const handleOnboardingComplete = async (isNewUser: boolean) => {
     setShowOnboarding(false);
     
     if (user) {
-      await supabase
+      // Update profile in database
+      const { error } = await supabase
         .from("profiles")
         .update({ 
-          is_new_user: newUser,
+          is_new_user: isNewUser,
           has_completed_onboarding: true 
         })
         .eq("id", user.id);
+      
+      if (!error && isNewUser) {
+        // Dispatch event to trigger guided tour in App.tsx
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('startGuidedTour'));
+        }, 500);
+      }
     }
   };
 
