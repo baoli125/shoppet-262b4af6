@@ -162,7 +162,7 @@ const FloatingChatbot = ({ user, isNewUser }: FloatingChatbotProps) => {
       <Button
         data-tour="chatbot"
         onClick={handleChatbotClick}
-        className="fixed bottom-6 right-6 h-16 w-16 rounded-full shadow-lg hover:scale-110 transition-transform z-50 bg-gradient-to-br from-primary to-primary/80"
+        className="fixed bottom-[25vh] right-6 h-16 w-16 rounded-full shadow-lg hover:scale-110 transition-transform z-50 bg-gradient-to-br from-primary to-primary/80"
         size="icon"
       >
         {isOpen ? (
@@ -192,7 +192,7 @@ const FloatingChatbot = ({ user, isNewUser }: FloatingChatbotProps) => {
 
       {/* Chat Window */}
       {isOpen && (
-        <Card className="fixed bottom-24 right-6 w-96 h-[500px] shadow-2xl z-50 flex flex-col">
+        <Card className="fixed bottom-[calc(25vh+80px)] right-6 w-96 h-[500px] shadow-2xl z-50 flex flex-col">
           <div className="p-4 border-b bg-gradient-to-r from-primary to-primary/80 text-white rounded-t-lg">
             <div className="flex items-center gap-2">
               <span className="text-2xl">🐾</span>

@@ -10,7 +10,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import shoppetLogo from "@/assets/shoppet-logo.png";
+import { useNavigate, useLocation } from "react-router-dom";
+import shoppetLogo from "@/assets/logo.png";
 
 interface HeaderProps {
   isLoggedIn?: boolean;
@@ -32,6 +33,8 @@ const Header = ({
   onLogoutClick
 }: HeaderProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const menuItems = [
     { label: "Trang Chủ", href: "#home", active: true },
@@ -51,12 +54,24 @@ const Header = ({
 
   const handleMenuItemClick = (href: string) => {
     if (href.startsWith('#')) {
-      const element = document.querySelector(href);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
+      // If not on home page, navigate to home first
+      if (location.pathname !== '/') {
+        navigate('/');
+        // Wait for navigation to complete, then scroll
+        setTimeout(() => {
+          const element = document.querySelector(href);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+          }
+        }, 100);
+      } else {
+        const element = document.querySelector(href);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
       }
     } else if (href.startsWith('/')) {
-      window.location.href = href;
+      navigate(href);
     }
     setMobileMenuOpen(false);
   };
