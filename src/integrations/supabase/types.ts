@@ -551,6 +551,7 @@ export type Database = {
           email: string | null
           has_completed_onboarding: boolean | null
           id: string
+          is_new_user: boolean | null
           phone: string | null
           points: number | null
           updated_at: string | null
@@ -562,6 +563,7 @@ export type Database = {
           email?: string | null
           has_completed_onboarding?: boolean | null
           id: string
+          is_new_user?: boolean | null
           phone?: string | null
           points?: number | null
           updated_at?: string | null
@@ -573,6 +575,7 @@ export type Database = {
           email?: string | null
           has_completed_onboarding?: boolean | null
           id?: string
+          is_new_user?: boolean | null
           phone?: string | null
           points?: number | null
           updated_at?: string | null

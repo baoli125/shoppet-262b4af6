@@ -54,6 +54,11 @@ const Index = () => {
       .single();
     setProfile(data);
     
+    // Set is_new_user from profile
+    if (data?.is_new_user !== undefined) {
+      setIsNewUser(data.is_new_user);
+    }
+    
     // Check if user needs onboarding
     if (data && !data.has_completed_onboarding) {
       setShowOnboarding(true);
@@ -85,9 +90,20 @@ const Index = () => {
     });
   };
 
-  const handleOnboardingComplete = (newUser: boolean) => {
+  const handleOnboardingComplete = async (newUser: boolean) => {
     setIsNewUser(newUser);
     setShowOnboarding(false);
+    
+    // Update profile in database
+    if (user) {
+      await supabase
+        .from("profiles")
+        .update({ 
+          is_new_user: newUser,
+          has_completed_onboarding: true 
+        })
+        .eq("id", user.id);
+    }
   };
 
   return (
