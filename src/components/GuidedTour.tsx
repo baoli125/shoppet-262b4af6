@@ -134,6 +134,11 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       
       if (element) {
         setTargetElement(element);
+        
+        // Boost z-index to ensure element is clickable above overlay
+        element.style.position = 'relative';
+        element.style.zIndex = '102';
+        
         const rect = element.getBoundingClientRect();
         setHighlightPosition({
           top: rect.top,
@@ -167,6 +172,16 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       window.removeEventListener('scroll', updateHighlight, true);
     };
   }, [currentStep, isActive]);
+
+  useEffect(() => {
+    // Cleanup function when tour ends
+    return () => {
+      if (targetElement) {
+        targetElement.style.zIndex = '';
+        targetElement.style.position = '';
+      }
+    };
+  }, [targetElement, isActive]);
 
   useEffect(() => {
     if (!isActive) return;
@@ -209,6 +224,12 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
   }, [targetElement, currentStep, isActive]);
 
   const nextStep = () => {
+    // Reset previous element's z-index
+    if (targetElement) {
+      targetElement.style.zIndex = '';
+      targetElement.style.position = '';
+    }
+    
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
@@ -217,12 +238,23 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
   };
 
   const handleComplete = () => {
+    // Reset z-index of target element
+    if (targetElement) {
+      targetElement.style.zIndex = '';
+      targetElement.style.position = '';
+    }
+    
     onComplete();
   };
 
   const skipTour = () => {
     const confirmed = window.confirm("Bạn có chắc muốn bỏ qua hướng dẫn? Bạn có thể xem lại sau trong phần cài đặt.");
     if (confirmed) {
+      // Reset z-index before completing
+      if (targetElement) {
+        targetElement.style.zIndex = '';
+        targetElement.style.position = '';
+      }
       handleComplete();
     }
   };
@@ -234,66 +266,92 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
 
   return (
     <>
-      {/* Overlay with blur */}
-      <div 
-        className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[100] transition-all duration-300" 
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-        }}
-      />
+      {/* Overlay with cutout - 4 divs creating darkness around target */}
+      {targetElement ? (
+        <>
+          {/* Top overlay */}
+          <div 
+            className="fixed left-0 right-0 z-[100] bg-black/70 backdrop-blur-sm pointer-events-auto"
+            style={{
+              top: 0,
+              height: `${highlightPosition.top - 4}px`,
+            }}
+          />
+          
+          {/* Bottom overlay */}
+          <div 
+            className="fixed left-0 right-0 z-[100] bg-black/70 backdrop-blur-sm pointer-events-auto"
+            style={{
+              top: `${highlightPosition.top + highlightPosition.height + 4}px`,
+              bottom: 0,
+            }}
+          />
+          
+          {/* Left overlay */}
+          <div 
+            className="fixed z-[100] bg-black/70 backdrop-blur-sm pointer-events-auto"
+            style={{
+              top: `${highlightPosition.top - 4}px`,
+              left: 0,
+              width: `${highlightPosition.left - 4}px`,
+              height: `${highlightPosition.height + 8}px`,
+            }}
+          />
+          
+          {/* Right overlay */}
+          <div 
+            className="fixed z-[100] bg-black/70 backdrop-blur-sm pointer-events-auto"
+            style={{
+              top: `${highlightPosition.top - 4}px`,
+              left: `${highlightPosition.left + highlightPosition.width + 4}px`,
+              right: 0,
+              height: `${highlightPosition.height + 8}px`,
+            }}
+          />
+        </>
+      ) : (
+        // Fallback full overlay when no target
+        <div 
+          className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm pointer-events-auto"
+        />
+      )}
 
-      {/* Highlight */}
+      {/* Highlight - Hollow animated border */}
       {targetElement && (
         <>
-          {/* Animated pulsing rings */}
+          {/* Outer pulsing border - HOLLOW SQUARE */}
           <div
-            className="fixed z-[101] pointer-events-none transition-all duration-500"
+            className="fixed pointer-events-none transition-all duration-500"
             style={{
               top: `${highlightPosition.top - 12}px`,
               left: `${highlightPosition.left - 12}px`,
               width: `${highlightPosition.width + 24}px`,
               height: `${highlightPosition.height + 24}px`,
+              zIndex: 101,
             }}
           >
-            {/* Outer pulsing ring */}
+            {/* Animated hollow border */}
             <div 
-              className="absolute inset-0 rounded-xl border-4 border-primary"
+              className="absolute inset-0 rounded-xl border-4 border-primary pointer-events-none"
               style={{
                 animation: 'blink-highlight 1.5s infinite ease-in-out',
-                boxShadow: '0 0 40px hsl(var(--primary) / 0.6), inset 0 0 20px hsl(var(--primary) / 0.3)'
-              }}
-            />
-            
-            {/* Inner glow */}
-            <div 
-              className="absolute inset-2 rounded-lg bg-primary/10"
-              style={{
-                animation: 'pulse 2s infinite ease-in-out'
+                boxShadow: '0 0 40px hsl(var(--primary) / 0.6)',
+                background: 'transparent', // Rỗng hoàn toàn
               }}
             />
             
             {/* Corner sparkles */}
             <Sparkles 
-              className="absolute -top-2 -right-2 w-6 h-6 text-primary animate-pulse" 
+              className="absolute -top-3 -right-3 w-6 h-6 text-primary animate-pulse pointer-events-none" 
               style={{ animationDelay: '0s' }}
             />
             <Sparkles 
-              className="absolute -bottom-2 -left-2 w-5 h-5 text-secondary animate-pulse" 
+              className="absolute -bottom-3 -left-3 w-5 h-5 text-secondary animate-pulse pointer-events-none" 
               style={{ animationDelay: '0.5s' }}
             />
           </div>
 
-          {/* Clickable transparent area to capture clicks */}
-          <div
-            className="fixed z-[102] cursor-pointer"
-            style={{
-              top: `${highlightPosition.top}px`,
-              left: `${highlightPosition.left}px`,
-              width: `${highlightPosition.width}px`,
-              height: `${highlightPosition.height}px`,
-            }}
-          />
+          {/* KHÔNG có overlay che nút - để nút hoàn toàn clickable */}
         </>
       )}
 
