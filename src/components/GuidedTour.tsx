@@ -300,6 +300,13 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
   if (!isActive) return null;
 
   const currentStepData = steps[currentStep];
+  
+  // Safety check: if current step is out of bounds, complete the tour
+  if (!currentStepData) {
+    handleComplete();
+    return null;
+  }
+  
   const tooltipPosition = getTooltipPosition(currentStepData.position, highlightPosition);
 
   return (
