@@ -25,6 +25,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
   const [highlightPosition, setHighlightPosition] = useState({ top: 0, left: 0, width: 0, height: 0 });
   const [isProcessingClick, setIsProcessingClick] = useState(false);
   const clickListenerRef = useRef<((e: MouseEvent) => void) | null>(null);
+  const retryIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const steps = [
     {
@@ -93,9 +94,26 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
   useEffect(() => {
     if (!isActive) return;
 
+    // Clear any existing retry interval when step changes
+    if (retryIntervalRef.current) {
+      console.log("Clearing previous retry interval");
+      clearInterval(retryIntervalRef.current);
+      retryIntervalRef.current = null;
+    }
+
     const updateHighlight = () => {
       const step = steps[currentStep];
+      
+      // Safety check
+      if (!step) {
+        console.error("Invalid step index:", currentStep);
+        return;
+      }
+      
+      console.log(`Starting step ${currentStep}:`, step.id);
+      
       if (!step.selector) {
+        console.log("Step has no selector (center display)");
         setTargetElement(null);
         return;
       }
@@ -112,7 +130,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
             // Wait longer for dropdown animation and rendering
             setTimeout(() => {
               findAndHighlightElement();
-            }, 500); // Increased from 300ms to 500ms
+            }, 500);
             return;
           }
         }
@@ -123,10 +141,23 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
 
     const findAndHighlightElement = () => {
       const step = steps[currentStep];
+      
+      if (!step || !step.selector) {
+        console.log("No selector for current step");
+        return;
+      }
+      
       const element = document.querySelector(step.selector!) as HTMLElement;
       
       if (element) {
-        console.log(`Found element for step ${currentStep}:`, step.id);
+        console.log(`✓ Found element for step ${currentStep}:`, step.id);
+        
+        // Clear retry interval if it exists
+        if (retryIntervalRef.current) {
+          clearInterval(retryIntervalRef.current);
+          retryIntervalRef.current = null;
+        }
+        
         setTargetElement(element);
         
         // Boost z-index to ensure element is clickable above overlay
@@ -137,7 +168,6 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
         element.offsetHeight;
         
         const rect = element.getBoundingClientRect();
-        console.log('Element position:', rect);
         
         setHighlightPosition({
           top: rect.top,
@@ -149,20 +179,19 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
         // Scroll to element with more padding
         element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
       } else {
-        console.warn(`Element not found for selector: ${step.selector}`);
-        // Keep retrying to find the element - DO NOT auto-skip
-        const retryInterval = setInterval(() => {
-          const retryElement = document.querySelector(step.selector!) as HTMLElement;
-          if (retryElement) {
-            console.log(`Found element after waiting`);
-            clearInterval(retryInterval);
-            findAndHighlightElement();
-          }
-          // Never skip automatically - user must interact or close tour manually
-        }, 600);
+        console.warn(`✗ Element not found for step ${currentStep}:`, step.selector);
         
-        // Store interval ID to cleanup later
-        return () => clearInterval(retryInterval);
+        // Only start retry interval if one doesn't exist
+        if (!retryIntervalRef.current) {
+          console.log("Starting retry interval to find element");
+          retryIntervalRef.current = setInterval(() => {
+            const retryElement = document.querySelector(step.selector!) as HTMLElement;
+            if (retryElement) {
+              console.log(`✓ Found element on retry for step ${currentStep}`);
+              findAndHighlightElement();
+            }
+          }, 600);
+        }
       }
     };
 
@@ -183,6 +212,13 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       window.removeEventListener('resize', debouncedUpdate);
       window.removeEventListener('scroll', debouncedUpdate, true);
       clearTimeout(resizeTimeout);
+      
+      // Clear retry interval on cleanup
+      if (retryIntervalRef.current) {
+        console.log("Cleanup: clearing retry interval");
+        clearInterval(retryIntervalRef.current);
+        retryIntervalRef.current = null;
+      }
     };
   }, [currentStep, isActive]);
 
