@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { MessageSquare, X } from "lucide-react";
+import { MessageSquare, X, ShoppingBag, Bot, PawPrint, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface Message {
   role: "user" | "assistant";
@@ -22,6 +23,19 @@ const FloatingChatbot = ({ isNewUser }: FloatingChatbotProps) => {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
+
+  const quickActions = [
+    { icon: ShoppingBag, label: "Khám phá Marketplace", path: "/marketplace" },
+    { icon: Bot, label: "Hỏi Trợ lý AI", path: "/ai-chat" },
+    { icon: PawPrint, label: "Quản lý Hồ sơ Thú cưng", path: "/pets" },
+    { icon: Users, label: "Vào Cộng đồng", path: "/community" },
+  ];
+
+  const handleQuickAction = (path: string) => {
+    navigate(path);
+    setIsOpen(false);
+  };
 
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
@@ -133,7 +147,7 @@ const FloatingChatbot = ({ isNewUser }: FloatingChatbotProps) => {
 
           <ScrollArea className="flex-1 p-4">
             {messages.length === 0 && (
-              <div className="text-center text-muted-foreground space-y-2">
+              <div className="text-center text-muted-foreground space-y-4">
                 <p className="text-4xl mb-4">👋</p>
                 {isNewUser ? (
                   <>
@@ -151,6 +165,21 @@ const FloatingChatbot = ({ isNewUser }: FloatingChatbotProps) => {
                     </p>
                   </>
                 )}
+                
+                <div className="mt-6 space-y-2">
+                  <p className="text-xs font-medium text-foreground">Truy cập nhanh:</p>
+                  {quickActions.map((action, idx) => (
+                    <Button
+                      key={idx}
+                      variant="outline"
+                      className="w-full justify-start gap-2"
+                      onClick={() => handleQuickAction(action.path)}
+                    >
+                      <action.icon className="h-4 w-4" />
+                      {action.label}
+                    </Button>
+                  ))}
+                </div>
               </div>
             )}
 
