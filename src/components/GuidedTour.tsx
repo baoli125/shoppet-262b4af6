@@ -150,22 +150,19 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
         element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
       } else {
         console.warn(`Element not found for selector: ${step.selector}`);
-        // If element not found, retry a few times before skipping
-        let retryCount = 0;
-        const maxRetries = 5;
+        // Keep retrying to find the element - DO NOT auto-skip
         const retryInterval = setInterval(() => {
-          retryCount++;
           const retryElement = document.querySelector(step.selector!) as HTMLElement;
           if (retryElement) {
-            console.log(`Found element on retry ${retryCount}`);
+            console.log(`Found element after waiting`);
             clearInterval(retryInterval);
             findAndHighlightElement();
-          } else if (retryCount >= maxRetries) {
-            console.log("Skipping step due to missing element after retries");
-            clearInterval(retryInterval);
-            nextStep();
           }
-        }, 600); // Check every 600ms
+          // Never skip automatically - user must interact or close tour manually
+        }, 600);
+        
+        // Store interval ID to cleanup later
+        return () => clearInterval(retryInterval);
       }
     };
 
