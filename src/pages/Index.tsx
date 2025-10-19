@@ -1,30 +1,19 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import Header from "@/components/Header";
 import HeroCarousel from "@/components/HeroCarousel";
-import AuthModal from "@/components/AuthModal";
 import OnboardingModal from "@/components/OnboardingModal";
-import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
 
 const Index = () => {
   const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<any>(null);
-  const [showAuthModal, setShowAuthModal] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [isNewUser, setIsNewUser] = useState(false);
-  const [cartCount, setCartCount] = useState(0);
-  const { toast } = useToast();
-  const navigate = useNavigate();
 
   useEffect(() => {
     // Check initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchProfile(session.user.id);
-        fetchCartCount(session.user.id);
+        checkOnboarding(session.user.id);
       }
     });
 
@@ -34,66 +23,28 @@ const Index = () => {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchProfile(session.user.id);
-        fetchCartCount(session.user.id);
-      } else {
-        setProfile(null);
-        setCartCount(0);
+        checkOnboarding(session.user.id);
       }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  const fetchProfile = async (userId: string) => {
+  const checkOnboarding = async (userId: string) => {
     const { data } = await supabase
       .from("profiles")
-      .select("*")
+      .select("has_completed_onboarding")
       .eq("id", userId)
       .single();
-    setProfile(data);
     
-    // Set is_new_user from profile
-    if (data?.is_new_user !== undefined) {
-      setIsNewUser(data.is_new_user);
-    }
-    
-    // Check if user needs onboarding
     if (data && !data.has_completed_onboarding) {
       setShowOnboarding(true);
     }
   };
 
-  const fetchCartCount = async (userId: string) => {
-    const { data } = await supabase
-      .from("cart_items")
-      .select("quantity", { count: "exact" })
-      .eq("user_id", userId);
-    
-    const total = data?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0;
-    setCartCount(total);
-  };
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    toast({
-      title: "Đăng xuất thành công",
-      description: "Hẹn gặp lại bạn!",
-    });
-  };
-
-  const handleAuthSuccess = () => {
-    toast({
-      title: "Chào mừng!",
-      description: "Bạn đã đăng nhập thành công vào Shoppet 🐾",
-    });
-  };
-
   const handleOnboardingComplete = async (newUser: boolean) => {
-    setIsNewUser(newUser);
     setShowOnboarding(false);
     
-    // Update profile in database
     if (user) {
       await supabase
         .from("profiles")
@@ -107,15 +58,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header
-        isLoggedIn={!!user}
-        userName={profile?.display_name || user?.email || "User"}
-        userAvatar={profile?.avatar_url}
-        cartCount={cartCount}
-        onLoginClick={() => setShowAuthModal(true)}
-        onRegisterClick={() => setShowAuthModal(true)}
-        onLogoutClick={handleLogout}
-      />
 
       <main>
         <HeroCarousel />
@@ -200,12 +142,6 @@ const Index = () => {
           </div>
         </footer>
       </main>
-
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        onSuccess={handleAuthSuccess}
-      />
 
       {showOnboarding && (
         <OnboardingModal 
