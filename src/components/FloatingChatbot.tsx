@@ -4,9 +4,20 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import type { User } from "@supabase/supabase-js";
 
 interface Message {
   role: "user" | "assistant";
@@ -14,16 +25,31 @@ interface Message {
 }
 
 interface FloatingChatbotProps {
+  user: User | null;
   isNewUser: boolean;
 }
 
-const FloatingChatbot = ({ isNewUser }: FloatingChatbotProps) => {
+const FloatingChatbot = ({ user, isNewUser }: FloatingChatbotProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [showLoginAlert, setShowLoginAlert] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  const handleChatbotClick = () => {
+    if (!user) {
+      setShowLoginAlert(true);
+    } else {
+      setIsOpen(!isOpen);
+    }
+  };
+
+  const handleLoginRedirect = () => {
+    setShowLoginAlert(false);
+    navigate("/");
+  };
 
   const quickActions = [
     { icon: ShoppingBag, label: "Khám phá Marketplace", path: "/marketplace" },
@@ -121,7 +147,7 @@ const FloatingChatbot = ({ isNewUser }: FloatingChatbotProps) => {
     <>
       {/* Floating Button */}
       <Button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleChatbotClick}
         className="fixed bottom-6 right-6 h-16 w-16 rounded-full shadow-lg hover:scale-110 transition-transform z-50 bg-gradient-to-br from-primary to-primary/80"
         size="icon"
       >
@@ -131,6 +157,24 @@ const FloatingChatbot = ({ isNewUser }: FloatingChatbotProps) => {
           <span className="text-4xl">🐾</span>
         )}
       </Button>
+
+      {/* Login Alert Dialog */}
+      <AlertDialog open={showLoginAlert} onOpenChange={setShowLoginAlert}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Vui lòng Đăng nhập</AlertDialogTitle>
+            <AlertDialogDescription>
+              Vui lòng đăng nhập để sử dụng tính năng này
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Đóng</AlertDialogCancel>
+            <AlertDialogAction onClick={handleLoginRedirect}>
+              Đăng nhập
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Chat Window */}
       {isOpen && (

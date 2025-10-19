@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import HeroCarousel from "@/components/HeroCarousel";
 import AuthModal from "@/components/AuthModal";
-import FloatingChatbot from "@/components/FloatingChatbot";
 import OnboardingModal from "@/components/OnboardingModal";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -214,8 +213,6 @@ const Index = () => {
           onComplete={handleOnboardingComplete}
         />
       )}
-
-      {user && <FloatingChatbot isNewUser={isNewUser} />}
     </div>
   );
 };
