@@ -130,6 +130,8 @@ const Marketplace = () => {
       toast({
         title: "Đã thêm vào giỏ hàng! 🛒",
       });
+      // Dispatch custom event to update header cart count
+      window.dispatchEvent(new CustomEvent('cartUpdated'));
     }
   };
 
@@ -163,6 +165,8 @@ const Marketplace = () => {
 
       if (!error) {
         setCartItems({ ...cartItems, [productId]: newQty });
+        // Dispatch custom event to update header cart count
+        window.dispatchEvent(new CustomEvent('cartUpdated'));
       }
     }
   };

@@ -17,6 +17,7 @@ import NotFound from "./pages/NotFound";
 import Header from "@/components/Header";
 import AuthModal from "@/components/AuthModal";
 import FloatingChatbot from "@/components/FloatingChatbot";
+import GuidedTour from "@/components/GuidedTour";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { User } from "@supabase/supabase-js";
@@ -29,6 +30,7 @@ const AppContent = () => {
   const [isNewUser, setIsNewUser] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showGuidedTour, setShowGuidedTour] = useState(false);
   const { toast } = useToast();
   const location = useLocation();
 
@@ -59,11 +61,21 @@ const AppContent = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Refetch cart count when location changes
+  // Refetch cart count when location changes or cart updated
   useEffect(() => {
     if (user) {
       fetchCartCount(user.id);
     }
+
+    // Listen for cart updates
+    const handleCartUpdate = () => {
+      if (user) {
+        fetchCartCount(user.id);
+      }
+    };
+
+    window.addEventListener('cartUpdated', handleCartUpdate);
+    return () => window.removeEventListener('cartUpdated', handleCartUpdate);
   }, [location.pathname, user]);
 
   const fetchProfile = async (userId: string) => {
@@ -77,6 +89,10 @@ const AppContent = () => {
     
     if (data?.is_new_user !== undefined) {
       setIsNewUser(data.is_new_user);
+      // Show guided tour for new users who haven't completed onboarding
+      if (data.is_new_user && data.has_completed_onboarding) {
+        setShowGuidedTour(true);
+      }
     }
   };
 
@@ -103,6 +119,25 @@ const AppContent = () => {
     toast({
       title: "Chào mừng!",
       description: "Bạn đã đăng nhập thành công vào Shoppet 🐾",
+    });
+  };
+
+  const handleGuidedTourComplete = async () => {
+    setShowGuidedTour(false);
+    
+    // Update user profile to mark as not new anymore
+    if (user) {
+      await supabase
+        .from("profiles")
+        .update({ is_new_user: false })
+        .eq("id", user.id);
+      
+      setIsNewUser(false);
+    }
+
+    toast({
+      title: "Hoàn thành hướng dẫn! 🎉",
+      description: "Bạn đã sẵn sàng khám phá Shoppet!",
     });
   };
 
@@ -133,6 +168,11 @@ const AppContent = () => {
       </Routes>
 
       <FloatingChatbot user={user} isNewUser={isNewUser} />
+
+      <GuidedTour 
+        isActive={showGuidedTour} 
+        onComplete={handleGuidedTourComplete}
+      />
 
       <AuthModal
         isOpen={showAuthModal}

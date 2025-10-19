@@ -134,7 +134,10 @@ const Header = ({
                 {/* User Dropdown */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="flex items-center gap-2 hover:bg-muted px-3 py-2 rounded-full transition-colors">
+                    <button 
+                      data-tour="user-dropdown"
+                      className="flex items-center gap-2 hover:bg-muted px-3 py-2 rounded-full transition-colors"
+                    >
                       <Avatar className="w-8 h-8 border-2 border-primary">
                         <AvatarImage src={userAvatar} alt={userName} />
                         <AvatarFallback className="bg-primary text-primary-foreground">
@@ -145,16 +148,28 @@ const Header = ({
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56 bg-popover">
-                    {userMenuItems.map((item) => (
-                      <DropdownMenuItem 
-                        key={item.label}
-                        onClick={() => handleMenuItemClick(item.href)}
-                        className="cursor-pointer"
-                      >
-                        <item.icon className="w-4 h-4 mr-2" />
-                        {item.label}
-                      </DropdownMenuItem>
-                    ))}
+                    {userMenuItems.map((item) => {
+                      // Add data-tour attributes for guided tour
+                      const tourMap: Record<string, string> = {
+                        '/marketplace': 'marketplace-menu',
+                        '/ai-chat': 'ai-chat-menu',
+                        '/pets': 'pets-menu',
+                        '/community': 'community-menu',
+                        '/cart': 'cart-menu',
+                      };
+                      
+                      return (
+                        <DropdownMenuItem 
+                          key={item.label}
+                          data-tour={tourMap[item.href]}
+                          onClick={() => handleMenuItemClick(item.href)}
+                          className="cursor-pointer"
+                        >
+                          <item.icon className="w-4 h-4 mr-2" />
+                          {item.label}
+                        </DropdownMenuItem>
+                      );
+                    })}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem 
                       onClick={onLogoutClick}
