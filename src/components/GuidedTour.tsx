@@ -71,14 +71,6 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       requireDropdownOpen: true,
     },
     {
-      id: 'add-pet-prompt',
-      selector: null,
-      title: "Thêm Thú Cưng Đầu Tiên! 🎉",
-      description: "Hãy thêm thông tin về thú cưng của bạn để nhận được các tư vấn và chăm sóc phù hợp nhất! Click vào mục 'Hồ sơ Thú cưng' bên trên để bắt đầu.",
-      position: 'center' as const,
-      forceClick: false,
-    },
-    {
       id: 'cart-orders-menu',
       selector: '[data-tour="cart-menu"]',
       title: "Giỏ hàng & Theo dõi Đơn hàng 🛒",
