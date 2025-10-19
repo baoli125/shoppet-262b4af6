@@ -14,6 +14,9 @@ const Index = () => {
       setUser(session?.user ?? null);
       if (session?.user) {
         checkOnboarding(session.user.id);
+      } else {
+        // Reset onboarding modal when logged out
+        setShowOnboarding(false);
       }
     });
 
@@ -24,6 +27,9 @@ const Index = () => {
       setUser(session?.user ?? null);
       if (session?.user) {
         checkOnboarding(session.user.id);
+      } else {
+        // Reset onboarding modal when logged out
+        setShowOnboarding(false);
       }
     });
 

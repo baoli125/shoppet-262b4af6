@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MessageSquare, X, ShoppingBag, Bot, PawPrint, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -37,6 +37,19 @@ const FloatingChatbot = ({ user, isNewUser }: FloatingChatbotProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Reset chatbot state when user logs out
+  useEffect(() => {
+    if (!user) {
+      // User logged out - reset all state
+      setIsOpen(false);
+      setMessages([]);
+      setInput("");
+      setIsLoading(false);
+      setShowLoginAlert(false);
+      console.log("Chatbot reset due to logout");
+    }
+  }, [user]);
 
   const handleChatbotClick = () => {
     if (!user) {
