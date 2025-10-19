@@ -591,19 +591,21 @@ function getTooltipPosition(
       // Tooltip for chatbot - fixed position at bottom RIGHT corner
       const isMobile = window.innerWidth < 768;
       
+      style.position = 'fixed';
+      style.bottom = '140px'; // Above chatbot button
+      
       if (isMobile) {
         // Mobile: center bottom, above chatbot
-        style.position = 'fixed';
-        style.bottom = '140px'; // Above chatbot button
         style.left = '50%';
+        style.right = 'auto';
         style.transform = 'translateX(-50%)';
         style.maxWidth = 'calc(100vw - 32px)';
         style.width = '90%';
       } else {
         // Desktop: bottom RIGHT corner, above chatbot 
-        style.position = 'fixed';
-        style.bottom = '140px'; // Above chatbot button  
-        style.right = '24px'; // RIGHT corner
+        style.left = 'auto';
+        style.right = '24px';
+        style.transform = 'none';
         style.maxWidth = '380px';
       }
       break;
