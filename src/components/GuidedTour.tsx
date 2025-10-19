@@ -80,6 +80,14 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       showCartIcon: true,
       requireDropdownOpen: true,
     },
+    {
+      id: 'community-intro',
+      selector: null,
+      title: "Cộng đồng Yêu Thú Cưng 👥",
+      description: "Kết nối với hàng ngàn người yêu thú cưng! Chia sẻ câu chuyện, kinh nghiệm, và học hỏi từ cộng đồng.",
+      position: 'center' as const,
+      forceClick: false,
+    },
   ];
 
   useEffect(() => {
@@ -538,7 +546,7 @@ function getTooltipPosition(
       style.transform = 'translateY(-50%)';
       break;
     case 'bottom-right':
-      // Tooltip for chatbot - fixed position at bottom center, above chatbot
+      // Tooltip for chatbot - fixed position at bottom RIGHT corner
       const isMobile = window.innerWidth < 768;
       
       if (isMobile) {
@@ -550,10 +558,10 @@ function getTooltipPosition(
         style.maxWidth = 'calc(100vw - 32px)';
         style.width = '90%';
       } else {
-        // Desktop: bottom left corner, above chatbot 
+        // Desktop: bottom RIGHT corner, above chatbot 
         style.position = 'fixed';
         style.bottom = '140px'; // Above chatbot button  
-        style.left = '24px';
+        style.right = '24px'; // RIGHT corner
         style.maxWidth = '380px';
       }
       break;
