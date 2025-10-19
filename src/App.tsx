@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import Index from "./pages/Index";
 import AIChat from "./pages/AIChat";
 import Pets from "./pages/Pets";
@@ -34,12 +34,13 @@ const AppContent = () => {
   const [showGuidedTour, setShowGuidedTour] = useState(false);
   const { toast } = useToast();
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Listen for auth changes FIRST (best practice)
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, currentSession) => {
+    } = supabase.auth.onAuthStateChange((event, currentSession) => {
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
       
@@ -50,8 +51,17 @@ const AppContent = () => {
           fetchCartCount(currentSession.user.id);
         }, 0);
       } else {
+        // Clear all state when logged out
         setProfile(null);
         setCartCount(0);
+        setIsNewUser(false);
+        setShowGuidedTour(false);
+        setShowAuthModal(false);
+      }
+      
+      // Handle SIGNED_OUT event - redirect to home
+      if (event === 'SIGNED_OUT') {
+        navigate('/');
       }
     });
 
@@ -66,7 +76,7 @@ const AppContent = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [navigate]);
 
   // Refetch cart count when location changes or cart updated
   useEffect(() => {
@@ -86,35 +96,66 @@ const AppContent = () => {
   }, [location.pathname, user]);
 
   const fetchProfile = async (userId: string) => {
-    const { data } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", userId)
-      .single();
-    
-    setProfile(data);
-    
-    if (data?.is_new_user !== undefined) {
-      setIsNewUser(data.is_new_user);
-      // Show guided tour for new users who haven't completed onboarding
-      if (data.is_new_user && data.has_completed_onboarding) {
-        setShowGuidedTour(true);
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", userId)
+        .single();
+      
+      if (error) {
+        console.error("Error fetching profile:", error);
+        return;
       }
+      
+      setProfile(data);
+      
+      if (data?.is_new_user !== undefined) {
+        setIsNewUser(data.is_new_user);
+        // Show guided tour for new users who have completed onboarding
+        if (data.is_new_user && data.has_completed_onboarding) {
+          // Small delay to ensure UI is ready
+          setTimeout(() => {
+            setShowGuidedTour(true);
+          }, 500);
+        }
+      }
+    } catch (err) {
+      console.error("Unexpected error fetching profile:", err);
     }
   };
 
   const fetchCartCount = async (userId: string) => {
-    const { data } = await supabase
-      .from("cart_items")
-      .select("quantity", { count: "exact" })
-      .eq("user_id", userId);
-    
-    const total = data?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0;
-    setCartCount(total);
+    try {
+      const { data, error } = await supabase
+        .from("cart_items")
+        .select("quantity", { count: "exact" })
+        .eq("user_id", userId);
+      
+      if (error) {
+        console.error("Error fetching cart count:", error);
+        return;
+      }
+      
+      const total = data?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0;
+      setCartCount(total);
+    } catch (err) {
+      console.error("Unexpected error fetching cart count:", err);
+    }
   };
 
   const handleLogout = async () => {
     try {
+      // Clear all state immediately to prevent conflicts
+      setUser(null);
+      setSession(null);
+      setProfile(null);
+      setCartCount(0);
+      setIsNewUser(false);
+      setShowGuidedTour(false);
+      setShowAuthModal(false);
+      
+      // Sign out from Supabase
       const { error } = await supabase.auth.signOut();
       
       if (error) {
@@ -127,11 +168,8 @@ const AppContent = () => {
         return;
       }
       
-      // Clear local state
-      setUser(null);
-      setSession(null);
-      setProfile(null);
-      setCartCount(0);
+      // Redirect to home page to avoid conflicts
+      navigate('/');
       
       toast({
         title: "Đăng xuất thành công",
