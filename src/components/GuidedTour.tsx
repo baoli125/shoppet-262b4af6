@@ -398,7 +398,11 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
             {/* Click indicator for forceClick steps */}
             {currentStepData.forceClick && (
               <div 
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+                className={`absolute pointer-events-none ${
+                  currentStepData.position === 'bottom-right' 
+                    ? 'top-[-40px] left-1/2 -translate-x-1/2' 
+                    : 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2'
+                }`}
                 style={{
                   animation: 'pulse 1s infinite ease-in-out'
                 }}
@@ -544,8 +548,22 @@ function getTooltipPosition(
       style.transform = 'translateY(-50%)';
       break;
     case 'bottom-right':
-      style.bottom = `${window.innerHeight - highlightPos.top + offset}px`;
-      style.right = `${window.innerWidth - highlightPos.left - highlightPos.width}px`;
+      // Hiển thị tooltip TRÊN chatbot, không che nút
+      const isMobile = window.innerWidth < 768;
+      
+      if (isMobile) {
+        // Mobile: Hiển thị ở giữa màn hình phía trên chatbot
+        style.bottom = `${window.innerHeight - highlightPos.top + 100}px`;
+        style.left = '16px';
+        style.right = '16px';
+        style.maxWidth = 'none';
+      } else {
+        // Desktop: Hiển thị bên trái
+        style.bottom = `${window.innerHeight - highlightPos.top + 80}px`;
+        style.left = '24px';
+        style.right = 'auto';
+        style.maxWidth = '400px';
+      }
       break;
   }
 
