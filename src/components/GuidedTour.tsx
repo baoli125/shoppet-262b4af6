@@ -79,15 +79,6 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       forceClick: false,
     },
     {
-      id: 'community-menu',
-      selector: '[data-tour="community-menu"]',
-      title: "Cộng đồng Yêu thú cưng 👥",
-      description: "Kết nối, chia sẻ kinh nghiệm với hàng ngàn người yêu thú cưng khác.",
-      position: 'left' as const,
-      forceClick: true,
-      requireDropdownOpen: true,
-    },
-    {
       id: 'cart-orders-menu',
       selector: '[data-tour="cart-menu"]',
       title: "Giỏ hàng & Theo dõi Đơn hàng 🛒",
@@ -548,21 +539,23 @@ function getTooltipPosition(
       style.transform = 'translateY(-50%)';
       break;
     case 'bottom-right':
-      // Hiển thị tooltip TRÊN chatbot, không che nút
+      // Tooltip for chatbot - fixed position at bottom center, above chatbot
       const isMobile = window.innerWidth < 768;
       
       if (isMobile) {
-        // Mobile: Hiển thị ở giữa màn hình phía trên chatbot
-        style.bottom = `${window.innerHeight - highlightPos.top + 100}px`;
-        style.left = '16px';
-        style.right = '16px';
-        style.maxWidth = 'none';
+        // Mobile: center bottom, above chatbot
+        style.position = 'fixed';
+        style.bottom = '140px'; // Above chatbot button
+        style.left = '50%';
+        style.transform = 'translateX(-50%)';
+        style.maxWidth = 'calc(100vw - 32px)';
+        style.width = '90%';
       } else {
-        // Desktop: Hiển thị bên trái
-        style.bottom = `${window.innerHeight - highlightPos.top + 80}px`;
+        // Desktop: bottom left corner, above chatbot 
+        style.position = 'fixed';
+        style.bottom = '140px'; // Above chatbot button  
         style.left = '24px';
-        style.right = 'auto';
-        style.maxWidth = '400px';
+        style.maxWidth = '380px';
       }
       break;
   }
