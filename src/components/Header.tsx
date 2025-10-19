@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Menu, X, ShoppingCart, User, LogOut, Settings, Package, FileText, MessageSquare, Store, Users } from "lucide-react";
+import { Menu, X, ShoppingCart, User, LogOut, Settings, Package, FileText, MessageSquare, Store, Users, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -33,8 +33,13 @@ const Header = ({
   onLogoutClick
 }: HeaderProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [language, setLanguage] = useState<'vi' | 'en'>('vi');
   const navigate = useNavigate();
   const location = useLocation();
+
+  const toggleLanguage = () => {
+    setLanguage(prev => prev === 'vi' ? 'en' : 'vi');
+  };
 
   const menuItems = [
     { label: "Trang Chủ", href: "#home", active: true },
@@ -89,8 +94,7 @@ const Header = ({
               handleMenuItemClick('#home');
             }}
           >
-            <img src={shoppetLogo} alt="Shoppet Logo" className="w-10 h-10 md:w-12 md:h-12" />
-            <span className="text-2xl md:text-3xl font-bold text-primary">Shoppet</span>
+            <img src={shoppetLogo} alt="Shoppet Logo" className="h-12 md:h-16 w-auto object-contain" />
           </a>
 
           {/* Desktop Navigation */}
@@ -118,21 +122,41 @@ const Header = ({
           <div className="hidden md:flex items-center gap-4">
             {!isLoggedIn ? (
               <>
+                {/* Language Switcher */}
+                <button
+                  onClick={toggleLanguage}
+                  className="flex items-center gap-2 px-3 py-2 hover:bg-muted rounded-full transition-colors"
+                  title={language === 'vi' ? 'Switch to English' : 'Chuyển sang Tiếng Việt'}
+                >
+                  <Globe className="w-5 h-5 text-header-text" />
+                  <span className="text-sm font-medium text-header-text">{language.toUpperCase()}</span>
+                </button>
+                
                 <Button 
                   onClick={onLoginClick}
                   className="btn-solid-blue"
                 >
-                  Đăng nhập
+                  {language === 'vi' ? 'Đăng nhập' : 'Login'}
                 </Button>
                 <Button 
                   onClick={onRegisterClick}
                   className="btn-outline-blue"
                 >
-                  Đăng ký
+                  {language === 'vi' ? 'Đăng ký' : 'Register'}
                 </Button>
               </>
             ) : (
               <>
+                {/* Language Switcher */}
+                <button
+                  onClick={toggleLanguage}
+                  className="flex items-center gap-2 px-3 py-2 hover:bg-muted rounded-full transition-colors"
+                  title={language === 'vi' ? 'Switch to English' : 'Chuyển sang Tiếng Việt'}
+                >
+                  <Globe className="w-5 h-5 text-header-text" />
+                  <span className="text-sm font-medium text-header-text">{language.toUpperCase()}</span>
+                </button>
+
                 {/* Cart Icon */}
                 <button 
                   onClick={() => handleMenuItemClick('/cart')}
@@ -239,15 +263,39 @@ const Header = ({
             {/* Mobile Auth Section */}
             {!isLoggedIn ? (
               <div className="flex flex-col gap-2 pt-4 border-t border-header-border">
+                {/* Mobile Language Switcher */}
+                <button
+                  onClick={toggleLanguage}
+                  className="flex items-center justify-between px-4 py-2 hover:bg-muted rounded-lg transition-colors"
+                >
+                  <span className="flex items-center gap-2">
+                    <Globe className="w-5 h-5" />
+                    {language === 'vi' ? 'Ngôn ngữ' : 'Language'}
+                  </span>
+                  <span className="text-sm font-medium">{language.toUpperCase()}</span>
+                </button>
+                
                 <Button onClick={onLoginClick} className="btn-solid-blue w-full">
-                  Đăng nhập
+                  {language === 'vi' ? 'Đăng nhập' : 'Login'}
                 </Button>
                 <Button onClick={onRegisterClick} className="btn-outline-blue w-full">
-                  Đăng ký
+                  {language === 'vi' ? 'Đăng ký' : 'Register'}
                 </Button>
               </div>
             ) : (
               <div className="flex flex-col gap-2 pt-4 border-t border-header-border">
+                {/* Mobile Language Switcher */}
+                <button
+                  onClick={toggleLanguage}
+                  className="flex items-center justify-between px-4 py-2 hover:bg-muted rounded-lg transition-colors"
+                >
+                  <span className="flex items-center gap-2">
+                    <Globe className="w-5 h-5" />
+                    {language === 'vi' ? 'Ngôn ngữ' : 'Language'}
+                  </span>
+                  <span className="text-sm font-medium">{language.toUpperCase()}</span>
+                </button>
+                
                 {/* Mobile Cart */}
                 <button 
                   onClick={() => handleMenuItemClick('/cart')}
@@ -255,7 +303,7 @@ const Header = ({
                 >
                   <span className="flex items-center gap-2">
                     <ShoppingCart className="w-5 h-5" />
-                    Giỏ hàng
+                    {language === 'vi' ? 'Giỏ hàng' : 'Cart'}
                   </span>
                   {cartCount > 0 && (
                     <Badge className="bg-destructive text-destructive-foreground">
