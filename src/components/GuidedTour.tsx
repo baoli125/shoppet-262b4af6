@@ -588,25 +588,24 @@ function getTooltipPosition(
       style.transform = 'translateY(-50%)';
       break;
     case 'bottom-right':
-      // Tooltip for chatbot - position to the LEFT of chatbot button
+      // Tooltip for chatbot - display ABOVE or to the LEFT of actual chatbot position
       const isMobile = window.innerWidth < 768;
       
       if (isMobile) {
-        // Mobile: center bottom, above chatbot
+        // Mobile: center, above chatbot
         style.position = 'fixed';
-        style.bottom = '140px';
+        style.bottom = `${window.innerHeight - highlightPos.top + 20}px`; // 20px above chatbot
         style.left = '50%';
         style.transform = 'translateX(-50%)';
         style.maxWidth = 'calc(100vw - 32px)';
         style.width = '90%';
       } else {
-        // Desktop: position to the LEFT of the chatbot button (which is at right-6)
-        // Chatbot is at right: 24px, so tooltip should be to its left
+        // Desktop: to the LEFT of chatbot button
         style.position = 'fixed';
-        style.bottom = `${highlightPos.top}px`; // Align with chatbot vertically
-        style.right = `${window.innerWidth - highlightPos.left + 20}px`; // 20px gap from chatbot
+        style.top = `${highlightPos.top}px`; // Align vertically with chatbot
+        style.right = `${window.innerWidth - highlightPos.left + 20}px`; // 20px to the left of chatbot
         style.left = 'auto';
-        style.transform = 'none';
+        style.transform = 'translateY(-50%)'; // Center vertically
         style.maxWidth = '380px';
       }
       break;
