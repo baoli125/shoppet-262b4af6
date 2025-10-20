@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Search, ShoppingCart, Plus, Minus } from "lucide-react";
+import { ArrowLeft, Search, ShoppingCart, Plus, Minus, ArrowUpDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -28,6 +28,8 @@ const Marketplace = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedPetType, setSelectedPetType] = useState("all");
+  const [sortBy, setSortBy] = useState("none");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [cartItems, setCartItems] = useState<Record<string, number>>({});
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -40,7 +42,7 @@ const Marketplace = () => {
 
   useEffect(() => {
     filterProducts();
-  }, [products, searchQuery, selectedCategory, selectedPetType]);
+  }, [products, searchQuery, selectedCategory, selectedPetType, sortBy, sortDirection]);
 
   const fetchProducts = async () => {
     const { data, error } = await supabase
@@ -96,7 +98,26 @@ const Marketplace = () => {
       filtered = filtered.filter((p) => p.pet_type === selectedPetType);
     }
 
+    // Apply sorting
+    if (sortBy !== "none") {
+      filtered.sort((a, b) => {
+        let comparison = 0;
+        
+        if (sortBy === "price") {
+          comparison = a.price - b.price;
+        } else if (sortBy === "name") {
+          comparison = a.name.localeCompare(b.name);
+        }
+        
+        return sortDirection === "asc" ? comparison : -comparison;
+      });
+    }
+
     setFilteredProducts(filtered);
+  };
+
+  const toggleSortDirection = () => {
+    setSortDirection(prev => prev === "asc" ? "desc" : "asc");
   };
 
   const addToCart = async (productId: string) => {
@@ -217,7 +238,7 @@ const Marketplace = () => {
       {/* Filters */}
       <div className="border-b border-border bg-card">
         <div className="container mx-auto px-4 py-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div className="md:col-span-2">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -256,6 +277,30 @@ const Marketplace = () => {
                 <SelectItem value="fish">{t('marketplace.petTypes.fish')}</SelectItem>
               </SelectContent>
             </Select>
+
+            <div className="flex gap-2">
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sắp xếp" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Không sắp xếp</SelectItem>
+                  <SelectItem value="price">Giá tiền</SelectItem>
+                  <SelectItem value="name">Tên sản phẩm</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              {sortBy !== "none" && (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={toggleSortDirection}
+                  title={sortDirection === "asc" ? "Từ thấp đến cao" : "Từ cao đến thấp"}
+                >
+                  <ArrowUpDown className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </div>

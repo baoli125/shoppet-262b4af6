@@ -40,6 +40,13 @@ const FloatingChatbot = ({ user, isNewUser }: FloatingChatbotProps) => {
   const navigate = useNavigate();
   const { t } = useLanguage();
 
+  const quickSuggestions = [
+    "Chó tôi bị tiêu chảy phải làm sao?",
+    "Thức ăn nào tốt cho mèo con?",
+    "Lịch tiêm phòng cho chó con",
+    "Cách huấn luyện chó đi vệ sinh",
+  ];
+
   // Reset chatbot state when user logs out
   useEffect(() => {
     if (!user) {
@@ -76,6 +83,10 @@ const FloatingChatbot = ({ user, isNewUser }: FloatingChatbotProps) => {
   const handleQuickAction = (path: string) => {
     navigate(path);
     setIsOpen(false);
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    setInput(suggestion);
   };
 
   const sendMessage = async () => {
@@ -262,7 +273,22 @@ const FloatingChatbot = ({ user, isNewUser }: FloatingChatbotProps) => {
             ))}
           </ScrollArea>
 
-          <div className="p-4 border-t">
+          <div className="p-4 border-t space-y-3">
+            {messages.length === 0 && (
+              <div className="flex flex-wrap gap-2">
+                {quickSuggestions.map((suggestion, idx) => (
+                  <Button
+                    key={idx}
+                    variant="secondary"
+                    size="sm"
+                    className="text-xs"
+                    onClick={() => handleSuggestionClick(suggestion)}
+                  >
+                    {suggestion}
+                  </Button>
+                ))}
+              </div>
+            )}
             <div className="flex gap-2">
               <Input
                 value={input}
