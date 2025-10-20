@@ -19,6 +19,13 @@ const AIChat = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const quickSuggestions = [
+    "Chó bị tiêu chảy phải làm sao?",
+    "Thức ăn nào tốt cho mèo con?",
+    "Lịch tiêm phòng cho chó con",
+    "Cách huấn luyện chó đi vệ sinh",
+  ];
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -231,6 +238,22 @@ const AIChat = () => {
       {/* Input */}
       <div className="border-t border-border bg-card">
         <div className="container mx-auto px-4 py-4 max-w-4xl">
+          {messages.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-3">
+              {quickSuggestions.map((suggestion, idx) => (
+                <Button
+                  key={idx}
+                  variant="secondary"
+                  size="sm"
+                  className="text-xs"
+                  onClick={() => setInput(suggestion)}
+                  disabled={isLoading}
+                >
+                  {suggestion}
+                </Button>
+              ))}
+            </div>
+          )}
           <div className="flex gap-3">
             <Textarea
               value={input}
