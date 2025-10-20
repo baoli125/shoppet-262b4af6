@@ -9,17 +9,19 @@ import { useToast } from "@/hooks/use-toast";
 interface Message {
   role: "user" | "assistant";
   content: string;
+  followUpQuestions?: string[];
 }
 
 const AIChat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [currentFollowUps, setCurrentFollowUps] = useState<string[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const quickSuggestions = [
+  const defaultSuggestions = [
     "Chó bị tiêu chảy phải làm sao?",
     "Thức ăn nào tốt cho mèo con?",
     "Lịch tiêm phòng cho chó con",
@@ -41,15 +43,39 @@ const AIChat = () => {
     let assistantContent = "";
     const upsertAssistant = (chunk: string) => {
       assistantContent += chunk;
+      
+      // Parse follow-up questions if present
+      let displayContent = assistantContent;
+      let followUps: string[] = [];
+      
+      if (assistantContent.includes("---FOLLOW_UP---")) {
+        const parts = assistantContent.split("---FOLLOW_UP---");
+        displayContent = parts[0].trim();
+        const followUpText = parts[1]?.trim();
+        if (followUpText) {
+          followUps = followUpText
+            .split("\n")
+            .map(q => q.trim())
+            .filter(q => q.length > 0);
+        }
+      }
+      
       setMessages(prev => {
         const last = prev[prev.length - 1];
         if (last?.role === "assistant") {
           return prev.map((m, i) => 
-            i === prev.length - 1 ? { ...m, content: assistantContent } : m
+            i === prev.length - 1 
+              ? { ...m, content: displayContent, followUpQuestions: followUps }
+              : m
           );
         }
-        return [...prev, { role: "assistant", content: assistantContent }];
+        return [...prev, { role: "assistant", content: displayContent, followUpQuestions: followUps }];
       });
+      
+      // Update current follow-ups for display
+      if (followUps.length > 0) {
+        setCurrentFollowUps(followUps);
+      }
     };
 
     try {
@@ -207,14 +233,32 @@ const AIChat = () => {
                   key={idx}
                   className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} animate-fade-in`}
                 >
-                  <div
-                    className={`max-w-[80%] rounded-2xl px-4 py-3 ${
-                      msg.role === "user"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-card border border-border"
-                    }`}
-                  >
-                    <p className="whitespace-pre-wrap">{msg.content}</p>
+                  <div className="flex flex-col gap-2 max-w-[80%]">
+                    <div
+                      className={`rounded-2xl px-4 py-3 ${
+                        msg.role === "user"
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-card border border-border"
+                      }`}
+                    >
+                      <p className="whitespace-pre-wrap">{msg.content}</p>
+                    </div>
+                    {msg.role === "assistant" && msg.followUpQuestions && msg.followUpQuestions.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {msg.followUpQuestions.map((question, qIdx) => (
+                          <Button
+                            key={qIdx}
+                            variant="outline"
+                            size="sm"
+                            className="text-xs text-left h-auto py-2 px-3"
+                            onClick={() => setInput(question)}
+                            disabled={isLoading}
+                          >
+                            {question}
+                          </Button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -238,9 +282,9 @@ const AIChat = () => {
       {/* Input */}
       <div className="border-t border-border bg-card">
         <div className="container mx-auto px-4 py-4 max-w-4xl">
-          {messages.length > 0 && (
+          {messages.length === 0 && (
             <div className="flex flex-wrap gap-2 mb-3">
-              {quickSuggestions.map((suggestion, idx) => (
+              {defaultSuggestions.map((suggestion, idx) => (
                 <Button
                   key={idx}
                   variant="secondary"
