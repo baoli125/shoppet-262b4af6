@@ -13,7 +13,7 @@ interface TourStep {
   selector: string | null;
   title: string;
   description: string;
-  position: 'top' | 'bottom' | 'left' | 'right' | 'center';
+  position: "top" | "bottom" | "left" | "right" | "center";
   forceClick: boolean;
   requireDropdownOpen?: boolean;
   showCartIcon?: boolean;
@@ -39,135 +39,139 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
 
   const steps: TourStep[] = [
     {
-      id: 'chatbot',
+      id: "chatbot",
       selector: '[data-tour="chatbot"]',
       title: "Trợ lý AI Thông Minh 🤖",
       description: "Đây là cổng vào trung tâm của Shoppet! Click để mở và khám phá 4 tính năng chính.",
-      position: 'left',
+      position: "left",
       forceClick: true,
     },
     {
-      id: 'chatbot-marketplace',
+      id: "chatbot-marketplace",
       selector: '[data-tour="chatbot-marketplace"]',
       title: "Marketplace - Mua sắm Thông minh 🛍️",
       description: "Click để khám phá nơi mua sắm tất cả sản phẩm cho thú cưng!",
-      position: 'right',
+      position: "right",
       forceClick: true,
     },
     {
-      id: 'marketplace-overview',
+      id: "marketplace-overview",
       selector: '[data-tour="marketplace-search"]',
       title: "Chào mừng đến Marketplace! 🛍️",
-      description: "Đây là Marketplace - nơi mua sắm tất cả sản phẩm cho thú cưng. Bạn có thể tìm kiếm, lọc danh mục và xem chi tiết sản phẩm tại đây.",
-      position: 'bottom',
+      description:
+        "Đây là Marketplace - nơi mua sắm tất cả sản phẩm cho thú cưng. Bạn có thể tìm kiếm, lọc danh mục và xem chi tiết sản phẩm tại đây.",
+      position: "bottom",
       forceClick: false,
     },
     {
-      id: 'back-to-dropdown-1',
+      id: "back-to-dropdown-1",
       selector: '[data-tour="user-dropdown"]',
       title: "Quay lại Menu 🔙",
       description: "Hãy click để quay lại menu chính và khám phá tính năng tiếp theo",
-      position: 'bottom',
+      position: "bottom",
       forceClick: true,
     },
     {
-      id: 'dropdown-to-ai',
+      id: "dropdown-to-ai",
       selector: '[data-tour="ai-chat-menu"]',
       title: "Trợ lý AI Tư vấn 🤖",
       description: "Click để khám phá trợ lý AI thông minh của chúng tôi",
-      position: 'left',
+      position: "left",
       forceClick: true,
       requireDropdownOpen: true,
     },
     {
-      id: 'ai-overview',
+      id: "ai-overview",
       selector: '[data-tour="ai-chat-input"]',
       title: "Trợ lý AI của bạn! 🤖",
-      description: "Tại đây bạn có thể hỏi bất kỳ câu hỏi nào về thú cưng. Tôi có thể tư vấn sức khỏe, dinh dưỡng 24/7.",
-      position: 'top',
+      description:
+        "Tại đây bạn có thể hỏi bất kỳ câu hỏi nào về thú cưng. Tôi có thể tư vấn sức khỏe, dinh dưỡng 24/7.",
+      position: "top",
       forceClick: false,
     },
     {
-      id: 'back-to-dropdown-2',
+      id: "back-to-dropdown-2",
       selector: '[data-tour="user-dropdown"]',
       title: "Tiếp tục Khám phá 🔙",
       description: "Click để tiếp tục khám phá các tính năng khác",
-      position: 'bottom',
+      position: "bottom",
       forceClick: true,
     },
     {
-      id: 'dropdown-to-pets',
+      id: "dropdown-to-pets",
       selector: '[data-tour="pets-menu"]',
       title: "Hồ sơ Thú cưng 📋",
       description: "Click để quản lý thông tin thú cưng của bạn",
-      position: 'left',
+      position: "left",
       forceClick: true,
       requireDropdownOpen: true,
     },
     {
-      id: 'pets-overview',
+      id: "pets-overview",
       selector: '[data-tour="pets-add-button"]',
       title: "Quản lý Thú cưng! 📋",
-      description: "Tại đây bạn có thể thêm và quản lý thông tin sức khỏe, lịch tiêm phòng cho tất cả thú cưng của mình.",
-      position: 'bottom',
+      description:
+        "Tại đây bạn có thể thêm và quản lý thông tin sức khỏe, lịch tiêm phòng cho tất cả thú cưng của mình.",
+      position: "bottom",
       forceClick: false,
     },
     {
-      id: 'back-to-dropdown-3',
+      id: "back-to-dropdown-3",
       selector: '[data-tour="user-dropdown"]',
       title: "Tính năng Cuối cùng 🔙",
       description: "Click để khám phá tính năng cuối cùng",
-      position: 'bottom',
+      position: "bottom",
       forceClick: true,
     },
     {
-      id: 'dropdown-to-community',
+      id: "dropdown-to-community",
       selector: '[data-tour="community-menu"]',
       title: "Cộng đồng Yêu Thú Cưng 👥",
       description: "Click để tham gia cộng đồng yêu thú cưng",
-      position: 'left',
+      position: "left",
       forceClick: true,
       requireDropdownOpen: true,
     },
     {
-      id: 'community-overview',
+      id: "community-overview",
       selector: '[data-tour="community-post-input"]',
       title: "Cộng đồng Shoppet! 👥",
       description: "Chia sẻ kinh nghiệm, kết nối với những người yêu thú cưng khác. Đây là nơi để học hỏi và giao lưu!",
-      position: 'top',
+      position: "top",
       forceClick: false,
     },
     {
-      id: 'back-to-dropdown-4',
+      id: "back-to-dropdown-4",
       selector: '[data-tour="user-dropdown"]',
       title: "Các tính năng khác 🔙",
       description: "Click để xem các tính năng quản lý khác",
-      position: 'bottom',
+      position: "bottom",
       forceClick: true,
     },
     {
-      id: 'orders-menu',
+      id: "orders-menu",
       selector: '[data-tour="orders-menu"]',
       title: "Đơn hàng của tôi 📦",
       description: "Theo dõi tình trạng đơn hàng, xem lịch sử mua sắm và quản lý các đơn hàng của bạn.",
-      position: 'left',
+      position: "left",
       forceClick: false,
       requireDropdownOpen: true,
     },
     {
-      id: 'cart-icon',
+      id: "cart-icon",
       selector: '[data-tour="cart-icon"]',
       title: "Giỏ hàng Nhanh 🛒",
       description: "Icon này cho phép bạn truy cập nhanh vào giỏ hàng. Click vào để xem các sản phẩm bạn đã chọn!",
-      position: 'bottom',
+      position: "bottom",
       forceClick: false,
     },
     {
-      id: 'tour-complete',
+      id: "tour-complete",
       selector: null,
       title: "🎉 Hoàn thành Hướng dẫn!",
-      description: "Tuyệt vời! Bạn đã làm quen với tất cả tính năng chính của Shoppet. Giờ hãy bắt đầu khám phá và chăm sóc thú cưng của bạn thật tốt nhé! 🐾",
-      position: 'center',
+      description:
+        "Tuyệt vời! Bạn đã làm quen với tất cả tính năng chính của Shoppet. Giờ hãy bắt đầu khám phá và chăm sóc thú cưng của bạn thật tốt nhé! 🐾",
+      position: "center",
       forceClick: false,
     },
   ];
@@ -184,15 +188,15 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
 
     const updateHighlight = () => {
       const step = steps[currentStep];
-      
+
       // Safety check
       if (!step) {
         console.error("Invalid step index:", currentStep);
         return;
       }
-      
+
       console.log(`Starting step ${currentStep}:`, step.id);
-      
+
       if (!step.selector) {
         console.log("Step has no selector (center display)");
         setTargetElement(null);
@@ -222,34 +226,33 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
 
     const findAndHighlightElement = () => {
       const step = steps[currentStep];
-      
+
       if (!step || !step.selector) {
         console.log("No selector for current step");
         return;
       }
-      
+
       const element = document.querySelector(step.selector!) as HTMLElement;
-      
+
       if (element) {
         console.log(`✓ Found element for step ${currentStep}:`, step.id);
-        
+
         // Clear retry interval if it exists
         if (retryIntervalRef.current) {
           clearInterval(retryIntervalRef.current);
           retryIntervalRef.current = null;
         }
-        
+
         setTargetElement(element);
-        
-        // Boost z-index to ensure element is clickable above overlay
-        element.style.position = 'relative';
-        element.style.zIndex = '102';
-        
+
+        // 🛠 SỬA: Chỉ set z-index, giữ nguyên position gốc
+        element.style.zIndex = "102";
+
         // Force reflow to ensure position update
         element.offsetHeight;
-        
+
         const rect = element.getBoundingClientRect();
-        
+
         setHighlightPosition({
           top: rect.top,
           left: rect.left,
@@ -257,11 +260,11 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
           height: rect.height,
         });
 
-        // Scroll to element with more padding
-        element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+        // Scroll to element với chatbot (vẫn cần vì có thể bị scroll)
+        element.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
       } else {
         console.warn(`✗ Element not found for step ${currentStep}:`, step.selector);
-        
+
         // Only start retry interval if one doesn't exist
         if (!retryIntervalRef.current) {
           console.log("Starting retry interval to find element");
@@ -286,14 +289,14 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       resizeTimeout = setTimeout(updateHighlight, 100);
     };
 
-    window.addEventListener('resize', debouncedUpdate);
-    window.addEventListener('scroll', debouncedUpdate, true);
+    window.addEventListener("resize", debouncedUpdate);
+    window.addEventListener("scroll", debouncedUpdate, true);
 
     return () => {
-      window.removeEventListener('resize', debouncedUpdate);
-      window.removeEventListener('scroll', debouncedUpdate, true);
+      window.removeEventListener("resize", debouncedUpdate);
+      window.removeEventListener("scroll", debouncedUpdate, true);
       clearTimeout(resizeTimeout);
-      
+
       // Clear retry interval on cleanup
       if (retryIntervalRef.current) {
         console.log("Cleanup: clearing retry interval");
@@ -307,8 +310,8 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
     // Cleanup function when tour ends
     return () => {
       if (targetElement) {
-        targetElement.style.zIndex = '';
-        targetElement.style.position = '';
+        targetElement.style.zIndex = "";
+        targetElement.style.position = "";
       }
     };
   }, [targetElement, isActive]);
@@ -317,13 +320,13 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
     if (!isActive) return;
 
     const step = steps[currentStep];
-    
+
     // Safety check
     if (!step) {
       console.error("Invalid step in click handler:", currentStep);
       return;
     }
-    
+
     // Only add click listener if step requires forced click AND element exists
     if (!step.forceClick || !targetElement) {
       console.log(`Step ${currentStep} doesn't require force click or no target element`);
@@ -332,8 +335,8 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
 
     // Remove previous listener if exists
     if (clickListenerRef.current) {
-      document.removeEventListener('click', clickListenerRef.current, true);
-      targetElement.removeEventListener('click', clickListenerRef.current, true);
+      document.removeEventListener("click", clickListenerRef.current, true);
+      targetElement.removeEventListener("click", clickListenerRef.current, true);
       clickListenerRef.current = null;
     }
 
@@ -347,43 +350,40 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       }
 
       const target = e.target as HTMLElement;
-      
+
       // Check if it's the target element or its children
       const isTargetOrChild = targetElement.contains(target);
-      
+
       // More flexible click detection - check if click is within highlight area
       const rect = targetElement.getBoundingClientRect();
       const clickX = e.clientX;
       const clickY = e.clientY;
-      
-      const isWithinBounds = 
-        clickX >= rect.left - 5 && 
-        clickX <= rect.right + 5 && 
-        clickY >= rect.top - 5 && 
-        clickY <= rect.bottom + 5;
-      
+
+      const isWithinBounds =
+        clickX >= rect.left - 5 && clickX <= rect.right + 5 && clickY >= rect.top - 5 && clickY <= rect.bottom + 5;
+
       if (isWithinBounds || isTargetOrChild) {
         console.log(`✓ Valid click detected on step ${currentStep}:`, step.id);
-        
+
         // STOP event propagation immediately
         e.stopPropagation();
         e.preventDefault();
-        
+
         // Set processing flag FIRST
         setIsProcessingClick(true);
-        
+
         // Visual feedback
-        targetElement.style.transform = 'scale(0.95)';
-        
+        targetElement.style.transform = "scale(0.95)";
+
         // Move to next step after animation
         setTimeout(() => {
           if (targetElement) {
-            targetElement.style.transform = '';
+            targetElement.style.transform = "";
           }
-          
+
           console.log(`➡️ Advancing from step ${currentStep} to ${currentStep + 1}`);
           nextStep();
-          
+
           // Reset processing flag after step changes
           setTimeout(() => {
             setIsProcessingClick(false);
@@ -395,18 +395,18 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
     };
 
     clickListenerRef.current = handleClick;
-    
+
     // Add listener with high priority (capture phase)
-    document.addEventListener('click', handleClick, { capture: true });
-    targetElement.addEventListener('click', handleClick, { capture: true });
+    document.addEventListener("click", handleClick, { capture: true });
+    targetElement.addEventListener("click", handleClick, { capture: true });
 
     console.log(`👆 Waiting for click on step ${currentStep}:`, step.id);
 
     return () => {
       if (clickListenerRef.current) {
-        document.removeEventListener('click', clickListenerRef.current, true);
+        document.removeEventListener("click", clickListenerRef.current, true);
         if (targetElement) {
-          targetElement.removeEventListener('click', clickListenerRef.current, true);
+          targetElement.removeEventListener("click", clickListenerRef.current, true);
         }
         clickListenerRef.current = null;
       }
@@ -419,16 +419,16 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       console.log("🛑 nextStep called while processing, ignoring");
       return;
     }
-    
+
     console.log(`➡️ Moving from step ${currentStep} to ${currentStep + 1}`);
-    
+
     // Reset previous element's z-index
     if (targetElement) {
-      targetElement.style.zIndex = '';
-      targetElement.style.position = '';
-      targetElement.style.transform = '';
+      targetElement.style.zIndex = "";
+      targetElement.style.position = "";
+      targetElement.style.transform = "";
     }
-    
+
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
       setIsProcessingClick(false);
@@ -440,10 +440,10 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
   const handleComplete = () => {
     // Reset z-index of target element
     if (targetElement) {
-      targetElement.style.zIndex = '';
-      targetElement.style.position = '';
+      targetElement.style.zIndex = "";
+      targetElement.style.position = "";
     }
-    
+
     onComplete();
   };
 
@@ -452,8 +452,8 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
     if (confirmed) {
       // Reset z-index before completing
       if (targetElement) {
-        targetElement.style.zIndex = '';
-        targetElement.style.position = '';
+        targetElement.style.zIndex = "";
+        targetElement.style.position = "";
       }
       handleComplete();
     }
@@ -462,13 +462,13 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
   if (!isActive) return null;
 
   const currentStepData = steps[currentStep];
-  
+
   // Safety check: if current step is out of bounds, complete the tour
   if (!currentStepData) {
     handleComplete();
     return null;
   }
-  
+
   const tooltipPosition = getTooltipPosition(currentStepData.position, highlightPosition);
 
   return (
@@ -477,25 +477,25 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       {targetElement ? (
         <>
           {/* Top overlay */}
-          <div 
+          <div
             className="fixed left-0 right-0 z-[100] bg-black/70 backdrop-blur-sm pointer-events-auto"
             style={{
               top: 0,
               height: `${highlightPosition.top - 4}px`,
             }}
           />
-          
+
           {/* Bottom overlay */}
-          <div 
+          <div
             className="fixed left-0 right-0 z-[100] bg-black/70 backdrop-blur-sm pointer-events-auto"
             style={{
               top: `${highlightPosition.top + highlightPosition.height + 4}px`,
               bottom: 0,
             }}
           />
-          
+
           {/* Left overlay */}
-          <div 
+          <div
             className="fixed z-[100] bg-black/70 backdrop-blur-sm pointer-events-auto"
             style={{
               top: `${highlightPosition.top - 4}px`,
@@ -504,9 +504,9 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
               height: `${highlightPosition.height + 8}px`,
             }}
           />
-          
+
           {/* Right overlay */}
-          <div 
+          <div
             className="fixed z-[100] bg-black/70 backdrop-blur-sm pointer-events-auto"
             style={{
               top: `${highlightPosition.top - 4}px`,
@@ -518,9 +518,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
         </>
       ) : (
         // Fallback full overlay when no target
-        <div 
-          className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm pointer-events-auto"
-        />
+        <div className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm pointer-events-auto" />
       )}
 
       {/* Highlight - Hollow animated border */}
@@ -538,21 +536,21 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
             }}
           >
             {/* Animated hollow border */}
-            <div 
+            <div
               className="absolute inset-0 rounded-xl border-4 border-primary pointer-events-none"
               style={{
-                animation: 'blink-highlight 1.5s infinite ease-in-out',
-                boxShadow: '0 0 40px hsl(var(--primary) / 0.6)',
-                background: 'transparent',
+                animation: "blink-highlight 1.5s infinite ease-in-out",
+                boxShadow: "0 0 40px hsl(var(--primary) / 0.6)",
+                background: "transparent",
               }}
             />
-            
+
             {/* Click indicator for forceClick steps */}
             {currentStepData.forceClick && (
-              <div 
+              <div
                 className="absolute pointer-events-none top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
                 style={{
-                  animation: 'pulse 1s infinite ease-in-out'
+                  animation: "pulse 1s infinite ease-in-out",
                 }}
               >
                 <div className="bg-primary text-primary-foreground px-4 py-2 rounded-full shadow-lg text-sm font-bold whitespace-nowrap">
@@ -560,15 +558,15 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
                 </div>
               </div>
             )}
-            
+
             {/* Corner sparkles */}
-            <Sparkles 
-              className="absolute -top-3 -right-3 w-6 h-6 text-primary animate-pulse pointer-events-none" 
-              style={{ animationDelay: '0s' }}
+            <Sparkles
+              className="absolute -top-3 -right-3 w-6 h-6 text-primary animate-pulse pointer-events-none"
+              style={{ animationDelay: "0s" }}
             />
-            <Sparkles 
-              className="absolute -bottom-3 -left-3 w-5 h-5 text-secondary animate-pulse pointer-events-none" 
-              style={{ animationDelay: '0.5s' }}
+            <Sparkles
+              className="absolute -bottom-3 -left-3 w-5 h-5 text-secondary animate-pulse pointer-events-none"
+              style={{ animationDelay: "0.5s" }}
             />
           </div>
         </>
@@ -579,7 +577,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
         className="fixed z-[103] p-6 shadow-2xl max-w-md border-2 border-primary/20"
         style={{
           ...tooltipPosition,
-          animation: 'slide-in-tooltip 0.4s ease-out'
+          animation: "slide-in-tooltip 0.4s ease-out",
         }}
       >
         <div className="flex items-start justify-between mb-4">
@@ -615,13 +613,13 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
               Bước {currentStep + 1}/{steps.length}
             </span>
           </div>
-          
+
           {!currentStepData.forceClick && (
             <Button onClick={nextStep} className="btn-hero shadow-lg">
               {currentStep === steps.length - 1 ? "🎉 Hoàn thành" : "Tiếp theo →"}
             </Button>
           )}
-          
+
           {currentStepData.forceClick && (
             <div className="flex items-center gap-2 text-sm font-medium text-primary animate-pulse">
               <span className="inline-block w-2 h-2 bg-primary rounded-full animate-ping"></span>
@@ -644,17 +642,17 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
         <div
           className="fixed z-[101] pointer-events-none"
           style={{
-            top: '16px',
-            right: window.innerWidth < 768 ? '60px' : '240px', // Adjust for mobile
+            top: "16px",
+            right: window.innerWidth < 768 ? "60px" : "240px", // Adjust for mobile
           }}
         >
-          <div style={{ animation: 'blink-highlight 1.5s infinite ease-in-out' }}>
+          <div style={{ animation: "blink-highlight 1.5s infinite ease-in-out" }}>
             <div className="w-14 h-14 rounded-full border-4 border-primary shadow-[0_0_40px_hsl(var(--primary)/0.8)]" />
           </div>
           {/* Pulse rings */}
-          <div 
+          <div
             className="absolute inset-0 w-14 h-14 rounded-full border-2 border-primary/50"
-            style={{ animation: 'pulse-ring 2s infinite ease-out' }}
+            style={{ animation: "pulse-ring 2s infinite ease-out" }}
           />
         </div>
       )}
@@ -663,37 +661,37 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
 };
 
 function getTooltipPosition(
-  position: 'top' | 'bottom' | 'left' | 'right' | 'center',
-  highlightPos: { top: number; left: number; width: number; height: number }
+  position: "top" | "bottom" | "left" | "right" | "center",
+  highlightPos: { top: number; left: number; width: number; height: number },
 ) {
   const offset = 20;
   const style: React.CSSProperties = {};
 
   switch (position) {
-    case 'center':
-      style.top = '50%';
-      style.left = '50%';
-      style.transform = 'translate(-50%, -50%)';
+    case "center":
+      style.top = "50%";
+      style.left = "50%";
+      style.transform = "translate(-50%, -50%)";
       break;
-    case 'top':
+    case "top":
       style.top = `${highlightPos.top - offset}px`;
       style.left = `${highlightPos.left + highlightPos.width / 2}px`;
-      style.transform = 'translate(-50%, -100%)';
+      style.transform = "translate(-50%, -100%)";
       break;
-    case 'bottom':
+    case "bottom":
       style.top = `${highlightPos.top + highlightPos.height + offset}px`;
       style.left = `${highlightPos.left + highlightPos.width / 2}px`;
-      style.transform = 'translateX(-50%)';
+      style.transform = "translateX(-50%)";
       break;
-    case 'left':
+    case "left":
       style.top = `${highlightPos.top + highlightPos.height / 2}px`;
       style.left = `${highlightPos.left - offset}px`;
-      style.transform = 'translate(-100%, -50%)';
+      style.transform = "translate(-100%, -50%)";
       break;
-    case 'right':
+    case "right":
       style.top = `${highlightPos.top + highlightPos.height / 2}px`;
       style.left = `${highlightPos.left + highlightPos.width + offset}px`;
-      style.transform = 'translateY(-50%)';
+      style.transform = "translateY(-50%)";
       break;
   }
 
