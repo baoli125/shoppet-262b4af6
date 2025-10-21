@@ -94,18 +94,21 @@ Trả lời bằng tiếng Việt, súc tích và chuyên nghiệp.`;
       
       if (response.status === 429) {
         return new Response(
-          JSON.stringify({ error: "Quá nhiều yêu cầu, vui lòng thử lại sau." }),
+          JSON.stringify({ error: "Service temporarily unavailable" }),
           { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
       if (response.status === 402) {
         return new Response(
-          JSON.stringify({ error: "Dịch vụ AI tạm thời không khả dụng." }),
+          JSON.stringify({ error: "Service temporarily unavailable" }),
           { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
       
-      throw new Error(`AI gateway error: ${response.status}`);
+      return new Response(
+        JSON.stringify({ error: "Service error" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     console.log("Streaming AI response");
@@ -115,7 +118,7 @@ Trả lời bằng tiếng Việt, súc tích và chuyên nghiệp.`;
   } catch (e) {
     console.error("chat-ai error:", e);
     return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }),
+      JSON.stringify({ error: "Service error occurred" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

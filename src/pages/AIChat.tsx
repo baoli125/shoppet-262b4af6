@@ -92,12 +92,15 @@ const AIChat = () => {
 
       if (!resp.ok || !resp.body) {
         if (resp.status === 429) {
-          throw new Error("Quá nhiều yêu cầu, vui lòng thử lại sau");
+          throw new Error("Hệ thống đang bận, vui lòng thử lại sau");
         }
         if (resp.status === 402) {
-          throw new Error("Dịch vụ AI tạm thời không khả dụng");
+          throw new Error("Dịch vụ tạm thời không khả dụng");
         }
-        throw new Error("Failed to start stream");
+        if (resp.status === 401) {
+          throw new Error("Vui lòng đăng nhập để sử dụng dịch vụ");
+        }
+        throw new Error("Không thể kết nối");
       }
 
       const reader = resp.body.getReader();

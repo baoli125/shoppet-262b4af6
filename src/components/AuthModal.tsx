@@ -7,6 +7,15 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff } from "lucide-react";
+import { z } from "zod";
+
+const passwordSchema = z.string()
+  .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
+  .regex(/[A-Z]/, "Mật khẩu phải có ít nhất 1 chữ hoa")
+  .regex(/[a-z]/, "Mật khẩu phải có ít nhất 1 chữ thường")
+  .regex(/[0-9]/, "Mật khẩu phải có ít nhất 1 chữ số");
+
+const emailSchema = z.string().email("Email không hợp lệ").max(255, "Email quá dài");
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -58,6 +67,18 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
     setIsLoading(true);
 
     try {
+      // Validate email
+      const emailValidation = emailSchema.safeParse(email);
+      if (!emailValidation.success) {
+        throw new Error(emailValidation.error.errors[0].message);
+      }
+
+      // Validate password
+      const passwordValidation = passwordSchema.safeParse(password);
+      if (!passwordValidation.success) {
+        throw new Error(passwordValidation.error.errors[0].message);
+      }
+
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -189,7 +210,6 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    minLength={6}
                   />
                   <button
                     type="button"
@@ -199,7 +219,9 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
-                <p className="text-xs text-muted-foreground">Tối thiểu 6 ký tự</p>
+                <p className="text-xs text-muted-foreground">
+                  Tối thiểu 8 ký tự, bao gồm chữ hoa, chữ thường và số
+                </p>
               </div>
 
               <Button type="submit" className="w-full btn-hero" disabled={isLoading}>
