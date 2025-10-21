@@ -203,12 +203,11 @@ const FloatingChatbot = ({ user, isNewUser }: FloatingChatbotProps) => {
               {/* Nút đóng chatbot cho bước 3 */}
               <Button
                 data-tour="chatbot-close"
-                variant="ghost"
+                onClick={handleChatbotClick}
+                className="fixed bottom-[15vh] right-6 h-16 w-16 rounded-full shadow-lg hover:scale-110 transition-transform z-50 bg-gradient-to-br from-primary to-primary/80"
                 size="icon"
-                onClick={() => setIsOpen(false)}
-                className="h-8 w-8 text-white hover:bg-white/20"
               >
-                <X className="h-4 w-4" />
+                {isOpen ? <X className="h-8 w-8" /> : <span className="text-4xl">X</span>}
               </Button>
             </div>
           </div>
