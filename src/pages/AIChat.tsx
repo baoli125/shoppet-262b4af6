@@ -186,12 +186,12 @@ const AIChat = () => {
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-              <Sparkles className="w-6 h-6 text-white" />
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+              <Sparkles className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-foreground">Trợ lý AI Shoppet</h1>
-              <p className="text-sm text-muted-foreground">Tư vấn sức khỏe & dinh dưỡng 24/7</p>
+              <h1 className="text-lg font-bold text-foreground">Trợ lý AI Shoppet</h1>
+              <p className="text-xs text-muted-foreground">Tư vấn sức khỏe & dinh dưỡng 24/7</p>
             </div>
           </div>
         </div>
@@ -201,14 +201,14 @@ const AIChat = () => {
       <div className="flex-1 overflow-y-auto">
         <div className="container mx-auto px-4 py-6 max-w-4xl">
           {messages.length === 0 ? (
-            <div className="text-center py-12 animate-fade-in">
-              <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                <Sparkles className="w-10 h-10 text-white" />
+            <div className="text-center py-8 animate-fade-in">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+                <Sparkles className="w-8 h-8 text-white" />
               </div>
-              <h2 className="text-2xl font-bold mb-3 text-foreground">
+              <h2 className="text-xl font-bold mb-2 text-foreground">
                 Xin chào! Tôi là trợ lý AI của Shoppet
               </h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto mb-6">
+              <p className="text-sm text-muted-foreground max-w-2xl mx-auto mb-4">
                 Tôi có thể giúp bạn tư vấn về sức khỏe, dinh dưỡng, và chăm sóc thú cưng. 
                 Hãy hỏi tôi bất cứ điều gì!
               </p>
