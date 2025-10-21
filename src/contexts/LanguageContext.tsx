@@ -226,7 +226,7 @@ const translations = {
       welcomeNew: "Chào mừng bạn đến với Shoppet!",
       welcomeNewDesc:
         "Tôi là Tay Nhỏ, tôi sẽ hướng dẫn bạn khám phá tất cả tính năng trên website. Hãy hỏi tôi bất cứ điều gì!",
-      welcomeBack: "Chúc bạn một ngày tốt lành!",
+      welcomeBack: "👋 Chúc bạn một ngày tốt lành!",
       welcomeBackDesc: "Nếu cần hỗ trợ gì, cứ nhấn vào tôi nhé! 🐾",
       exploreMarketplace: "Khám phá Marketplace",
       askAI: "Hỏi Trợ lý AI",

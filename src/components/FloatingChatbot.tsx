@@ -203,7 +203,7 @@ const FloatingChatbot = ({ user, isNewUser }: FloatingChatbotProps) => {
           <ScrollArea className="flex-1 p-4">
             {messages.length === 0 && (
               <div className="text-center text-muted-foreground space-y-4">
-                <p className="text-4xl mb-4">👋</p>
+                <p className="text-4xl mb-4"></p>
                 {isNewUser ? (
                   <>
                     <p className="font-semibold">{t("chatbot.welcomeNew")}</p>
