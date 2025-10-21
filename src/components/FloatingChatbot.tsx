@@ -215,6 +215,21 @@ const FloatingChatbot = ({ user, isNewUser }: FloatingChatbotProps) => {
                     <p className="text-sm">{t("chatbot.welcomeBackDesc")}</p>
                   </>
                 )}
+
+                <div className="mt-6 space-y-2">
+                  <p className="text-xs font-medium text-foreground">{t("")}</p>
+                  {quickActions.map((action, idx) => (
+                    <Button
+                      key={idx}
+                      variant="outline"
+                      className="w-full justify-start gap-2"
+                      onClick={() => handleQuickAction(action.path)}
+                    >
+                      <action.icon className="h-4 w-4" />
+                      {action.label}
+                    </Button>
+                  ))}
+                </div>
               </div>
             )}
 
