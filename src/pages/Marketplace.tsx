@@ -318,7 +318,11 @@ const Marketplace = () => {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredProducts.map((product) => (
-              <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+              <Card 
+                key={product.id} 
+                className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => navigate(`/product/${product.id}`)}
+              >
                 <div className="aspect-square bg-muted relative">
                   <img
                     src={product.image_url || "https://via.placeholder.com/300"}
@@ -356,11 +360,14 @@ const Marketplace = () => {
                   </div>
 
                   {cartItems[product.id] ? (
-                    <div className="flex items-center gap-2 mt-4">
+                    <div className="flex items-center gap-2 mt-4" onClick={(e) => e.stopPropagation()}>
                       <Button
                         variant="outline"
                         size="icon"
-                        onClick={() => updateCartQuantity(product.id, -1)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          updateCartQuantity(product.id, -1);
+                        }}
                       >
                         <Minus className="w-4 h-4" />
                       </Button>
@@ -370,7 +377,10 @@ const Marketplace = () => {
                       <Button
                         variant="outline"
                         size="icon"
-                        onClick={() => updateCartQuantity(product.id, 1)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          updateCartQuantity(product.id, 1);
+                        }}
                         disabled={cartItems[product.id] >= product.stock}
                       >
                         <Plus className="w-4 h-4" />
@@ -379,7 +389,10 @@ const Marketplace = () => {
                   ) : (
                     <Button
                       className="w-full mt-4 btn-hero"
-                      onClick={() => addToCart(product.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        addToCart(product.id);
+                      }}
                       disabled={product.stock === 0}
                     >
                       <ShoppingCart className="w-4 h-4 mr-2" />

@@ -483,48 +483,66 @@ export type Database = {
       products: {
         Row: {
           brand: string | null
+          calories: number | null
           category: Database["public"]["Enums"]["product_category"]
           created_at: string | null
           description: string | null
+          features: string | null
           id: string
           image_url: string | null
+          ingredients: string | null
           is_active: boolean | null
           name: string
+          nutritional_info: string | null
           pet_type: Database["public"]["Enums"]["pet_type"] | null
           price: number
           seller_id: string
           stock: number | null
           updated_at: string | null
+          usage_instructions: string | null
+          weight: string | null
         }
         Insert: {
           brand?: string | null
+          calories?: number | null
           category: Database["public"]["Enums"]["product_category"]
           created_at?: string | null
           description?: string | null
+          features?: string | null
           id?: string
           image_url?: string | null
+          ingredients?: string | null
           is_active?: boolean | null
           name: string
+          nutritional_info?: string | null
           pet_type?: Database["public"]["Enums"]["pet_type"] | null
           price: number
           seller_id: string
           stock?: number | null
           updated_at?: string | null
+          usage_instructions?: string | null
+          weight?: string | null
         }
         Update: {
           brand?: string | null
+          calories?: number | null
           category?: Database["public"]["Enums"]["product_category"]
           created_at?: string | null
           description?: string | null
+          features?: string | null
           id?: string
           image_url?: string | null
+          ingredients?: string | null
           is_active?: boolean | null
           name?: string
+          nutritional_info?: string | null
           pet_type?: Database["public"]["Enums"]["pet_type"] | null
           price?: number
           seller_id?: string
           stock?: number | null
           updated_at?: string | null
+          usage_instructions?: string | null
+          weight?: string | null
         }
         Relationships: [
           {

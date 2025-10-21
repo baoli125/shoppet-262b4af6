@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import AIChat from "./pages/AIChat";
 import Pets from "./pages/Pets";
 import Marketplace from "./pages/Marketplace";
+import ProductDetail from "./pages/ProductDetail";
 import Cart from "./pages/Cart";
 import Orders from "./pages/Orders";
 import Community from "./pages/Community";
@@ -236,6 +237,7 @@ const AppContent = () => {
         <Route path="/ai-chat" element={<AIChat />} />
         <Route path="/pets" element={<Pets />} />
         <Route path="/marketplace" element={<Marketplace />} />
+        <Route path="/product/:id" element={<ProductDetail />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/orders" element={<Orders />} />
         <Route path="/community" element={<Community />} />
