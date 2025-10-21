@@ -7,9 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Star, Award, Edit } from "lucide-react";
+import { Trophy, Star, Award, Edit, TrendingUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { Progress } from "@/components/ui/progress";
 
 const Profile = () => {
   const [user, setUser] = useState<any>(null);
@@ -87,19 +88,64 @@ const Profile = () => {
     navigate("/");
   };
 
+  const levelThresholds = [
+    { level: 1, points: 0, discount: 0, color: "text-gray-500" },
+    { level: 2, points: 100, discount: 2, color: "text-green-500" },
+    { level: 3, points: 300, discount: 5, color: "text-green-600" },
+    { level: 4, points: 600, discount: 8, color: "text-blue-500" },
+    { level: 5, points: 1000, discount: 12, color: "text-blue-600" },
+    { level: 6, points: 1500, discount: 15, color: "text-purple-500" },
+    { level: 7, points: 2100, discount: 18, color: "text-purple-600" },
+    { level: 8, points: 2800, discount: 20, color: "text-yellow-500" },
+  ];
+
   const getLevel = (points: number) => {
-    if (points < 100) return 1;
-    if (points < 500) return 2;
-    if (points < 1000) return 3;
-    if (points < 2000) return 4;
-    return 5;
+    for (let i = levelThresholds.length - 1; i >= 0; i--) {
+      if (points >= levelThresholds[i].points) {
+        return levelThresholds[i].level;
+      }
+    }
+    return 1;
+  };
+
+  const getDiscount = (points: number) => {
+    const level = getLevel(points);
+    const threshold = levelThresholds.find(t => t.level === level);
+    return threshold?.discount || 0;
+  };
+
+  const getLevelColor = (points: number) => {
+    const level = getLevel(points);
+    const threshold = levelThresholds.find(t => t.level === level);
+    return threshold?.color || "text-gray-500";
   };
 
   const getNextLevelPoints = (points: number) => {
-    const levels = [100, 500, 1000, 2000];
     const currentLevel = getLevel(points);
-    if (currentLevel >= 5) return 0;
-    return levels[currentLevel - 1] - points;
+    if (currentLevel >= 8) return 0;
+    const nextThreshold = levelThresholds.find(t => t.level === currentLevel + 1);
+    return nextThreshold ? nextThreshold.points - points : 0;
+  };
+
+  const getCurrentLevelPoints = (points: number) => {
+    const currentLevel = getLevel(points);
+    const currentThreshold = levelThresholds.find(t => t.level === currentLevel);
+    return currentThreshold?.points || 0;
+  };
+
+  const getProgressPercentage = (points: number) => {
+    const currentLevel = getLevel(points);
+    if (currentLevel >= 8) return 100;
+    
+    const currentThreshold = levelThresholds.find(t => t.level === currentLevel);
+    const nextThreshold = levelThresholds.find(t => t.level === currentLevel + 1);
+    
+    if (!currentThreshold || !nextThreshold) return 0;
+    
+    const pointsInLevel = points - currentThreshold.points;
+    const pointsNeeded = nextThreshold.points - currentThreshold.points;
+    
+    return Math.min(100, (pointsInLevel / pointsNeeded) * 100);
   };
 
   return (
@@ -172,21 +218,34 @@ const Profile = () => {
           {/* Gamification Stats */}
           <Card className="p-6">
             <div className="text-center mb-6">
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-primary to-primary/80 rounded-full mb-4">
-                <Trophy className="h-10 w-10 text-white" />
+              <div className={`inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-primary to-primary/80 rounded-full mb-4`}>
+                <Trophy className={`h-10 w-10 text-white`} />
               </div>
-              <h3 className="text-3xl font-bold mb-1">Level {getLevel(profile?.points || 0)}</h3>
+              <h3 className={`text-3xl font-bold mb-1 ${getLevelColor(profile?.points || 0)}`}>
+                Level {getLevel(profile?.points || 0)}
+              </h3>
               <p className="text-sm text-muted-foreground">
                 {profile?.points || 0} điểm
               </p>
-              {getNextLevelPoints(profile?.points || 0) > 0 && (
-                <p className="text-xs text-muted-foreground mt-2">
-                  Còn {getNextLevelPoints(profile?.points || 0)} điểm để lên level
-                </p>
-              )}
+              <p className="text-sm font-semibold text-primary mt-1">
+                Giảm {getDiscount(profile?.points || 0)}% tất cả đơn hàng
+              </p>
             </div>
 
-            <div className="space-y-2 text-sm">
+            {getNextLevelPoints(profile?.points || 0) > 0 && (
+              <div className="mb-6">
+                <div className="flex justify-between text-xs text-muted-foreground mb-2">
+                  <span>Level {getLevel(profile?.points || 0)}</span>
+                  <span>Level {getLevel(profile?.points || 0) + 1}</span>
+                </div>
+                <Progress value={getProgressPercentage(profile?.points || 0)} className="h-2" />
+                <p className="text-xs text-center text-muted-foreground mt-2">
+                  Còn {getNextLevelPoints(profile?.points || 0)} điểm để lên level
+                </p>
+              </div>
+            )}
+
+            <div className="space-y-2 text-sm mb-6">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Đơn hàng hoàn thành:</span>
                 <span className="font-semibold">-</span>
@@ -198,6 +257,43 @@ const Profile = () => {
             </div>
           </Card>
         </div>
+
+        {/* Discount Benefits Card */}
+        <Card className="p-6 mt-6">
+          <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+            <TrendingUp className="h-5 w-5 text-primary" />
+            🎯 Ưu đãi giảm giá theo level
+          </h3>
+          <div className="space-y-3">
+            {levelThresholds.map((threshold) => (
+              <div
+                key={threshold.level}
+                className={`flex justify-between items-center p-3 rounded-lg ${
+                  getLevel(profile?.points || 0) === threshold.level
+                    ? "bg-primary/10 border-2 border-primary"
+                    : "bg-muted/50"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`font-bold ${threshold.color}`}>
+                    Level {threshold.level}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    ({threshold.points} điểm)
+                  </div>
+                </div>
+                <div className="font-semibold text-primary">
+                  Giảm {threshold.discount}%
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 p-3 bg-blue-500/10 rounded-lg">
+            <p className="text-sm text-center">
+              💡 <span className="font-semibold">Mẹo:</span> Mỗi 10,000 VND = 1 điểm | Mỗi bài viết = 10 điểm
+            </p>
+          </div>
+        </Card>
 
         {/* Badges */}
         <Card className="p-6 mt-6">
