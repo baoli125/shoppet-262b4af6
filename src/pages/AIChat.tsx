@@ -1,8 +1,7 @@
 import { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Send, Sparkles } from "lucide-react";
+import { Send, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -18,7 +17,6 @@ const AIChat = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [currentFollowUps, setCurrentFollowUps] = useState<string[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
   const { toast } = useToast();
 
   const defaultSuggestions = [
@@ -175,40 +173,18 @@ const AIChat = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col pt-20">
-      {/* Header */}
-      <div className="border-b border-border bg-card header-shadow fixed top-0 left-0 right-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={() => navigate("/")}
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-lg font-bold text-foreground">Trợ lý AI Shoppet</h1>
-              <p className="text-xs text-muted-foreground">Tư vấn sức khỏe & dinh dưỡng 24/7</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Messages */}
       <div className="flex-1 overflow-y-auto">
         <div className="container mx-auto px-4 py-6 max-w-4xl">
           {messages.length === 0 ? (
-            <div className="text-center py-8 animate-fade-in">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                <Sparkles className="w-8 h-8 text-white" />
+            <div className="text-center py-6 animate-fade-in">
+              <div className="w-14 h-14 mx-auto mb-3 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+                <Sparkles className="w-7 h-7 text-white" />
               </div>
-              <h2 className="text-xl font-bold mb-2 text-foreground">
+              <h2 className="text-lg font-bold mb-2 text-foreground">
                 Xin chào! Tôi là trợ lý AI của Shoppet
               </h2>
-              <p className="text-sm text-muted-foreground max-w-2xl mx-auto mb-4">
+              <p className="text-xs text-muted-foreground max-w-2xl mx-auto mb-3">
                 Tôi có thể giúp bạn tư vấn về sức khỏe, dinh dưỡng, và chăm sóc thú cưng. 
                 Hãy hỏi tôi bất cứ điều gì!
               </p>
