@@ -60,7 +60,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
     },
     {
       id: "chatbot-close",
-      selector: '[data-tour="chatbot"]',
+      selector: '[data-tour="chatbot-close"]',
       title: "Đóng Chatbot",
       description: "Bạn có thể tắt chatbot ở đây khi cần.",
       position: "left",
