@@ -469,7 +469,12 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
     return null;
   }
 
-  const tooltipPosition = getTooltipPosition(currentStepData.position, highlightPosition);
+  // Tooltip luôn ở giữa màn hình
+  const tooltipPosition = {
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+  };
 
   return (
     <>
@@ -659,43 +664,5 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
     </>
   );
 };
-
-function getTooltipPosition(
-  position: "top" | "bottom" | "left" | "right" | "center",
-  highlightPos: { top: number; left: number; width: number; height: number },
-) {
-  const offset = 20;
-  const style: React.CSSProperties = {};
-
-  switch (position) {
-    case "center":
-      style.top = "50%";
-      style.left = "50%";
-      style.transform = "translate(-50%, -50%)";
-      break;
-    case "top":
-      style.top = `${highlightPos.top - offset}px`;
-      style.left = `${highlightPos.left + highlightPos.width / 2}px`;
-      style.transform = "translate(-50%, -100%)";
-      break;
-    case "bottom":
-      style.top = `${highlightPos.top + highlightPos.height + offset}px`;
-      style.left = `${highlightPos.left + highlightPos.width / 2}px`;
-      style.transform = "translateX(-50%)";
-      break;
-    case "left":
-      style.top = `${highlightPos.top + highlightPos.height / 2}px`;
-      style.left = `${highlightPos.left - offset}px`;
-      style.transform = "translate(-100%, -50%)";
-      break;
-    case "right":
-      style.top = `${highlightPos.top + highlightPos.height / 2}px`;
-      style.left = `${highlightPos.left + highlightPos.width + offset}px`;
-      style.transform = "translateY(-50%)";
-      break;
-  }
-
-  return style;
-}
 
 export default GuidedTour;
