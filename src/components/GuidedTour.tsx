@@ -595,32 +595,34 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       {/* Chatbot Image - hiển thị khi showChatbotImage = true */}
       {currentStepData.showChatbotImage && (
         <div
-          className="fixed z-[101] rounded-2xl shadow-2xl overflow-hidden pointer-events-none"
+          className="fixed z-[101] rounded-2xl shadow-2xl overflow-hidden"
           style={{
-            bottom: "20px",
-            right: "20px",
-            width: "min(90vw, 480px)",
-            maxHeight: "80vh",
+            bottom: "calc(15vh + 80px)",
+            right: "24px",
+            width: "384px",
+            height: "500px",
             animation: "slide-in-tooltip 0.4s ease-out",
+            pointerEvents: "none",
           }}
         >
-          <img src={chatbotGuideImage} alt="Chatbot Guide" className="w-full h-full object-contain" />
+          <img src={chatbotGuideImage} alt="Chatbot Guide" className="w-full h-full object-cover rounded-lg" />
           {/* Highlight border around chatbot image */}
           <div
-            className="absolute inset-0 rounded-2xl border-4 border-primary pointer-events-none"
+            className="absolute inset-0 rounded-2xl border-4 border-primary"
             style={{
               animation: "blink-highlight 1.5s infinite ease-in-out",
               boxShadow: "0 0 40px hsl(var(--primary) / 0.6)",
+              pointerEvents: "none",
             }}
           />
           {/* Corner sparkles */}
           <Sparkles
-            className="absolute -top-3 -right-3 w-6 h-6 text-primary animate-pulse pointer-events-none"
-            style={{ animationDelay: "0s" }}
+            className="absolute -top-3 -right-3 w-6 h-6 text-primary animate-pulse"
+            style={{ animationDelay: "0s", pointerEvents: "none" }}
           />
           <Sparkles
-            className="absolute -bottom-3 -left-3 w-5 h-5 text-secondary animate-pulse pointer-events-none"
-            style={{ animationDelay: "0.5s" }}
+            className="absolute -bottom-3 -left-3 w-5 h-5 text-secondary animate-pulse"
+            style={{ animationDelay: "0.5s", pointerEvents: "none" }}
           />
         </div>
       )}
