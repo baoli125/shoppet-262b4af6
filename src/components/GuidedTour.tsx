@@ -59,8 +59,8 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       showChatbotImage: true,
     },
     {
-      id: "chatbot",
-      selector: '[data-tour="chatbot-close"]',
+      id: "chatbot-close",
+      selector: '[data-tour="chatbot"]',
       title: "Đóng Chatbot",
       description: "Bạn có thể tắt chatbot ở đây khi cần.",
       position: "left",
