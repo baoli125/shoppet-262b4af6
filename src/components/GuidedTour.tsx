@@ -13,7 +13,7 @@ interface TourStep {
   selector: string | null;
   title: string;
   description: string;
-  position: 'top' | 'bottom' | 'left' | 'right' | 'center' | 'bottom-right';
+  position: 'top' | 'bottom' | 'left' | 'right' | 'center';
   forceClick: boolean;
   requireDropdownOpen?: boolean;
   showCartIcon?: boolean;
@@ -42,60 +42,73 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       id: 'chatbot',
       selector: '[data-tour="chatbot"]',
       title: "Trợ lý AI Thông Minh 🤖",
-      description: "Đây là trợ lý AI 24/7 của Shoppet! Bạn có thể hỏi bất kỳ câu hỏi nào về sức khỏe, dinh dưỡng, hoặc chăm sóc thú cưng.",
-      position: 'bottom-right' as const,
+      description: "Đây là cổng vào trung tâm của Shoppet! Click để mở và khám phá 4 tính năng chính.",
+      position: 'left' as const,
+      forceClick: true,
+    },
+    {
+      id: 'chatbot-marketplace',
+      selector: '[data-tour="chatbot-marketplace"]',
+      title: "Marketplace - Mua sắm Thông minh 🛍️",
+      description: "Tại đây bạn có thể mua tất cả sản phẩm cho thú cưng: thức ăn, đồ chơi, phụ kiện với giá tốt nhất. Click để trải nghiệm!",
+      position: 'right' as const,
+      forceClick: true,
+    },
+    {
+      id: 'chatbot-ai',
+      selector: '[data-tour="chatbot-ai"]',
+      title: "Trợ lý AI Tư vấn 🤖",
+      description: "Nhận tư vấn sức khỏe, dinh dưỡng cá nhân hóa 24/7 cho từng loại thú cưng của bạn. Click để thử ngay!",
+      position: 'right' as const,
+      forceClick: true,
+    },
+    {
+      id: 'chatbot-pets',
+      selector: '[data-tour="chatbot-pets"]',
+      title: "Hồ sơ Thú cưng 📋",
+      description: "Quản lý thông tin sức khỏe, lịch tiêm phòng, bệnh án của tất cả thú cưng trong một nơi. Click để bắt đầu!",
+      position: 'right' as const,
+      forceClick: true,
+    },
+    {
+      id: 'chatbot-community',
+      selector: '[data-tour="chatbot-community"]',
+      title: "Cộng đồng Yêu Thú Cưng 👥",
+      description: "Kết nối với hàng ngàn người yêu thú cưng! Chia sẻ câu chuyện, kinh nghiệm và học hỏi từ cộng đồng. Click để tham gia!",
+      position: 'right' as const,
       forceClick: true,
     },
     {
       id: 'user-dropdown',
       selector: '[data-tour="user-dropdown"]',
       title: "Menu Quản lý Tài khoản 👤",
-      description: "Đây là trung tâm điều khiển! Click vào đây để mở menu và xem tất cả các tính năng.",
+      description: "Đây là trung tâm điều khiển! Click vào đây để mở menu và xem thêm các tính năng nâng cao.",
       position: 'bottom' as const,
       forceClick: true,
     },
     {
-      id: 'marketplace-menu',
-      selector: '[data-tour="marketplace-menu"]',
-      title: "Marketplace - Mua sắm Thông minh 🛍️",
-      description: "Tại đây bạn có thể mua tất cả sản phẩm cho thú cưng: thức ăn, đồ chơi, phụ kiện với giá tốt nhất.",
+      id: 'orders-menu',
+      selector: '[data-tour="orders-menu"]',
+      title: "Đơn hàng của tôi 📦",
+      description: "Theo dõi tình trạng đơn hàng, xem lịch sử mua sắm và quản lý các đơn hàng của bạn.",
       position: 'left' as const,
       forceClick: true,
       requireDropdownOpen: true,
     },
     {
-      id: 'ai-chat-menu',
-      selector: '[data-tour="ai-chat-menu"]',
-      title: "Trợ lý AI Tư vấn 🤖",
-      description: "Nhận tư vấn sức khỏe, dinh dưỡng cá nhân hóa cho từng loại thú cưng của bạn.",
-      position: 'left' as const,
-      forceClick: true,
-      requireDropdownOpen: true,
-    },
-    {
-      id: 'pets-menu',
-      selector: '[data-tour="pets-menu"]',
-      title: "Hồ sơ Thú cưng 📋",
-      description: "Quản lý thông tin sức khỏe, lịch tiêm phòng, bệnh án của tất cả thú cưng trong một nơi.",
-      position: 'left' as const,
-      forceClick: true,
-      requireDropdownOpen: true,
-    },
-    {
-      id: 'cart-orders-menu',
-      selector: '[data-tour="cart-menu"]',
-      title: "Giỏ hàng & Theo dõi Đơn hàng 🛒",
-      description: "Theo dõi giỏ hàng và đơn hàng của bạn tại đây. Bạn cũng có thể xem nhanh bằng icon giỏ hàng trên header!",
-      position: 'left' as const,
+      id: 'cart-icon',
+      selector: '[data-tour="cart-icon"]',
+      title: "Giỏ hàng Nhanh 🛒",
+      description: "Icon này cho phép bạn truy cập nhanh vào giỏ hàng. Click vào để xem các sản phẩm bạn đã chọn!",
+      position: 'bottom' as const,
       forceClick: false,
-      showCartIcon: true,
-      requireDropdownOpen: true,
+      showCartIcon: false,
     },
     {
-      id: 'community-intro',
+      id: 'tour-complete',
       selector: null,
-      title: "Cộng đồng Yêu Thú Cưng 👥",
-      description: "Kết nối với hàng ngàn người yêu thú cưng! Chia sẻ câu chuyện, kinh nghiệm, và học hỏi từ cộng đồng.",
+      title: "🎉 Hoàn thành Hướng dẫn!",
+      description: "Tuyệt vời! Bạn đã làm quen với tất cả tính năng chính của Shoppet. Giờ hãy bắt đầu khám phá và chăm sóc thú cưng của bạn thật tốt nhé! 🐾",
       position: 'center' as const,
       forceClick: false,
     },
@@ -479,11 +492,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
             {/* Click indicator for forceClick steps */}
             {currentStepData.forceClick && (
               <div 
-                className={`absolute pointer-events-none ${
-                  currentStepData.position === 'bottom-right' 
-                    ? 'top-[-40px] left-1/2 -translate-x-1/2' 
-                    : 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2'
-                }`}
+                className="absolute pointer-events-none top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
                 style={{
                   animation: 'pulse 1s infinite ease-in-out'
                 }}
@@ -596,7 +605,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
 };
 
 function getTooltipPosition(
-  position: 'top' | 'bottom' | 'left' | 'right' | 'center' | 'bottom-right',
+  position: 'top' | 'bottom' | 'left' | 'right' | 'center',
   highlightPos: { top: number; left: number; width: number; height: number }
 ) {
   const offset = 20;
@@ -627,28 +636,6 @@ function getTooltipPosition(
       style.top = `${highlightPos.top + highlightPos.height / 2}px`;
       style.left = `${highlightPos.left + highlightPos.width + offset}px`;
       style.transform = 'translateY(-50%)';
-      break;
-    case 'bottom-right':
-      // Tooltip for chatbot - display ABOVE or to the LEFT of actual chatbot position
-      const isMobile = window.innerWidth < 768;
-      
-      if (isMobile) {
-        // Mobile: center, above chatbot
-        style.position = 'fixed';
-        style.bottom = `${window.innerHeight - highlightPos.top + 20}px`; // 20px above chatbot
-        style.left = '50%';
-        style.transform = 'translateX(-50%)';
-        style.maxWidth = 'calc(100vw - 32px)';
-        style.width = '90%';
-      } else {
-        // Desktop: to the LEFT of chatbot button
-        style.position = 'fixed';
-        style.top = `${highlightPos.top}px`; // Align vertically with chatbot
-        style.right = `${window.innerWidth - highlightPos.left + 20}px`; // 20px to the left of chatbot
-        style.left = 'auto';
-        style.transform = 'translateY(-50%)'; // Center vertically
-        style.maxWidth = '380px';
-      }
       break;
   }
 

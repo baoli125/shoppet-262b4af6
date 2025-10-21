@@ -169,6 +169,7 @@ const Header = ({
 
                 {/* Cart Icon */}
                 <button 
+                  data-tour="cart-icon"
                   onClick={() => handleMenuItemClick('/cart')}
                   className="relative p-2 hover:bg-muted rounded-full transition-colors"
                 >
@@ -205,6 +206,7 @@ const Header = ({
                         '/pets': 'pets-menu',
                         '/community': 'community-menu',
                         '/cart': 'cart-menu',
+                        '/orders': 'orders-menu',
                       };
                       
                       return (

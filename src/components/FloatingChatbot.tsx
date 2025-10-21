@@ -218,17 +218,42 @@ const FloatingChatbot = ({ user, isNewUser }: FloatingChatbotProps) => {
 
                 <div className="mt-6 space-y-2">
                   <p className="text-xs font-medium text-foreground">{t("")}</p>
-                  {quickActions.map((action, idx) => (
-                    <Button
-                      key={idx}
-                      variant="outline"
-                      className="w-full justify-start gap-2"
-                      onClick={() => handleQuickAction(action.path)}
-                    >
-                      <action.icon className="h-4 w-4" />
-                      {action.label}
-                    </Button>
-                  ))}
+                  <Button
+                    data-tour="chatbot-marketplace"
+                    variant="outline"
+                    className="w-full justify-start gap-2"
+                    onClick={() => handleQuickAction("/marketplace")}
+                  >
+                    <ShoppingBag className="h-4 w-4" />
+                    {t("chatbot.exploreMarketplace")}
+                  </Button>
+                  <Button
+                    data-tour="chatbot-ai"
+                    variant="outline"
+                    className="w-full justify-start gap-2"
+                    onClick={() => handleQuickAction("/ai-chat")}
+                  >
+                    <Bot className="h-4 w-4" />
+                    {t("chatbot.askAI")}
+                  </Button>
+                  <Button
+                    data-tour="chatbot-pets"
+                    variant="outline"
+                    className="w-full justify-start gap-2"
+                    onClick={() => handleQuickAction("/pets")}
+                  >
+                    <PawPrint className="h-4 w-4" />
+                    {t("chatbot.managePets")}
+                  </Button>
+                  <Button
+                    data-tour="chatbot-community"
+                    variant="outline"
+                    className="w-full justify-start gap-2"
+                    onClick={() => handleQuickAction("/community")}
+                  >
+                    <Users className="h-4 w-4" />
+                    {t("chatbot.joinCommunity")}
+                  </Button>
                 </div>
               </div>
             )}
