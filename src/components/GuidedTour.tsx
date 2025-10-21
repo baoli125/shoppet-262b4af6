@@ -276,7 +276,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       if (element) {
         console.log(`✓ Found element for step ${currentStep}:`, step.id);
 
-        // Clear retry interval if it exists
+        // Clear retry interval
         if (retryIntervalRef.current) {
           clearInterval(retryIntervalRef.current);
           retryIntervalRef.current = null;
@@ -284,14 +284,44 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
 
         setTargetElement(element);
 
-        // 🛠 SỬA: Chỉ set z-index, giữ nguyên position gốc
+        // SPECIAL: For dropdown steps, automatically open dropdown
+        if (step.requireDropdownOpen) {
+          console.log("🔓 Auto-opening dropdown for step:", step.id);
+          const dropdownTrigger = document.querySelector('[data-tour="user-dropdown"]') as HTMLElement;
+          if (dropdownTrigger) {
+            // Close any existing dropdown first
+            const existingDropdown = document.querySelector('[role="menu"]');
+            if (!existingDropdown) {
+              dropdownTrigger.click();
+              // Wait for dropdown to open then proceed
+              setTimeout(() => {
+                // Now highlight the target element inside dropdown
+                const dropdownElement = document.querySelector(step.selector!) as HTMLElement;
+                if (dropdownElement) {
+                  setTargetElement(dropdownElement);
+                  dropdownElement.style.zIndex = "102";
+
+                  const rect = dropdownElement.getBoundingClientRect();
+                  setHighlightPosition({
+                    top: rect.top,
+                    left: rect.left,
+                    width: rect.width,
+                    height: rect.height,
+                  });
+                }
+              }, 300);
+              return;
+            }
+          }
+        }
+
+        // Normal highlighting for non-dropdown elements
         element.style.zIndex = "102";
 
-        // Force reflow to ensure position update
+        // Force reflow
         element.offsetHeight;
 
         const rect = element.getBoundingClientRect();
-
         setHighlightPosition({
           top: rect.top,
           left: rect.left,
@@ -299,12 +329,14 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
           height: rect.height,
         });
 
-        // Scroll to element với chatbot (vẫn cần vì có thể bị scroll)
-        element.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+        // Scroll only if not fixed position
+        const isFixed = window.getComputedStyle(element).position === "fixed";
+        if (!isFixed) {
+          element.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+        }
       } else {
         console.warn(`✗ Element not found for step ${currentStep}:`, step.selector);
 
-        // Only start retry interval if one doesn't exist
         if (!retryIntervalRef.current) {
           console.log("Starting retry interval to find element");
           retryIntervalRef.current = setInterval(() => {
@@ -572,11 +604,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
             animation: "slide-in-tooltip 0.4s ease-out",
           }}
         >
-          <img
-            src={chatbotGuideImage}
-            alt="Chatbot Guide"
-            className="w-full h-full object-contain"
-          />
+          <img src={chatbotGuideImage} alt="Chatbot Guide" className="w-full h-full object-contain" />
           {/* Highlight border around chatbot image */}
           <div
             className="absolute inset-0 rounded-2xl border-4 border-primary pointer-events-none"
