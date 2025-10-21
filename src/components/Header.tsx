@@ -86,12 +86,12 @@ const Header = ({
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-header-bg border-b border-header-border header-shadow">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16 md:h-20">
-          {/* Logo & Brand */}
+      <div className="container mx-auto px-3 sm:px-4">
+        <div className="flex items-center justify-between h-14 sm:h-16 md:h-20">
+          {/* Logo & Brand - Mobile Optimized */}
           <a 
             href="#home" 
-            className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity touch-manipulation"
             onClick={(e) => {
               e.preventDefault();
               handleMenuItemClick('#home');
@@ -103,7 +103,7 @@ const Header = ({
               alt="Shoppet Logo" 
               width="128"
               height="86"
-              className="h-12 md:h-16 w-auto object-contain" 
+              className="h-10 sm:h-12 md:h-16 w-auto object-contain" 
             />
           </a>
 
@@ -235,10 +235,11 @@ const Header = ({
             )}
           </div>
 
-          {/* Mobile Menu Button */}
+          {/* Mobile Menu Button - Touch Optimized */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 hover:bg-muted rounded-lg transition-colors"
+            className="md:hidden p-3 hover:bg-muted rounded-lg transition-colors touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center"
+            aria-label={mobileMenuOpen ? "Đóng menu" : "Mở menu"}
           >
             {mobileMenuOpen ? (
               <X className="w-6 h-6 text-header-text" />
@@ -248,11 +249,11 @@ const Header = ({
           </button>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Mobile Menu - Optimized for Touch */}
         {mobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-header-border animate-fade-in">
+          <div className="md:hidden py-3 border-t border-header-border animate-fade-in">
             {/* Mobile Navigation */}
-            <nav className="flex flex-col gap-2 mb-4">
+            <nav className="flex flex-col gap-1 mb-3">
               {menuItems.map((item) => (
                 <a
                   key={item.label}
@@ -261,10 +262,10 @@ const Header = ({
                     e.preventDefault();
                     handleMenuItemClick(item.href);
                   }}
-                  className={`px-4 py-2 rounded-lg transition-colors ${
+                  className={`px-4 py-3 rounded-lg transition-colors touch-manipulation min-h-[48px] flex items-center ${
                     item.active 
                       ? "bg-primary/10 text-primary font-semibold" 
-                      : "text-header-text hover:bg-muted"
+                      : "text-header-text hover:bg-muted active:bg-muted/80"
                   }`}
                 >
                   {item.label}
@@ -272,53 +273,53 @@ const Header = ({
               ))}
             </nav>
 
-            {/* Mobile Auth Section */}
+            {/* Mobile Auth Section - Touch Optimized */}
             {!isLoggedIn ? (
-              <div className="flex flex-col gap-2 pt-4 border-t border-header-border">
+              <div className="flex flex-col gap-1 pt-3 border-t border-header-border">
                 {/* Mobile Language Switcher */}
                 <button
                   onClick={toggleLanguage}
-                  className="flex items-center justify-between px-4 py-2 hover:bg-muted rounded-lg transition-colors"
+                  className="flex items-center justify-between px-4 py-3 hover:bg-muted active:bg-muted/80 rounded-lg transition-colors touch-manipulation min-h-[48px]"
                 >
-                  <span className="flex items-center gap-2">
+                  <span className="flex items-center gap-3">
                     <Globe className="w-5 h-5" />
-                    {t('header.language')}
+                    <span className="font-medium">{t('header.language')}</span>
                   </span>
-                  <span className="text-sm font-medium">{language.toUpperCase()}</span>
+                  <span className="text-sm font-bold px-2 py-1 bg-primary/10 text-primary rounded">{language.toUpperCase()}</span>
                 </button>
                 
-                <Button onClick={onLoginClick} className="btn-solid-blue w-full">
+                <Button onClick={onLoginClick} className="btn-solid-blue w-full h-12 text-base font-semibold mt-2">
                   {t('header.login')}
                 </Button>
-                <Button onClick={onRegisterClick} className="btn-outline-blue w-full">
+                <Button onClick={onRegisterClick} className="btn-outline-blue w-full h-12 text-base font-semibold">
                   {t('header.register')}
                 </Button>
               </div>
             ) : (
-              <div className="flex flex-col gap-2 pt-4 border-t border-header-border">
+              <div className="flex flex-col gap-1 pt-3 border-t border-header-border">
                 {/* Mobile Language Switcher */}
                 <button
                   onClick={toggleLanguage}
-                  className="flex items-center justify-between px-4 py-2 hover:bg-muted rounded-lg transition-colors"
+                  className="flex items-center justify-between px-4 py-3 hover:bg-muted active:bg-muted/80 rounded-lg transition-colors touch-manipulation min-h-[48px]"
                 >
-                  <span className="flex items-center gap-2">
+                  <span className="flex items-center gap-3">
                     <Globe className="w-5 h-5" />
-                    {t('header.language')}
+                    <span className="font-medium">{t('header.language')}</span>
                   </span>
-                  <span className="text-sm font-medium">{language.toUpperCase()}</span>
+                  <span className="text-sm font-bold px-2 py-1 bg-primary/10 text-primary rounded">{language.toUpperCase()}</span>
                 </button>
                 
                 {/* Mobile Cart */}
                 <button 
                   onClick={() => handleMenuItemClick('/cart')}
-                  className="flex items-center justify-between px-4 py-2 hover:bg-muted rounded-lg transition-colors"
+                  className="flex items-center justify-between px-4 py-3 hover:bg-muted active:bg-muted/80 rounded-lg transition-colors touch-manipulation min-h-[48px]"
                 >
-                  <span className="flex items-center gap-2">
+                  <span className="flex items-center gap-3">
                     <ShoppingCart className="w-5 h-5" />
-                    {t('header.cart')}
+                    <span className="font-medium">{t('header.cart')}</span>
                   </span>
                   {cartCount > 0 && (
-                    <Badge className="bg-destructive text-destructive-foreground">
+                    <Badge className="bg-destructive text-destructive-foreground px-2 py-1 text-sm font-bold">
                       {cartCount}
                     </Badge>
                   )}
@@ -329,19 +330,19 @@ const Header = ({
                   <button
                     key={item.label}
                     onClick={() => handleMenuItemClick(item.href)}
-                    className="flex items-center gap-2 px-4 py-2 hover:bg-muted rounded-lg transition-colors text-left"
+                    className="flex items-center gap-3 px-4 py-3 hover:bg-muted active:bg-muted/80 rounded-lg transition-colors touch-manipulation min-h-[48px] text-left"
                   >
-                    <item.icon className="w-5 h-5" />
-                    {item.label}
+                    <item.icon className="w-5 h-5 flex-shrink-0" />
+                    <span className="font-medium">{item.label}</span>
                   </button>
                 ))}
 
                 <button
                   onClick={onLogoutClick}
-                  className="flex items-center gap-2 px-4 py-2 hover:bg-destructive/10 rounded-lg transition-colors text-destructive"
+                  className="flex items-center gap-3 px-4 py-3 hover:bg-destructive/10 active:bg-destructive/20 rounded-lg transition-colors touch-manipulation min-h-[48px] text-destructive"
                 >
-                  <LogOut className="w-5 h-5" />
-                  {t('header.logout')}
+                  <LogOut className="w-5 h-5 flex-shrink-0" />
+                  <span className="font-medium">{t('header.logout')}</span>
                 </button>
               </div>
             )}
