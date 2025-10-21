@@ -12,6 +12,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import shoppetLogoSmall from "@/assets/logo-small.png";
+import shoppetLogoMedium from "@/assets/logo-medium.png";
 import shoppetLogo from "@/assets/logo.png";
 
 interface HeaderProps {
@@ -95,7 +97,14 @@ const Header = ({
               handleMenuItemClick('#home');
             }}
           >
-            <img src={shoppetLogo} alt="Shoppet Logo" className="h-12 md:h-16 w-auto object-contain" />
+            <img 
+              src={shoppetLogoSmall} 
+              srcSet={`${shoppetLogoSmall} 1x, ${shoppetLogoMedium} 2x, ${shoppetLogo} 3x`}
+              alt="Shoppet Logo" 
+              width="128"
+              height="86"
+              className="h-12 md:h-16 w-auto object-contain" 
+            />
           </a>
 
           {/* Desktop Navigation */}
