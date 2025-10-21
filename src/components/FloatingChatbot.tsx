@@ -163,14 +163,14 @@ const FloatingChatbot = ({ user, isNewUser }: FloatingChatbotProps) => {
 
   return (
     <>
-      {/* Floating Button */}
+      {/* Floating Button - Mobile Optimized */}
       <Button
         data-tour="chatbot"
         onClick={handleChatbotClick}
-        className="fixed bottom-[15vh] right-6 h-16 w-16 rounded-full shadow-lg hover:scale-110 transition-transform z-50 bg-gradient-to-br from-primary to-primary/80"
+        className="fixed bottom-[15vh] right-3 sm:right-4 md:right-6 h-14 w-14 sm:h-16 sm:w-16 rounded-full shadow-lg hover:scale-110 active:scale-105 transition-transform z-50 bg-gradient-to-br from-primary to-primary/80 touch-manipulation"
         size="icon"
       >
-        {isOpen ? <X className="h-8 w-8" /> : <span className="text-4xl">🐾</span>}
+        {isOpen ? <X className="h-6 w-6 sm:h-8 sm:w-8" /> : <span className="text-3xl sm:text-4xl">🐾</span>}
       </Button>
 
       {/* Login Alert Dialog */}
@@ -187,90 +187,91 @@ const FloatingChatbot = ({ user, isNewUser }: FloatingChatbotProps) => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Chat Window */}
+      {/* Chat Window - Mobile Full Screen */}
       {isOpen && (
         <Card
           data-tour="chatbot-window"
-          className="fixed bottom-[calc(15vh+80px)] right-6 w-96 h-[500px] shadow-2xl z-50 flex flex-col"
+          className="fixed inset-x-2 bottom-2 sm:inset-x-auto sm:bottom-[calc(15vh+80px)] sm:right-4 md:right-6 sm:w-96 h-[85vh] sm:h-[500px] shadow-2xl z-50 flex flex-col"
         >
-          <div className="p-4 border-b bg-gradient-to-r from-primary to-primary/80 text-white rounded-t-lg">
+          <div className="p-3 sm:p-4 border-b bg-gradient-to-r from-primary to-primary/80 text-white rounded-t-lg">
             <div className="flex items-center gap-2">
-              <span className="text-2xl">🐾</span>
-              <div className="flex-1">
-                <h3 className="font-semibold">{t("chatbot.title")}</h3>
-                <p className="text-xs opacity-90">{t("chatbot.subtitle")}</p>
+              <span className="text-xl sm:text-2xl">🐾</span>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-sm sm:text-base truncate">{t("chatbot.title")}</h3>
+                <p className="text-xs opacity-90 truncate">{t("chatbot.subtitle")}</p>
               </div>
-              {/* Nút đóng chatbot cho bước 3 */}
+              {/* Close button - Hidden as floating button handles it */}
               <Button
                 data-tour="chatbot-close"
                 onClick={handleChatbotClick}
-                className="fixed bottom-[15vh] right-6 h-16 w-16 rounded-full shadow-lg hover:scale-110 transition-transform z-50 bg-gradient-to-br from-primary to-primary/80"
+                className="sm:hidden h-10 w-10 rounded-full"
                 size="icon"
+                variant="ghost"
               >
-                {isOpen ? <X className="h-8 w-8" /> : <span className="text-4xl">X</span>}
+                <X className="h-5 w-5" />
               </Button>
             </div>
           </div>
 
-          <ScrollArea className="flex-1 p-4">
+          <ScrollArea className="flex-1 p-3 sm:p-4">
             {messages.length === 0 && (
-              <div className="text-center text-muted-foreground space-y-4">
-                <p className="text-4xl mb-4"></p>
+              <div className="text-center text-muted-foreground space-y-3 sm:space-y-4">
+                <p className="text-3xl sm:text-4xl mb-3 sm:mb-4"></p>
                 {isNewUser ? (
                   <>
-                    <p className="font-semibold">{t("chatbot.welcomeNew")}</p>
-                    <p className="text-sm">{t("chatbot.welcomeNewDesc")}</p>
+                    <p className="font-semibold text-sm sm:text-base">{t("chatbot.welcomeNew")}</p>
+                    <p className="text-xs sm:text-sm">{t("chatbot.welcomeNewDesc")}</p>
                   </>
                 ) : (
                   <>
-                    <p className="font-semibold">{t("chatbot.welcomeBack")}</p>
-                    <p className="text-sm">{t("chatbot.welcomeBackDesc")}</p>
+                    <p className="font-semibold text-sm sm:text-base">{t("chatbot.welcomeBack")}</p>
+                    <p className="text-xs sm:text-sm">{t("chatbot.welcomeBackDesc")}</p>
                   </>
                 )}
 
-                <div className="mt-6 space-y-2">
+                <div className="mt-4 sm:mt-6 space-y-2">
                   <p className="text-xs font-medium text-foreground">{t("")}</p>
-                  {/* Đã xóa data-tour của các nút bên trong vì không dùng trong tour mới */}
+                  {/* Quick Actions - Mobile Optimized */}
                   <Button
                     variant="outline"
-                    className="w-full justify-start gap-2"
+                    className="w-full justify-start gap-2 h-11 sm:h-10 text-sm touch-manipulation"
                     onClick={() => handleQuickAction("/marketplace")}
                   >
-                    <ShoppingBag className="h-4 w-4" />
-                    {t("chatbot.exploreMarketplace")}
+                    <ShoppingBag className="h-4 w-4 flex-shrink-0" />
+                    <span className="truncate">{t("chatbot.exploreMarketplace")}</span>
                   </Button>
                   <Button
                     variant="outline"
-                    className="w-full justify-start gap-2"
+                    className="w-full justify-start gap-2 h-11 sm:h-10 text-sm touch-manipulation"
                     onClick={() => handleQuickAction("/ai-chat")}
                   >
-                    <Bot className="h-4 w-4" />
-                    {t("chatbot.askAI")}
+                    <Bot className="h-4 w-4 flex-shrink-0" />
+                    <span className="truncate">{t("chatbot.askAI")}</span>
                   </Button>
                   <Button
                     variant="outline"
-                    className="w-full justify-start gap-2"
+                    className="w-full justify-start gap-2 h-11 sm:h-10 text-sm touch-manipulation"
                     onClick={() => handleQuickAction("/pets")}
                   >
-                    <PawPrint className="h-4 w-4" />
-                    {t("chatbot.managePets")}
+                    <PawPrint className="h-4 w-4 flex-shrink-0" />
+                    <span className="truncate">{t("chatbot.managePets")}</span>
                   </Button>
                   <Button
                     variant="outline"
-                    className="w-full justify-start gap-2"
+                    className="w-full justify-start gap-2 h-11 sm:h-10 text-sm touch-manipulation"
                     onClick={() => handleQuickAction("/community")}
                   >
-                    <Users className="h-4 w-4" />
-                    {t("chatbot.joinCommunity")}
+                    <Users className="h-4 w-4 flex-shrink-0" />
+                    <span className="truncate">{t("chatbot.joinCommunity")}</span>
                   </Button>
                 </div>
               </div>
             )}
 
             {messages.map((msg, idx) => (
-              <div key={idx} className={`mb-4 ${msg.role === "user" ? "text-right" : "text-left"}`}>
+              <div key={idx} className={`mb-3 sm:mb-4 ${msg.role === "user" ? "text-right" : "text-left"}`}>
                 <div
-                  className={`inline-block max-w-[80%] p-3 rounded-lg ${
+                  className={`inline-block max-w-[85%] sm:max-w-[80%] p-2.5 sm:p-3 rounded-lg text-sm sm:text-base ${
                     msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
                   }`}
                 >
@@ -280,7 +281,7 @@ const FloatingChatbot = ({ user, isNewUser }: FloatingChatbotProps) => {
             ))}
           </ScrollArea>
 
-          <div className="p-4 border-t">
+          <div className="p-3 sm:p-4 border-t">
             <div className="flex gap-2">
               <Input
                 value={input}
@@ -288,8 +289,9 @@ const FloatingChatbot = ({ user, isNewUser }: FloatingChatbotProps) => {
                 onKeyPress={handleKeyPress}
                 placeholder={t("chatbot.placeholder")}
                 disabled={isLoading}
+                className="h-10 sm:h-11 text-sm sm:text-base"
               />
-              <Button onClick={sendMessage} disabled={isLoading || !input.trim()}>
+              <Button onClick={sendMessage} disabled={isLoading || !input.trim()} className="h-10 sm:h-11 w-10 sm:w-11 flex-shrink-0 touch-manipulation" size="icon">
                 <MessageSquare className="h-4 w-4" />
               </Button>
             </div>

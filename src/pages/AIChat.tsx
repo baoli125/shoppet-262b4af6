@@ -172,23 +172,23 @@ const AIChat = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col pt-20">
+    <div className="min-h-screen bg-background flex flex-col pt-14 sm:pt-16 md:pt-20">
       {/* Messages */}
       <div className="flex-1 overflow-y-auto">
-        <div className="container mx-auto px-4 py-6 max-w-4xl">
+        <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-4xl">
           {messages.length === 0 ? (
-            <div className="text-center py-6 animate-fade-in">
-              <div className="w-14 h-14 mx-auto mb-3 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                <Sparkles className="w-7 h-7 text-white" />
+            <div className="text-center py-4 sm:py-6 animate-fade-in">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 mx-auto mb-2 sm:mb-3 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+                <Sparkles className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
               </div>
-              <h2 className="text-lg font-bold mb-2 text-foreground">
+              <h2 className="text-base sm:text-lg font-bold mb-2 text-foreground">
                 Xin chào! Tôi là trợ lý AI của Shoppet
               </h2>
-              <p className="text-xs text-muted-foreground max-w-2xl mx-auto mb-3">
+              <p className="text-xs text-muted-foreground max-w-2xl mx-auto mb-3 px-2">
                 Tôi có thể giúp bạn tư vấn về sức khỏe, dinh dưỡng, và chăm sóc thú cưng. 
                 Hãy hỏi tôi bất cứ điều gì!
               </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-2xl mx-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 max-w-2xl mx-auto">
                 {[
                   "Con mèo của tôi bị tiêu chảy phải làm sao?",
                   "Chó con 2 tháng tuổi nên ăn gì?",
@@ -198,38 +198,38 @@ const AIChat = () => {
                   <button
                     key={i}
                     onClick={() => setInput(q)}
-                    className="quick-action-card text-left"
+                    className="quick-action-card text-left min-h-[60px] sm:min-h-auto touch-manipulation active:scale-[0.98]"
                   >
-                    <p className="text-sm">{q}</p>
+                    <p className="text-xs sm:text-sm leading-relaxed">{q}</p>
                   </button>
                 ))}
               </div>
             </div>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {messages.map((msg, idx) => (
                 <div
                   key={idx}
                   className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} animate-fade-in`}
                 >
-                  <div className="flex flex-col gap-2 max-w-[80%]">
+                  <div className="flex flex-col gap-2 max-w-[90%] sm:max-w-[85%] md:max-w-[80%]">
                     <div
-                      className={`rounded-2xl px-4 py-3 ${
+                      className={`rounded-2xl px-3 py-2.5 sm:px-4 sm:py-3 text-sm sm:text-base ${
                         msg.role === "user"
                           ? "bg-primary text-primary-foreground"
                           : "bg-card border border-border"
                       }`}
                     >
-                      <p className="whitespace-pre-wrap">{msg.content}</p>
+                      <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
                     </div>
                     {msg.role === "assistant" && msg.followUpQuestions && msg.followUpQuestions.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mt-2">
+                      <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-1 sm:mt-2">
                         {msg.followUpQuestions.map((question, qIdx) => (
                           <Button
                             key={qIdx}
                             variant="outline"
                             size="sm"
-                            className="text-xs text-left h-auto py-2 px-3"
+                            className="text-xs text-left h-auto py-2 px-2.5 sm:px-3 touch-manipulation"
                             onClick={() => setInput(question)}
                             disabled={isLoading}
                           >
@@ -243,7 +243,7 @@ const AIChat = () => {
               ))}
               {isLoading && messages[messages.length - 1]?.role === "user" && (
                 <div className="flex justify-start">
-                  <div className="bg-card border border-border rounded-2xl px-4 py-3">
+                  <div className="bg-card border border-border rounded-2xl px-3 py-2.5 sm:px-4 sm:py-3">
                     <div className="flex gap-2">
                       <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "0ms" }}></span>
                       <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "150ms" }}></span>
@@ -258,17 +258,17 @@ const AIChat = () => {
         </div>
       </div>
 
-      {/* Input */}
+      {/* Input - Mobile Sticky */}
       <div className="border-t border-border bg-card">
-        <div className="container mx-auto px-4 py-4 max-w-4xl">
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4 max-w-4xl">
           {messages.length === 0 && (
-            <div className="flex flex-wrap gap-2 mb-3">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-2 sm:mb-3">
               {defaultSuggestions.map((suggestion, idx) => (
                 <Button
                   key={idx}
                   variant="secondary"
                   size="sm"
-                  className="text-xs"
+                  className="text-xs h-8 sm:h-9 touch-manipulation"
                   onClick={() => setInput(suggestion)}
                   disabled={isLoading}
                 >
@@ -277,26 +277,26 @@ const AIChat = () => {
               ))}
             </div>
           )}
-          <div className="flex gap-3">
+          <div className="flex gap-2 sm:gap-3">
             <Textarea
               data-tour="ai-chat-input"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyPress}
               placeholder="Hỏi về sức khỏe thú cưng..."
-              className="resize-none min-h-[60px]"
+              className="resize-none min-h-[56px] sm:min-h-[60px] text-sm sm:text-base"
               disabled={isLoading}
             />
             <Button
               onClick={sendMessage}
               disabled={!input.trim() || isLoading}
-              className="btn-hero px-6"
+              className="btn-hero px-4 sm:px-6 h-14 sm:h-auto touch-manipulation flex-shrink-0"
               size="lg"
             >
               <Send className="w-5 h-5" />
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground mt-2">
+          <p className="text-xs text-muted-foreground mt-2 px-1">
             💡 Mẹo: Cung cấp thông tin về loài, tuổi, cân nặng để nhận tư vấn chính xác hơn
           </p>
         </div>

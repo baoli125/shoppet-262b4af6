@@ -248,17 +248,17 @@ const Cart = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
+      {/* Header - Mobile Optimized */}
       <div className="border-b border-border bg-card header-shadow">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" onClick={() => navigate("/marketplace")}>
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
+              <Button variant="ghost" size="icon" onClick={() => navigate("/marketplace")} className="flex-shrink-0 touch-manipulation">
                 <ArrowLeft className="w-5 h-5" />
               </Button>
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">Giỏ hàng</h1>
-                <p className="text-sm text-muted-foreground">
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground truncate">Giỏ hàng</h1>
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   {cartItems.length} sản phẩm
                 </p>
               </div>
@@ -267,49 +267,51 @@ const Cart = () => {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8">
         {cartItems.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">🛒</div>
-            <h2 className="text-2xl font-bold mb-2">Giỏ hàng trống</h2>
-            <p className="text-muted-foreground mb-6">
+          <div className="text-center py-8 sm:py-12">
+            <div className="text-4xl sm:text-5xl md:text-6xl mb-3 sm:mb-4">🛒</div>
+            <h2 className="text-xl sm:text-2xl font-bold mb-2">Giỏ hàng trống</h2>
+            <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6 px-4">
               Hãy thêm sản phẩm vào giỏ hàng để tiếp tục mua sắm
             </p>
-            <Button className="btn-hero" onClick={() => navigate("/marketplace")}>
+            <Button className="btn-hero h-11 sm:h-12 px-6 sm:px-8 touch-manipulation" onClick={() => navigate("/marketplace")}>
               Tiếp tục mua sắm
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
             {/* Cart Items */}
-            <div className="lg:col-span-2 space-y-4">
+            <div className="lg:col-span-2 space-y-3 sm:space-y-4">
               {cartItems.map((item) => (
-                <Card key={item.id} className="p-4">
-                  <div className="flex gap-4">
+                <Card key={item.id} className="p-3 sm:p-4">
+                  <div className="flex gap-3 sm:gap-4">
                     <img
                       src={item.products.image_url || "https://via.placeholder.com/100"}
                       alt={item.products.name}
-                      className="w-24 h-24 object-cover rounded"
+                      className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded flex-shrink-0"
                     />
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-lg mb-2">{item.products.name}</h3>
-                      <p className="text-primary font-bold text-xl mb-3">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-base sm:text-lg mb-1.5 sm:mb-2 line-clamp-2">{item.products.name}</h3>
+                      <p className="text-primary font-bold text-lg sm:text-xl mb-2 sm:mb-3">
                         {item.products.price.toLocaleString()}đ
                       </p>
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="flex items-center gap-1.5 sm:gap-2">
                           <Button
                             variant="outline"
                             size="icon"
                             onClick={() => updateQuantity(item.id, item.product_id, -1)}
+                            className="h-9 w-9 sm:h-10 sm:w-10 touch-manipulation flex-shrink-0"
                           >
                             <Minus className="w-4 h-4" />
                           </Button>
-                          <span className="w-12 text-center font-semibold">{item.quantity}</span>
+                          <span className="w-10 sm:w-12 text-center font-semibold text-sm sm:text-base">{item.quantity}</span>
                           <Button
                             variant="outline"
                             size="icon"
                             onClick={() => updateQuantity(item.id, item.product_id, 1)}
+                            className="h-9 w-9 sm:h-10 sm:w-10 touch-manipulation flex-shrink-0"
                           >
                             <Plus className="w-4 h-4" />
                           </Button>
@@ -318,7 +320,7 @@ const Cart = () => {
                           variant="ghost"
                           size="icon"
                           onClick={() => removeItem(item.id)}
-                          className="ml-auto"
+                          className="ml-auto h-9 w-9 sm:h-10 sm:w-10 touch-manipulation flex-shrink-0"
                         >
                           <Trash2 className="w-4 h-4 text-destructive" />
                         </Button>
@@ -329,28 +331,28 @@ const Cart = () => {
               ))}
             </div>
 
-            {/* Order Summary */}
+            {/* Order Summary - Sticky on desktop */}
             <div className="lg:col-span-1">
-              <Card className="p-6 sticky top-4">
-                <h2 className="text-xl font-bold mb-4">Tổng đơn hàng</h2>
-                <div className="space-y-3 mb-6">
-                  <div className="flex justify-between">
+              <Card className="p-4 sm:p-5 md:p-6 lg:sticky lg:top-4">
+                <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">Tổng đơn hàng</h2>
+                <div className="space-y-2.5 sm:space-y-3 mb-4 sm:mb-6">
+                  <div className="flex justify-between text-sm sm:text-base">
                     <span className="text-muted-foreground">Tạm tính</span>
                     <span>{calculateTotal().toLocaleString()}đ</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between text-sm sm:text-base">
                     <span className="text-muted-foreground">Phí vận chuyển</span>
                     <span>Miễn phí</span>
                   </div>
-                  <div className="border-t pt-3">
-                    <div className="flex justify-between text-lg font-bold">
+                  <div className="border-t pt-2.5 sm:pt-3">
+                    <div className="flex justify-between text-base sm:text-lg font-bold">
                       <span>Tổng cộng</span>
                       <span className="text-primary">{calculateTotal().toLocaleString()}đ</span>
                     </div>
                   </div>
                 </div>
                 <Button
-                  className="w-full btn-hero"
+                  className="w-full btn-hero h-11 sm:h-12 text-base touch-manipulation"
                   size="lg"
                   onClick={() => setIsCheckoutOpen(true)}
                 >
@@ -363,55 +365,58 @@ const Cart = () => {
         )}
       </div>
 
-      {/* Checkout Dialog */}
+      {/* Checkout Dialog - Mobile Optimized */}
       <Dialog open={isCheckoutOpen} onOpenChange={setIsCheckoutOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="w-[95vw] max-w-md mx-auto max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Thông tin giao hàng</DialogTitle>
+            <DialogTitle className="text-lg sm:text-xl">Thông tin giao hàng</DialogTitle>
           </DialogHeader>
 
-          <form onSubmit={handleCheckout} className="space-y-4">
+          <form onSubmit={handleCheckout} className="space-y-3 sm:space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="phone">Số điện thoại *</Label>
+              <Label htmlFor="phone" className="text-sm">Số điện thoại *</Label>
               <Input
                 id="phone"
                 type="tel"
                 value={checkoutForm.phone_number}
                 onChange={(e) => setCheckoutForm({ ...checkoutForm, phone_number: e.target.value })}
                 required
+                className="h-11 text-base"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="address">Địa chỉ giao hàng *</Label>
+              <Label htmlFor="address" className="text-sm">Địa chỉ giao hàng *</Label>
               <Textarea
                 id="address"
                 value={checkoutForm.shipping_address}
                 onChange={(e) => setCheckoutForm({ ...checkoutForm, shipping_address: e.target.value })}
                 required
                 rows={3}
+                className="text-base resize-none"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="notes">Ghi chú</Label>
+              <Label htmlFor="notes" className="text-sm">Ghi chú</Label>
               <Textarea
                 id="notes"
                 value={checkoutForm.customer_notes}
                 onChange={(e) => setCheckoutForm({ ...checkoutForm, customer_notes: e.target.value })}
                 rows={2}
+                className="text-base resize-none"
               />
             </div>
 
-            <div className="border-t pt-4">
-              <div className="flex justify-between mb-4">
-                <span className="font-semibold">Tổng thanh toán:</span>
-                <span className="text-xl font-bold text-primary">
+            <div className="border-t pt-3 sm:pt-4">
+              <div className="flex justify-between mb-3 sm:mb-4">
+                <span className="font-semibold text-sm sm:text-base">Tổng thanh toán:</span>
+                <span className="text-lg sm:text-xl font-bold text-primary">
                   {calculateTotal().toLocaleString()}đ
                 </span>
               </div>
 
-              <Button type="submit" className="w-full btn-hero" disabled={isLoading}>
+              <Button type="submit" className="w-full btn-hero h-11 sm:h-12 text-base touch-manipulation" disabled={isLoading}>
                 {isLoading ? "Đang xử lý..." : "Xác nhận đặt hàng"}
               </Button>
             </div>

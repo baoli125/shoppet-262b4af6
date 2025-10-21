@@ -120,23 +120,23 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="w-[95vw] max-w-md mx-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-center">
+          <DialogTitle className="text-xl sm:text-2xl font-bold text-center">
             Chào mừng đến Shoppet 🐾
           </DialogTitle>
         </DialogHeader>
 
         <Tabs defaultValue="login" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="login">Đăng nhập</TabsTrigger>
-            <TabsTrigger value="signup">Đăng ký</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 h-11">
+            <TabsTrigger value="login" className="text-sm sm:text-base">Đăng nhập</TabsTrigger>
+            <TabsTrigger value="signup" className="text-sm sm:text-base">Đăng ký</TabsTrigger>
           </TabsList>
 
           <TabsContent value="login">
-            <form onSubmit={handleLogin} className="space-y-4 pt-4">
+            <form onSubmit={handleLogin} className="space-y-3 sm:space-y-4 pt-3 sm:pt-4">
               <div className="space-y-2">
-                <Label htmlFor="login-email">Email</Label>
+                <Label htmlFor="login-email" className="text-sm">Email</Label>
                 <Input
                   id="login-email"
                   type="email"
@@ -144,11 +144,12 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  className="h-11 text-base"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="login-password">Mật khẩu</Label>
+                <Label htmlFor="login-password" className="text-sm">Mật khẩu</Label>
                 <div className="relative">
                   <Input
                     id="login-password"
@@ -157,27 +158,28 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    className="h-11 text-base pr-10"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
 
-              <Button type="submit" className="w-full btn-solid-blue" disabled={isLoading}>
+              <Button type="submit" className="w-full btn-solid-blue h-11 text-base touch-manipulation" disabled={isLoading}>
                 {isLoading ? "Đang đăng nhập..." : "Đăng nhập"}
               </Button>
             </form>
           </TabsContent>
 
           <TabsContent value="signup">
-            <form onSubmit={handleSignup} className="space-y-4 pt-4">
+            <form onSubmit={handleSignup} className="space-y-3 sm:space-y-4 pt-3 sm:pt-4">
               <div className="space-y-2">
-                <Label htmlFor="signup-name">Tên hiển thị</Label>
+                <Label htmlFor="signup-name" className="text-sm">Tên hiển thị</Label>
                 <Input
                   id="signup-name"
                   type="text"
@@ -185,11 +187,12 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   required
+                  className="h-11 text-base"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="signup-email">Email</Label>
+                <Label htmlFor="signup-email" className="text-sm">Email</Label>
                 <Input
                   id="signup-email"
                   type="email"
@@ -197,11 +200,12 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  className="h-11 text-base"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="signup-password">Mật khẩu</Label>
+                <Label htmlFor="signup-password" className="text-sm">Mật khẩu</Label>
                 <div className="relative">
                   <Input
                     id="signup-password"
@@ -210,21 +214,22 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    className="h-11 text-base pr-10"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground leading-relaxed">
                   Tối thiểu 8 ký tự, bao gồm chữ hoa, chữ thường và số
                 </p>
               </div>
 
-              <Button type="submit" className="w-full btn-hero" disabled={isLoading}>
+              <Button type="submit" className="w-full btn-hero h-11 text-base touch-manipulation" disabled={isLoading}>
                 {isLoading ? "Đang đăng ký..." : "Đăng ký"}
               </Button>
             </form>
