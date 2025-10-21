@@ -156,11 +156,16 @@ const ProductDetail = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="border-b border-border bg-card header-shadow">
+      <div className="border-b border-border bg-card header-shadow sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/marketplace")}>
+            <Button 
+              variant="outline" 
+              onClick={() => navigate("/marketplace")}
+              className="gap-2"
+            >
               <ArrowLeft className="w-5 h-5" />
+              Quay lại Marketplace
             </Button>
             <div>
               <h1 className="text-2xl font-bold text-foreground">Chi tiết sản phẩm</h1>
@@ -175,11 +180,11 @@ const ProductDetail = () => {
           {/* Product Image */}
           <div className="space-y-4">
             <Card className="overflow-hidden">
-              <div className="aspect-square bg-muted relative">
+              <div className="bg-muted relative max-h-96 flex items-center justify-center">
                 <img
                   src={product.image_url || "https://via.placeholder.com/600"}
                   alt={product.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-auto max-h-96 object-contain"
                 />
               </div>
             </Card>

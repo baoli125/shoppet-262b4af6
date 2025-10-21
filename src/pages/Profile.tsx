@@ -113,7 +113,7 @@ const Profile = () => {
         onLogoutClick={handleLogout}
       />
 
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
+      <main className="container mx-auto px-4 py-8 pt-24 max-w-4xl">
         <div className="grid md:grid-cols-3 gap-6">
           {/* Profile Info */}
           <Card className="md:col-span-2 p-6">
