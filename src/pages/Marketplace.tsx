@@ -206,27 +206,27 @@ const Marketplace = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
+      {/* Header - Mobile Optimized */}
       <div className="border-b border-border bg-card header-shadow">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
+              <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="flex-shrink-0 touch-manipulation">
                 <ArrowLeft className="w-5 h-5" />
               </Button>
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">{t('marketplace.title')}</h1>
-                <p className="text-sm text-muted-foreground">
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground truncate">{t('marketplace.title')}</h1>
+                <p className="text-xs sm:text-sm text-muted-foreground truncate hidden sm:block">
                   {t('marketplace.subtitle')}
                 </p>
               </div>
             </div>
 
-            <Button className="btn-hero relative" onClick={() => navigate("/cart")}>
-              <ShoppingCart className="w-5 h-5 mr-2" />
-              {t('header.cart')}
+            <Button className="btn-hero relative flex-shrink-0 h-10 sm:h-11 px-3 sm:px-4 touch-manipulation" onClick={() => navigate("/cart")}>
+              <ShoppingCart className="w-5 h-5 sm:mr-2" />
+              <span className="hidden sm:inline">{t('header.cart')}</span>
               {totalCartItems > 0 && (
-                <Badge className="absolute -top-2 -right-2 bg-destructive">
+                <Badge className="absolute -top-2 -right-2 bg-destructive text-xs px-1.5 min-w-[20px]">
                   {totalCartItems}
                 </Badge>
               )}
@@ -235,24 +235,24 @@ const Marketplace = () => {
         </div>
       </div>
 
-      {/* Filters */}
+      {/* Filters - Mobile Stacked */}
       <div className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 py-4">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-            <div className="md:col-span-2">
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2 sm:gap-3 md:gap-4">
+            <div className="sm:col-span-2 md:col-span-2">
               <div className="relative" data-tour="marketplace-search">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 sm:w-5 h-4 sm:h-5 text-muted-foreground" />
                 <Input
                   placeholder={t('marketplace.searchPlaceholder')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
+                  className="pl-9 sm:pl-10 h-10 sm:h-11 text-sm sm:text-base"
                 />
               </div>
             </div>
 
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger>
+              <SelectTrigger className="h-10 sm:h-11 text-sm sm:text-base">
                 <SelectValue placeholder={t('marketplace.category')} />
               </SelectTrigger>
               <SelectContent>
@@ -266,7 +266,7 @@ const Marketplace = () => {
             </Select>
 
             <Select value={selectedPetType} onValueChange={setSelectedPetType}>
-              <SelectTrigger>
+              <SelectTrigger className="h-10 sm:h-11 text-sm sm:text-base">
                 <SelectValue placeholder={t('marketplace.petType')} />
               </SelectTrigger>
               <SelectContent>
@@ -278,9 +278,9 @@ const Marketplace = () => {
               </SelectContent>
             </Select>
 
-            <div className="flex gap-2">
+            <div className="flex gap-2 sm:col-span-2 md:col-span-1">
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger>
+                <SelectTrigger className="h-10 sm:h-11 text-sm sm:text-base">
                   <SelectValue placeholder="Sắp xếp" />
                 </SelectTrigger>
                 <SelectContent>
@@ -296,6 +296,7 @@ const Marketplace = () => {
                   size="icon"
                   onClick={toggleSortDirection}
                   title={sortDirection === "asc" ? "Từ thấp đến cao" : "Từ cao đến thấp"}
+                  className="h-10 sm:h-11 w-10 sm:w-11 flex-shrink-0 touch-manipulation"
                 >
                   <ArrowUpDown className="h-4 w-4" />
                 </Button>
@@ -305,22 +306,22 @@ const Marketplace = () => {
         </div>
       </div>
 
-      {/* Products Grid */}
-      <div className="container mx-auto px-4 py-8">
+      {/* Products Grid - Mobile Optimized */}
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8">
         {filteredProducts.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">🛍️</div>
-            <h2 className="text-2xl font-bold mb-2">{t('marketplace.noProducts')}</h2>
-            <p className="text-muted-foreground">
+          <div className="text-center py-8 sm:py-12">
+            <div className="text-4xl sm:text-5xl md:text-6xl mb-3 sm:mb-4">🛍️</div>
+            <h2 className="text-xl sm:text-2xl font-bold mb-2">{t('marketplace.noProducts')}</h2>
+            <p className="text-sm sm:text-base text-muted-foreground">
               {t('marketplace.noProductsDesc')}
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
             {filteredProducts.map((product) => (
               <Card 
                 key={product.id} 
-                className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                className="overflow-hidden hover:shadow-lg active:shadow-xl transition-shadow cursor-pointer touch-manipulation"
                 onClick={() => navigate(`/product/${product.id}`)}
               >
                 <div className="aspect-square bg-muted relative">
@@ -329,38 +330,38 @@ const Marketplace = () => {
                     alt={product.name}
                     className="w-full h-full object-cover"
                   />
-                  <Badge className="absolute top-2 right-2 bg-primary">
+                  <Badge className="absolute top-2 right-2 bg-primary text-xs sm:text-sm">
                     {getCategoryLabel(product.category)}
                   </Badge>
                 </div>
 
-                <div className="p-4">
-                  <div className="flex items-start justify-between mb-2">
-                    <h3 className="font-semibold text-lg line-clamp-2">{product.name}</h3>
+                <div className="p-3 sm:p-4">
+                  <div className="flex items-start justify-between mb-2 gap-2">
+                    <h3 className="font-semibold text-base sm:text-lg line-clamp-2 flex-1">{product.name}</h3>
                     {product.pet_type && (
-                      <span className="text-xl ml-2">{getPetTypeLabel(product.pet_type).split(" ")[0]}</span>
+                      <span className="text-lg sm:text-xl flex-shrink-0">{getPetTypeLabel(product.pet_type).split(" ")[0]}</span>
                     )}
                   </div>
 
                   {product.brand && (
-                    <p className="text-sm text-muted-foreground mb-2">{product.brand}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground mb-1.5 sm:mb-2">{product.brand}</p>
                   )}
 
-                  <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                  <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 mb-2 sm:mb-3">
                     {product.description}
                   </p>
 
-                  <div className="flex items-center justify-between">
-                    <span className="text-2xl font-bold text-primary">
+                  <div className="flex items-center justify-between mb-3 sm:mb-4">
+                    <span className="text-lg sm:text-xl md:text-2xl font-bold text-primary">
                       {product.price.toLocaleString()}đ
                     </span>
-                    <span className="text-sm text-muted-foreground">
+                    <span className="text-xs sm:text-sm text-muted-foreground">
                       {t('marketplace.stock')} {product.stock}
                     </span>
                   </div>
 
                   {cartItems[product.id] ? (
-                    <div className="flex items-center gap-2 mt-4" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                       <Button
                         variant="outline"
                         size="icon"
@@ -368,10 +369,11 @@ const Marketplace = () => {
                           e.stopPropagation();
                           updateCartQuantity(product.id, -1);
                         }}
+                        className="h-10 w-10 sm:h-11 sm:w-11 touch-manipulation flex-shrink-0"
                       >
                         <Minus className="w-4 h-4" />
                       </Button>
-                      <span className="flex-1 text-center font-semibold">
+                      <span className="flex-1 text-center font-semibold text-base sm:text-lg">
                         {cartItems[product.id]}
                       </span>
                       <Button
@@ -382,13 +384,14 @@ const Marketplace = () => {
                           updateCartQuantity(product.id, 1);
                         }}
                         disabled={cartItems[product.id] >= product.stock}
+                        className="h-10 w-10 sm:h-11 sm:w-11 touch-manipulation flex-shrink-0"
                       >
                         <Plus className="w-4 h-4" />
                       </Button>
                     </div>
                   ) : (
                     <Button
-                      className="w-full mt-4 btn-hero"
+                      className="w-full btn-hero h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
                       onClick={(e) => {
                         e.stopPropagation();
                         addToCart(product.id);

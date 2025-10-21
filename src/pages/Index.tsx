@@ -78,35 +78,35 @@ const Index = () => {
       <main>
         <HeroCarousel />
 
-        {/* About Section */}
-        <section id="about" className="py-20 bg-card">
-          <div className="container mx-auto px-4">
+        {/* About Section - Mobile Optimized */}
+        <section id="about" className="py-12 sm:py-16 md:py-20 bg-card">
+          <div className="container mx-auto px-3 sm:px-4">
             <div className="max-w-4xl mx-auto text-center">
-              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-foreground">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 text-foreground">
                 {t('about.title')}
               </h2>
-              <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
+              <p className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-8 leading-relaxed">
                 {t('about.subtitle')}
               </p>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
-                <div className="p-6 bg-background rounded-2xl">
-                  <div className="text-4xl mb-4">🛍️</div>
-                  <h3 className="text-xl font-semibold mb-2 text-foreground">{t('about.marketplace.title')}</h3>
-                  <p className="text-muted-foreground">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8 mt-8 sm:mt-10 md:mt-12">
+                <div className="p-4 sm:p-5 md:p-6 bg-background rounded-xl sm:rounded-2xl">
+                  <div className="text-3xl sm:text-4xl mb-3 sm:mb-4">🛍️</div>
+                  <h3 className="text-lg sm:text-xl font-semibold mb-2 text-foreground">{t('about.marketplace.title')}</h3>
+                  <p className="text-sm sm:text-base text-muted-foreground">
                     {t('about.marketplace.description')}
                   </p>
                 </div>
-                <div className="p-6 bg-background rounded-2xl">
-                  <div className="text-4xl mb-4">🤖</div>
-                  <h3 className="text-xl font-semibold mb-2 text-foreground">{t('about.aiAssistant.title')}</h3>
-                  <p className="text-muted-foreground">
+                <div className="p-4 sm:p-5 md:p-6 bg-background rounded-xl sm:rounded-2xl">
+                  <div className="text-3xl sm:text-4xl mb-3 sm:mb-4">🤖</div>
+                  <h3 className="text-lg sm:text-xl font-semibold mb-2 text-foreground">{t('about.aiAssistant.title')}</h3>
+                  <p className="text-sm sm:text-base text-muted-foreground">
                     {t('about.aiAssistant.description')}
                   </p>
                 </div>
-                <div className="p-6 bg-background rounded-2xl">
-                  <div className="text-4xl mb-4">👥</div>
-                  <h3 className="text-xl font-semibold mb-2 text-foreground">{t('about.community.title')}</h3>
-                  <p className="text-muted-foreground">
+                <div className="p-4 sm:p-5 md:p-6 bg-background rounded-xl sm:rounded-2xl sm:col-span-2 md:col-span-1">
+                  <div className="text-3xl sm:text-4xl mb-3 sm:mb-4">👥</div>
+                  <h3 className="text-lg sm:text-xl font-semibold mb-2 text-foreground">{t('about.community.title')}</h3>
+                  <p className="text-sm sm:text-base text-muted-foreground">
                     {t('about.community.description')}
                   </p>
                 </div>
@@ -115,10 +115,10 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Footer */}
-        <footer className="bg-card border-t border-border py-12">
-          <div className="container mx-auto px-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+        {/* Footer - Mobile Optimized */}
+        <footer className="bg-card border-t border-border py-8 sm:py-10 md:py-12">
+          <div className="container mx-auto px-3 sm:px-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 mb-6 sm:mb-8">
               <div>
                 <h4 className="text-lg font-semibold mb-4 text-foreground">{t('about.title')}</h4>
                 <p className="text-muted-foreground text-sm">
