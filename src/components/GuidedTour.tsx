@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { X, Sparkles } from "lucide-react";
+import chatbotGuideImage from "@/assets/chatbot-guide.png";
 
 interface GuidedTourProps {
   isActive: boolean;
@@ -17,6 +18,7 @@ interface TourStep {
   forceClick: boolean;
   requireDropdownOpen?: boolean;
   showCartIcon?: boolean;
+  showChatbotImage?: boolean;
 }
 
 const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
@@ -49,11 +51,12 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
     },
     {
       id: "chatbot-overview",
-      selector: '[data-tour="chatbot-window"]',
+      selector: null,
       title: "🛍️ Khám phá Marketplace\n\n🤖 Hỏi Trợ lý AI\n\n📋 Quản lý Hồ sơ Thú cưng\n\n👥 Vào Cộng đồng",
       description: "Bạn có thể truy cập nhanh các ứng dụng từ chatbot Tay nhỏ!\nTay nhỏ có thể làm mọi thứ",
       position: "right",
       forceClick: false,
+      showChatbotImage: true,
     },
     {
       id: "chatbot-close",
@@ -555,6 +558,43 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       ) : (
         // Fallback full overlay when no target
         <div className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm pointer-events-auto" />
+      )}
+
+      {/* Chatbot Image - hiển thị khi showChatbotImage = true */}
+      {currentStepData.showChatbotImage && (
+        <div
+          className="fixed z-[101] rounded-2xl shadow-2xl overflow-hidden pointer-events-none"
+          style={{
+            bottom: "20px",
+            right: "20px",
+            width: "min(90vw, 480px)",
+            maxHeight: "80vh",
+            animation: "slide-in-tooltip 0.4s ease-out",
+          }}
+        >
+          <img
+            src={chatbotGuideImage}
+            alt="Chatbot Guide"
+            className="w-full h-full object-contain"
+          />
+          {/* Highlight border around chatbot image */}
+          <div
+            className="absolute inset-0 rounded-2xl border-4 border-primary pointer-events-none"
+            style={{
+              animation: "blink-highlight 1.5s infinite ease-in-out",
+              boxShadow: "0 0 40px hsl(var(--primary) / 0.6)",
+            }}
+          />
+          {/* Corner sparkles */}
+          <Sparkles
+            className="absolute -top-3 -right-3 w-6 h-6 text-primary animate-pulse pointer-events-none"
+            style={{ animationDelay: "0s" }}
+          />
+          <Sparkles
+            className="absolute -bottom-3 -left-3 w-5 h-5 text-secondary animate-pulse pointer-events-none"
+            style={{ animationDelay: "0.5s" }}
+          />
+        </div>
       )}
 
       {/* Highlight - Hollow animated border */}
