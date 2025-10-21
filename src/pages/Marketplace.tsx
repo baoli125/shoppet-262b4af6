@@ -240,7 +240,7 @@ const Marketplace = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div className="md:col-span-2">
-              <div className="relative">
+              <div className="relative" data-tour="marketplace-search">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
                   placeholder={t('marketplace.searchPlaceholder')}

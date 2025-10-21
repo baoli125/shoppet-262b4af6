@@ -279,6 +279,7 @@ const AIChat = () => {
           )}
           <div className="flex gap-3">
             <Textarea
+              data-tour="ai-chat-input"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyPress}

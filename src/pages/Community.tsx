@@ -271,6 +271,7 @@ const Community = () => {
             </Avatar>
             <div className="flex-1 space-y-4">
               <Textarea
+                data-tour="community-post-input"
                 placeholder="Chia sẻ điều gì đó với cộng đồng..."
                 value={newPost}
                 onChange={(e) => setNewPost(e.target.value)}

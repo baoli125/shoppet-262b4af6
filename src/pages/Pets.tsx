@@ -275,7 +275,7 @@ const Pets = () => {
 
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="btn-hero" onClick={resetForm}>
+                <Button className="btn-hero" onClick={resetForm} data-tour="pets-add-button">
                   <Plus className="w-5 h-5 mr-2" />
                   Thêm thú cưng
                 </Button>
