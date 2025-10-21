@@ -189,14 +189,27 @@ const FloatingChatbot = ({ user, isNewUser }: FloatingChatbotProps) => {
 
       {/* Chat Window */}
       {isOpen && (
-        <Card className="fixed bottom-[calc(15vh+80px)] right-6 w-96 h-[500px] shadow-2xl z-50 flex flex-col">
+        <Card
+          data-tour="chatbot-window"
+          className="fixed bottom-[calc(15vh+80px)] right-6 w-96 h-[500px] shadow-2xl z-50 flex flex-col"
+        >
           <div className="p-4 border-b bg-gradient-to-r from-primary to-primary/80 text-white rounded-t-lg">
             <div className="flex items-center gap-2">
               <span className="text-2xl">🐾</span>
-              <div>
+              <div className="flex-1">
                 <h3 className="font-semibold">{t("chatbot.title")}</h3>
                 <p className="text-xs opacity-90">{t("chatbot.subtitle")}</p>
               </div>
+              {/* Nút đóng chatbot cho bước 3 */}
+              <Button
+                data-tour="chatbot-close"
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsOpen(false)}
+                className="h-8 w-8 text-white hover:bg-white/20"
+              >
+                <X className="h-4 w-4" />
+              </Button>
             </div>
           </div>
 
@@ -218,8 +231,8 @@ const FloatingChatbot = ({ user, isNewUser }: FloatingChatbotProps) => {
 
                 <div className="mt-6 space-y-2">
                   <p className="text-xs font-medium text-foreground">{t("")}</p>
+                  {/* Đã xóa data-tour của các nút bên trong vì không dùng trong tour mới */}
                   <Button
-                    data-tour="chatbot-marketplace"
                     variant="outline"
                     className="w-full justify-start gap-2"
                     onClick={() => handleQuickAction("/marketplace")}
@@ -228,7 +241,6 @@ const FloatingChatbot = ({ user, isNewUser }: FloatingChatbotProps) => {
                     {t("chatbot.exploreMarketplace")}
                   </Button>
                   <Button
-                    data-tour="chatbot-ai"
                     variant="outline"
                     className="w-full justify-start gap-2"
                     onClick={() => handleQuickAction("/ai-chat")}
@@ -237,7 +249,6 @@ const FloatingChatbot = ({ user, isNewUser }: FloatingChatbotProps) => {
                     {t("chatbot.askAI")}
                   </Button>
                   <Button
-                    data-tour="chatbot-pets"
                     variant="outline"
                     className="w-full justify-start gap-2"
                     onClick={() => handleQuickAction("/pets")}
@@ -246,7 +257,6 @@ const FloatingChatbot = ({ user, isNewUser }: FloatingChatbotProps) => {
                     {t("chatbot.managePets")}
                   </Button>
                   <Button
-                    data-tour="chatbot-community"
                     variant="outline"
                     className="w-full justify-start gap-2"
                     onClick={() => handleQuickAction("/community")}

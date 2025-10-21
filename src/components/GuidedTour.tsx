@@ -38,6 +38,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
   }, [isActive]);
 
   const steps: TourStep[] = [
+    // === PHẦN CHATBOT ===
     {
       id: "chatbot",
       selector: '[data-tour="chatbot"]',
@@ -47,12 +48,39 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       forceClick: true,
     },
     {
-      id: "chatbot-marketplace",
-      selector: '[data-tour="chatbot-marketplace"]',
-      title: "Marketplace - Mua sắm Thông minh 🛍️",
-      description: "Click để khám phá nơi mua sắm tất cả sản phẩm cho thú cưng!",
+      id: "chatbot-overview",
+      selector: '[data-tour="chatbot-window"]',
+      title: "🛍️ Khám phá Marketplace\n\n🤖 Hỏi Trợ lý AI\n\n📋 Quản lý Hồ sơ Thú cưng\n\n👥 Vào Cộng đồng",
+      description: "Bạn có thể truy cập nhanh các ứng dụng từ chatbot Tay nhỏ!\nTay nhỏ có thể làm mọi thứ",
       position: "right",
+      forceClick: false,
+    },
+    {
+      id: "chatbot-close",
+      selector: '[data-tour="chatbot-close"]',
+      title: "Đóng Chatbot",
+      description: "Bạn có thể tắt chatbot ở đây khi cần.",
+      position: "left",
       forceClick: true,
+    },
+
+    // === PHẦN DROPDOWN & MARKETPLACE ===
+    {
+      id: "dropdown-menu",
+      selector: '[data-tour="user-dropdown"]',
+      title: "Menu Chính",
+      description: "Nếu bạn muốn xem chi tiết từng chức năng, hãy bấm vào đây",
+      position: "bottom",
+      forceClick: true,
+    },
+    {
+      id: "dropdown-to-marketplace",
+      selector: '[data-tour="marketplace-menu"]',
+      title: "Marketplace",
+      description: "Click để khám phá Marketplace - nơi mua sắm tất cả sản phẩm cho thú cưng!",
+      position: "left",
+      forceClick: true,
+      requireDropdownOpen: true,
     },
     {
       id: "marketplace-overview",
@@ -63,6 +91,8 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       position: "bottom",
       forceClick: false,
     },
+
+    // === PHẦN AI ASSISTANT ===
     {
       id: "back-to-dropdown-1",
       selector: '[data-tour="user-dropdown"]',
@@ -89,6 +119,8 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       position: "top",
       forceClick: false,
     },
+
+    // === PHẦN PET PROFILES ===
     {
       id: "back-to-dropdown-2",
       selector: '[data-tour="user-dropdown"]',
@@ -115,11 +147,13 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       position: "bottom",
       forceClick: false,
     },
+
+    // === PHẦN COMMUNITY ===
     {
       id: "back-to-dropdown-3",
       selector: '[data-tour="user-dropdown"]',
-      title: "Tính năng Cuối cùng 🔙",
-      description: "Click để khám phá tính năng cuối cùng",
+      title: "Khám phá Cộng đồng 🔙",
+      description: "Click để khám phá tính năng cộng đồng",
       position: "bottom",
       forceClick: true,
     },
@@ -140,6 +174,8 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       position: "top",
       forceClick: false,
     },
+
+    // === PHẦN BỔ SUNG ===
     {
       id: "back-to-dropdown-4",
       selector: '[data-tour="user-dropdown"]',
