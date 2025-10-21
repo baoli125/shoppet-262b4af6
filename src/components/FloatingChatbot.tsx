@@ -69,10 +69,10 @@ const FloatingChatbot = ({ user, isNewUser }: FloatingChatbotProps) => {
   };
 
   const quickActions = [
-    { icon: ShoppingBag, label: t('chatbot.exploreMarketplace'), path: "/marketplace" },
-    { icon: Bot, label: t('chatbot.askAI'), path: "/ai-chat" },
-    { icon: PawPrint, label: t('chatbot.managePets'), path: "/pets" },
-    { icon: Users, label: t('chatbot.joinCommunity'), path: "/community" },
+    { icon: ShoppingBag, label: t("chatbot.exploreMarketplace"), path: "/marketplace" },
+    { icon: Bot, label: t("chatbot.askAI"), path: "/ai-chat" },
+    { icon: PawPrint, label: t("chatbot.managePets"), path: "/pets" },
+    { icon: Users, label: t("chatbot.joinCommunity"), path: "/community" },
   ];
 
   const handleQuickAction = (path: string) => {
@@ -93,20 +93,17 @@ const FloatingChatbot = ({ user, isNewUser }: FloatingChatbotProps) => {
     setIsLoading(true);
 
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat-ai`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({
-            messages: [...messages, { role: "user", content: userMessage }],
-            isNewUser,
-          }),
-        }
-      );
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat-ai`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          messages: [...messages, { role: "user", content: userMessage }],
+          isNewUser,
+        }),
+      });
 
       if (!response.ok) throw new Error("Failed to get response");
 
@@ -148,8 +145,8 @@ const FloatingChatbot = ({ user, isNewUser }: FloatingChatbotProps) => {
     } catch (error) {
       console.error("Error sending message:", error);
       toast({
-        title: t('chatbot.error'),
-        description: t('chatbot.errorDesc'),
+        title: t("chatbot.error"),
+        description: t("chatbot.errorDesc"),
         variant: "destructive",
       });
     } finally {
@@ -173,27 +170,19 @@ const FloatingChatbot = ({ user, isNewUser }: FloatingChatbotProps) => {
         className="fixed bottom-[15vh] right-6 h-16 w-16 rounded-full shadow-lg hover:scale-110 transition-transform z-50 bg-gradient-to-br from-primary to-primary/80"
         size="icon"
       >
-        {isOpen ? (
-          <X className="h-8 w-8" />
-        ) : (
-          <span className="text-4xl">🐾</span>
-        )}
+        {isOpen ? <X className="h-8 w-8" /> : <span className="text-4xl">🐾</span>}
       </Button>
 
       {/* Login Alert Dialog */}
       <AlertDialog open={showLoginAlert} onOpenChange={setShowLoginAlert}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t('chatbot.loginRequired')}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('chatbot.loginRequiredDesc')}
-            </AlertDialogDescription>
+            <AlertDialogTitle>{t("chatbot.loginRequired")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("chatbot.loginRequiredDesc")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t('chatbot.close')}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleLoginRedirect}>
-              {t('header.login')}
-            </AlertDialogAction>
+            <AlertDialogCancel>{t("chatbot.close")}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleLoginRedirect}>{t("header.login")}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -205,8 +194,8 @@ const FloatingChatbot = ({ user, isNewUser }: FloatingChatbotProps) => {
             <div className="flex items-center gap-2">
               <span className="text-2xl">🐾</span>
               <div>
-                <h3 className="font-semibold">{t('chatbot.title')}</h3>
-                <p className="text-xs opacity-90">{t('chatbot.subtitle')}</p>
+                <h3 className="font-semibold">{t("chatbot.title")}</h3>
+                <p className="text-xs opacity-90">{t("chatbot.subtitle")}</p>
               </div>
             </div>
           </div>
@@ -217,49 +206,23 @@ const FloatingChatbot = ({ user, isNewUser }: FloatingChatbotProps) => {
                 <p className="text-4xl mb-4">👋</p>
                 {isNewUser ? (
                   <>
-                    <p className="font-semibold">{t('chatbot.welcomeNew')}</p>
-                    <p className="text-sm">
-                      {t('chatbot.welcomeNewDesc')}
-                    </p>
+                    <p className="font-semibold">{t("chatbot.welcomeNew")}</p>
+                    <p className="text-sm">{t("chatbot.welcomeNewDesc")}</p>
                   </>
                 ) : (
                   <>
-                    <p className="font-semibold">{t('chatbot.welcomeBack')}</p>
-                    <p className="text-sm">
-                      {t('chatbot.welcomeBackDesc')}
-                    </p>
+                    <p className="font-semibold">{t("chatbot.welcomeBack")}</p>
+                    <p className="text-sm">{t("chatbot.welcomeBackDesc")}</p>
                   </>
                 )}
-                
-                <div className="mt-6 space-y-2">
-                  <p className="text-xs font-medium text-foreground">{t('chatbot.quickAccess')}</p>
-                  {quickActions.map((action, idx) => (
-                    <Button
-                      key={idx}
-                      variant="outline"
-                      className="w-full justify-start gap-2"
-                      onClick={() => handleQuickAction(action.path)}
-                    >
-                      <action.icon className="h-4 w-4" />
-                      {action.label}
-                    </Button>
-                  ))}
-                </div>
               </div>
             )}
 
             {messages.map((msg, idx) => (
-              <div
-                key={idx}
-                className={`mb-4 ${
-                  msg.role === "user" ? "text-right" : "text-left"
-                }`}
-              >
+              <div key={idx} className={`mb-4 ${msg.role === "user" ? "text-right" : "text-left"}`}>
                 <div
                   className={`inline-block max-w-[80%] p-3 rounded-lg ${
-                    msg.role === "user"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted"
+                    msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
                   }`}
                 >
                   {msg.content}
@@ -274,7 +237,7 @@ const FloatingChatbot = ({ user, isNewUser }: FloatingChatbotProps) => {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder={t('chatbot.placeholder')}
+                placeholder={t("chatbot.placeholder")}
                 disabled={isLoading}
               />
               <Button onClick={sendMessage} disabled={isLoading || !input.trim()}>
