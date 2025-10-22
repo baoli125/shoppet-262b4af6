@@ -245,17 +245,16 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
 
       case "bottom":
         return {
-          top: "70%", // Thay vì "50%" của center, ta dùng "60%" để xuống dưới 10%
+          top: "90%", // Thay vì "50%" của center, ta dùng "60%" để xuống dưới 10%
           left: "50%",
           transform: "translate(-50%, -50%)",
         };
 
       case "left": {
-        const left = Math.max(rect.left - tooltipWidth - offset, 10);
         return {
-          top: `${rect.top + rect.height / 2}px`,
-          left: `${left}px`,
-          transform: "translateY(-50%)",
+          top: "50%",
+          left: "10%",
+          transform: "translate(-50%, -50%)",
         };
       }
 
