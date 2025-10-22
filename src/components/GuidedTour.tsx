@@ -215,6 +215,75 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
     },
   ];
 
+  // HÀM MỚI: Tính toán vị trí tooltip động
+  const getTooltipPosition = () => {
+    const step = steps[currentStep];
+
+    // Nếu không có target element hoặc step không có selector → hiển thị ở giữa
+    if (!step.selector || !targetElement) {
+      return {
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%)",
+      };
+    }
+
+    const rect = highlightPosition;
+    const isMobile = window.innerWidth < 768;
+    const tooltipWidth = isMobile ? window.innerWidth * 0.9 : 384;
+    const tooltipHeight = isMobile ? 200 : 220;
+    const offset = isMobile ? 15 : 20;
+
+    // Tính toán vị trí thông minh để không bị che
+    switch (step.position) {
+      case "top": {
+        const top = Math.max(rect.top - tooltipHeight - offset, 10);
+        return {
+          top: `${top}px`,
+          left: `${rect.left + rect.width / 2}px`,
+          transform: "translateX(-50%)",
+        };
+      }
+
+      case "bottom": {
+        const top = rect.top + rect.height + offset;
+        const maxTop = window.innerHeight - tooltipHeight - 10;
+        return {
+          top: `${Math.min(top, maxTop)}px`,
+          left: `${rect.left + rect.width / 2}px`,
+          transform: "translateX(-50%)",
+        };
+      }
+
+      case "left": {
+        const left = Math.max(rect.left - tooltipWidth - offset, 10);
+        return {
+          top: `${rect.top + rect.height / 2}px`,
+          left: `${left}px`,
+          transform: "translateY(-50%)",
+        };
+      }
+
+      case "right": {
+        const left = rect.left + rect.width + offset;
+        const maxLeft = window.innerWidth - tooltipWidth - 10;
+        return {
+          top: `${rect.top + rect.height / 2}px`,
+          left: `${Math.min(left, maxLeft)}px`,
+          transform: "translateY(-50%)",
+        };
+      }
+
+      case "center":
+      default:
+        return {
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+        };
+    }
+  };
+
   useEffect(() => {
     if (!isActive) return;
 
@@ -386,6 +455,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       }
     };
   }, [targetElement, isActive]);
+
   useEffect(() => {
     if (!isActive) return;
 
@@ -526,13 +596,6 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
     return null;
   }
 
-  // Tooltip luôn ở giữa màn hình
-  const tooltipPosition = {
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-  };
-
   return (
     <>
       {/* Overlay with cutout - 4 divs creating darkness around target */}
@@ -668,11 +731,11 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
         </>
       )}
 
-      {/* Tooltip */}
+      {/* Tooltip với vị trí ĐỘNG */}
       <Card
         className="fixed z-[103] p-4 sm:p-6 shadow-2xl w-[90vw] max-w-md border-2 border-primary/20 mx-4 sm:mx-0"
         style={{
-          ...tooltipPosition,
+          ...getTooltipPosition(), // ← SỬ DỤNG VỊ TRÍ ĐỘNG Ở ĐÂY
           animation: "slide-in-tooltip 0.4s ease-out",
         }}
       >
