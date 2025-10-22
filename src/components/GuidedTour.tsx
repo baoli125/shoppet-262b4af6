@@ -253,7 +253,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       case "left": {
         return {
           top: "50%",
-          left: "35%",
+          left: "5%",
           transform: "translate(-50%, -50%)",
         };
       }
