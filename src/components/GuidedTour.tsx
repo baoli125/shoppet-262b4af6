@@ -266,10 +266,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
     const findAndHighlightElement = () => {
       const step = steps[currentStep];
 
-      if (!step || !step.selector) {
-        console.log("No selector for current step");
-        return;
-      }
+      if (!step || !step.selector) return;
 
       const element = document.querySelector(step.selector!) as HTMLElement;
 
@@ -283,43 +280,8 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
         }
 
         setTargetElement(element);
-
-        // SPECIAL: For dropdown steps, automatically open dropdown
-        if (step.requireDropdownOpen) {
-          console.log("🔓 Auto-opening dropdown for step:", step.id);
-          const dropdownTrigger = document.querySelector('[data-tour="user-dropdown"]') as HTMLElement;
-          if (dropdownTrigger) {
-            // Close any existing dropdown first
-            const existingDropdown = document.querySelector('[role="menu"]');
-            if (!existingDropdown) {
-              dropdownTrigger.click();
-              // Wait for dropdown to open then proceed
-              setTimeout(() => {
-                // Now highlight the target element inside dropdown
-                const dropdownElement = document.querySelector(step.selector!) as HTMLElement;
-                if (dropdownElement) {
-                  setTargetElement(dropdownElement);
-                  dropdownElement.style.zIndex = "102";
-
-                  const rect = dropdownElement.getBoundingClientRect();
-                  setHighlightPosition({
-                    top: rect.top,
-                    left: rect.left,
-                    width: rect.width,
-                    height: rect.height,
-                  });
-                }
-              }, 300);
-              return;
-            }
-          }
-        }
-
-        // Normal highlighting for non-dropdown elements
         element.style.zIndex = "102";
-
-        // Force reflow
-        element.offsetHeight;
+        element.offsetHeight; // Force reflow
 
         const rect = element.getBoundingClientRect();
         setHighlightPosition({
@@ -328,6 +290,28 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
           width: rect.width,
           height: rect.height,
         });
+
+        // SPECIAL: Auto-handle dropdown opening
+        if (step.requireDropdownOpen) {
+          console.log("🔓 Auto-handling dropdown for step:", step.id);
+          const dropdownTrigger = document.querySelector('[data-tour="user-dropdown"]') as HTMLElement;
+          if (dropdownTrigger) {
+            // Check if dropdown is already open
+            const existingDropdown = document.querySelector('[role="menu"]');
+            if (!existingDropdown) {
+              // Auto-open dropdown and wait for it to render
+              dropdownTrigger.click();
+              setTimeout(() => {
+                const dropdownElement = document.querySelector(step.selector!) as HTMLElement;
+                if (dropdownElement) {
+                  console.log("✅ Dropdown opened successfully");
+                  // The click handler will automatically proceed to next step
+                }
+              }, 500);
+              return;
+            }
+          }
+        }
 
         // Scroll only if not fixed position
         const isFixed = window.getComputedStyle(element).position === "fixed";
@@ -338,7 +322,6 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
         console.warn(`✗ Element not found for step ${currentStep}:`, step.selector);
 
         if (!retryIntervalRef.current) {
-          console.log("Starting retry interval to find element");
           retryIntervalRef.current = setInterval(() => {
             const retryElement = document.querySelector(step.selector!) as HTMLElement;
             if (retryElement) {
@@ -378,114 +361,68 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
   }, [currentStep, isActive]);
 
   useEffect(() => {
-    // Cleanup function when tour ends
-    return () => {
-      if (targetElement) {
-        targetElement.style.zIndex = "";
-        targetElement.style.position = "";
-      }
-    };
-  }, [targetElement, isActive]);
+    if (!isActive || !targetElement || !steps[currentStep]?.forceClick) return;
 
-  useEffect(() => {
-    if (!isActive) return;
-
-    const step = steps[currentStep];
-
-    // Safety check
-    if (!step) {
-      console.error("Invalid step in click handler:", currentStep);
-      return;
-    }
-
-    // Only add click listener if step requires forced click AND element exists
-    if (!step.forceClick || !targetElement) {
-      console.log(`Step ${currentStep} doesn't require force click or no target element`);
-      return;
-    }
-
-    console.log(`👆 Setting up click listener for step ${currentStep}:`, step.id);
+    console.log(`🎯 Setting up AUTO-CLICK for step ${currentStep}`);
 
     const handleClick = (e: MouseEvent) => {
-      console.log("🖱 Click detected in guided tour", e.target);
+      e.stopPropagation();
+      e.preventDefault();
 
-      // CRITICAL: Prevent multiple rapid clicks
-      if (isProcessingClick) {
-        console.log("🛑 Already processing a click, ignoring...");
-        return;
+      console.log(`✅ Auto-processing click for step ${currentStep}`);
+
+      // Remove listener immediately to prevent double click
+      if (clickListenerRef.current) {
+        document.removeEventListener("click", clickListenerRef.current, true);
+        clickListenerRef.current = null;
       }
 
-      const target = e.target as HTMLElement;
+      // Visual feedback
+      targetElement.style.transform = "scale(0.95)";
 
-      // Check if it's the target element or its children
-      const isTargetOrChild = targetElement.contains(target);
-
-      // More flexible click detection - check if click is within highlight area
-      const rect = targetElement.getBoundingClientRect();
-      const clickX = e.clientX;
-      const clickY = e.clientY;
-
-      const isWithinBounds =
-        clickX >= rect.left - 10 && clickX <= rect.right + 10 && clickY >= rect.top - 10 && clickY <= rect.bottom + 10;
-
-      if (isWithinBounds || isTargetOrChild) {
-        console.log(`✓ Valid click detected on step ${currentStep}:`, step.id);
-
-        // STOP event propagation immediately
-        e.stopPropagation();
-        e.preventDefault();
-
-        // Set processing flag FIRST
-        setIsProcessingClick(true);
-
-        // Visual feedback
-        targetElement.style.transform = "scale(0.95)";
-
-        // Move to next step after animation - SIMPLIFIED
-        setTimeout(() => {
-          if (targetElement) {
-            targetElement.style.transform = "";
-          }
-
-          console.log(`➡️ Advancing from step ${currentStep} to ${currentStep + 1}`);
-
-          // Directly move to next step without complex state management
-          if (currentStep < steps.length - 1) {
-            setCurrentStep((prev) => prev + 1);
-          } else {
-            handleComplete();
-          }
-
-          // Reset processing flag
-          setIsProcessingClick(false);
-        }, 300);
-      } else {
-        console.log(`❌ Click outside target area, ignoring`);
+      // For chatbot button, trigger its click handler
+      if (currentStep === 0) {
+        const chatbotButton = document.querySelector('[data-tour="chatbot"]') as HTMLButtonElement;
+        if (chatbotButton) {
+          chatbotButton.click();
+        }
       }
+
+      // Move to next step after short delay
+      setTimeout(() => {
+        if (targetElement) {
+          targetElement.style.transform = "";
+        }
+
+        console.log(`➡️ Moving to step ${currentStep + 1}`);
+
+        if (currentStep < steps.length - 1) {
+          setCurrentStep((prev) => prev + 1);
+        } else {
+          handleComplete();
+        }
+      }, 300);
     };
 
-    // Remove previous listener if exists
+    // Remove previous listener
     if (clickListenerRef.current) {
       document.removeEventListener("click", clickListenerRef.current, true);
-      targetElement.removeEventListener("click", clickListenerRef.current, true);
     }
 
     clickListenerRef.current = handleClick;
 
-    // Add listener with high priority (capture phase)
-    document.addEventListener("click", handleClick, { capture: true });
-    targetElement.addEventListener("click", handleClick, { capture: true });
+    // Add auto-click listener - sẽ tự động xử lý khi user click vào vùng highlight
+    document.addEventListener("click", handleClick, {
+      capture: true,
+    });
 
     return () => {
       if (clickListenerRef.current) {
         document.removeEventListener("click", clickListenerRef.current, true);
-        if (targetElement) {
-          targetElement.removeEventListener("click", clickListenerRef.current, true);
-        }
         clickListenerRef.current = null;
       }
     };
-  }, [targetElement, currentStep, isActive, isProcessingClick]);
+  }, [targetElement, currentStep, isActive]);
 
   const nextStep = () => {
     console.log(`➡️ Moving from step ${currentStep} to ${currentStep + 1}`);
@@ -650,20 +587,6 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
                 background: "transparent",
               }}
             />
-
-            {/* Click indicator for forceClick steps */}
-            {currentStepData.forceClick && (
-              <div
-                className="absolute pointer-events-none top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-                style={{
-                  animation: "pulse 1s infinite ease-in-out",
-                }}
-              >
-                <div className="bg-primary text-primary-foreground px-3 py-1.5 sm:px-4 sm:py-2 rounded-full shadow-lg text-xs sm:text-sm font-bold whitespace-nowrap">
-                  👆 Click vào đây
-                </div>
-              </div>
-            )}
 
             {/* Corner sparkles */}
             <Sparkles
