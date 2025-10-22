@@ -386,41 +386,23 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       }
     };
   }, [targetElement, isActive]);
-
   useEffect(() => {
     if (!isActive) return;
 
     const step = steps[currentStep];
+    if (!step || !step.forceClick || !targetElement) return;
 
-    // Safety check
-    if (!step) {
-      console.error("Invalid step in click handler:", currentStep);
-      return;
-    }
-
-    // Only add click listener if step requires forced click AND element exists
-    if (!step.forceClick || !targetElement) {
-      console.log(`Step ${currentStep} doesn't require force click or no target element`);
-      return;
-    }
-
-    console.log(`👆 Setting up click listener for step ${currentStep}:`, step.id);
+    console.log(`👆 Setting up INTEGRATED click listener for step ${currentStep}:`, step.id);
 
     const handleClick = (e: MouseEvent) => {
-      console.log("🖱 Click detected in guided tour", e.target);
+      console.log("🖱 INTEGRATED Click detected", e.target);
 
-      // CRITICAL: Prevent multiple rapid clicks
       if (isProcessingClick) {
         console.log("🛑 Already processing a click, ignoring...");
         return;
       }
 
       const target = e.target as HTMLElement;
-
-      // Check if it's the target element or its children
-      const isTargetOrChild = targetElement.contains(target);
-
-      // More flexible click detection - check if click is within highlight area
       const rect = targetElement.getBoundingClientRect();
       const clickX = e.clientX;
       const clickY = e.clientY;
@@ -428,28 +410,46 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       const isWithinBounds =
         clickX >= rect.left - 10 && clickX <= rect.right + 10 && clickY >= rect.top - 10 && clickY <= rect.bottom + 10;
 
-      if (isWithinBounds || isTargetOrChild) {
-        console.log(`✓ Valid click detected on step ${currentStep}:`, step.id);
+      if (isWithinBounds || targetElement.contains(target)) {
+        console.log(`✓ INTEGRATED Valid click detected on step ${currentStep}:`, step.id);
 
-        // STOP event propagation immediately
-        e.stopPropagation();
-        e.preventDefault();
+        // QUAN TRỌNG: Cho phép click gốc thực hiện TRƯỚC
+        // KHÔNG preventDefault() và KHÔNG stopPropagation() ở đây
 
-        // Set processing flag FIRST
         setIsProcessingClick(true);
 
-        // Visual feedback
+        // 1. TRƯỚC TIÊN: Visual feedback
         targetElement.style.transform = "scale(0.95)";
+        targetElement.style.transition = "transform 0.15s";
 
-        // Move to next step after animation - SIMPLIFIED
+        // 2. KÍCH HOẠT CLICK GỐC PROGRAMMATICALLY (nếu cần)
+        // Đảm bảo dropdown mở ra
+        if (step.requireDropdownOpen || step.selector?.includes("dropdown")) {
+          console.log("🔓 Programmatically triggering dropdown open");
+          setTimeout(() => {
+            targetElement.click(); // Kích hoạt click thật sự
+          }, 50);
+        }
+
+        // 3. SAU KHI CLICK GỐC ĐÃ XỬ LÝ: Chuyển bước tour
         setTimeout(() => {
+          console.log(`➡️ INTEGRATED Advancing from step ${currentStep} to ${currentStep + 1}`);
+
+          // Khôi phục visual
           if (targetElement) {
             targetElement.style.transform = "";
           }
 
-          console.log(`➡️ Advancing from step ${currentStep} to ${currentStep + 1}`);
+          // Đảm bảo dropdown đã mở trước khi chuyển bước (nếu cần)
+          if (step.requireDropdownOpen) {
+            const dropdownContent = document.querySelector('[role="menu"]');
+            if (!dropdownContent) {
+              console.log("⚠️ Dropdown chưa mở, thử lại...");
+              targetElement.click();
+            }
+          }
 
-          // Directly move to next step without complex state management
+          // CHUYỂN BƯỚC TOUR
           if (currentStep < steps.length - 1) {
             setCurrentStep((prev) => prev + 1);
           } else {
@@ -457,31 +457,28 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
           }
 
           // Reset processing flag
-          setIsProcessingClick(false);
-        }, 300);
+          setTimeout(() => {
+            setIsProcessingClick(false);
+          }, 150);
+        }, 300); // Đợi đủ thời gian cho click gốc và dropdown mở
       } else {
         console.log(`❌ Click outside target area, ignoring`);
       }
     };
 
-    // Remove previous listener if exists
+    // Remove previous listener
     if (clickListenerRef.current) {
       document.removeEventListener("click", clickListenerRef.current, true);
-      targetElement.removeEventListener("click", clickListenerRef.current, true);
     }
 
     clickListenerRef.current = handleClick;
 
-    // Add listener with high priority (capture phase)
+    // Add listener với capture phase
     document.addEventListener("click", handleClick, { capture: true });
-    targetElement.addEventListener("click", handleClick, { capture: true });
 
     return () => {
       if (clickListenerRef.current) {
         document.removeEventListener("click", clickListenerRef.current, true);
-        if (targetElement) {
-          targetElement.removeEventListener("click", clickListenerRef.current, true);
-        }
         clickListenerRef.current = null;
       }
     };
