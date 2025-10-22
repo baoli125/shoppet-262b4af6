@@ -243,15 +243,12 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
         };
       }
 
-      case "bottom": {
-        const top = rect.top + rect.height + offset;
-        const maxTop = window.innerHeight - tooltipHeight - 10;
+      case "bottom":
         return {
-          top: `${Math.min(top, maxTop)}px`,
-          left: `${rect.left + rect.width / 2}px`,
-          transform: "translateX(-50%)",
+          top: "70%", // Thay vì "50%" của center, ta dùng "60%" để xuống dưới 10%
+          left: "50%",
+          transform: "translate(-50%, -50%)",
         };
-      }
 
       case "left": {
         const left = Math.max(rect.left - tooltipWidth - offset, 10);
