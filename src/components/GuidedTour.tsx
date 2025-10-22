@@ -54,7 +54,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       selector: null,
       title: "🛍️ Khám phá Marketplace\n\n🤖 Hỏi Trợ lý AI\n\n📋 Quản lý Hồ sơ Thú cưng\n\n👥 Vào Cộng đồng",
       description: "Bạn có thể truy cập nhanh các ứng dụng từ chatbot Tay nhỏ!\nTay nhỏ có thể làm mọi thứ",
-      position: "leftleft",
+      position: "left",
       forceClick: false,
       showChatbotImage: true,
     },
@@ -245,7 +245,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
 
       case "bottom":
         return {
-          top: "75%", // Thay vì "50%" của center, ta dùng "60%" để xuống dưới 10%
+          top: "83%",
           left: "50%",
           transform: "translate(-50%, -50%)",
         };
