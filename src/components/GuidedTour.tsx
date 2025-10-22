@@ -46,7 +46,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       selector: '[data-tour="chatbot"]',
       title: "Trợ lý AI Thông Minh 🤖",
       description: "Đây là cổng vào trung tâm của Shoppet! Click để mở và khám phá 4 tính năng chính.",
-      position: "left",
+      position: "center",
       forceClick: true,
     },
     {
@@ -54,7 +54,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       selector: null,
       title: "🛍️ Khám phá Marketplace\n\n🤖 Hỏi Trợ lý AI\n\n📋 Quản lý Hồ sơ Thú cưng\n\n👥 Vào Cộng đồng",
       description: "Bạn có thể truy cập nhanh các ứng dụng từ chatbot Tay nhỏ!\nTay nhỏ có thể làm mọi thứ",
-      position: "right",
+      position: "center",
       forceClick: false,
       showChatbotImage: true,
     },
@@ -63,7 +63,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       selector: '[data-tour="chatbot"]',
       title: "Đóng Chatbot",
       description: "Bạn có thể tắt chatbot ở đây khi cần.",
-      position: "left",
+      position: "center",
       forceClick: true,
     },
 
@@ -73,7 +73,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       selector: '[data-tour="user-dropdown"]',
       title: "Menu Chính",
       description: "Nếu bạn muốn xem chi tiết từng chức năng, hãy bấm vào đây",
-      position: "bottom",
+      position: "center",
       forceClick: true,
     },
     {
@@ -81,7 +81,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       selector: '[data-tour="marketplace-menu"]',
       title: "Marketplace",
       description: "Click để khám phá Marketplace - nơi mua sắm tất cả sản phẩm cho thú cưng!",
-      position: "left",
+      position: "center",
       forceClick: true,
       requireDropdownOpen: true,
     },
@@ -91,7 +91,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       title: "Chào mừng đến Marketplace! 🛍️",
       description:
         "Đây là Marketplace - nơi mua sắm tất cả sản phẩm cho thú cưng. Bạn có thể tìm kiếm, lọc danh mục và xem chi tiết sản phẩm tại đây.",
-      position: "bottom",
+      position: "center",
       forceClick: false,
     },
 
@@ -101,7 +101,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       selector: '[data-tour="user-dropdown"]',
       title: "Quay lại Menu 🔙",
       description: "Hãy click để quay lại menu chính và khám phá tính năng tiếp theo",
-      position: "bottom",
+      position: "center",
       forceClick: true,
     },
     {
@@ -109,7 +109,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       selector: '[data-tour="ai-chat-menu"]',
       title: "Trợ lý AI Tư vấn 🤖",
       description: "Click để khám phá trợ lý AI thông minh của chúng tôi",
-      position: "left",
+      position: "center",
       forceClick: true,
       requireDropdownOpen: true,
     },
@@ -119,7 +119,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       title: "Trợ lý AI của bạn! 🤖",
       description:
         "Tại đây bạn có thể hỏi bất kỳ câu hỏi nào về thú cưng. Tôi có thể tư vấn sức khỏe, dinh dưỡng 24/7.",
-      position: "top",
+      position: "center",
       forceClick: false,
     },
 
@@ -129,7 +129,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       selector: '[data-tour="user-dropdown"]',
       title: "Tiếp tục Khám phá 🔙",
       description: "Click để tiếp tục khám phá các tính năng khác",
-      position: "bottom",
+      position: "center",
       forceClick: true,
     },
     {
@@ -137,7 +137,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       selector: '[data-tour="pets-menu"]',
       title: "Hồ sơ Thú cưng 📋",
       description: "Click để quản lý thông tin thú cưng của bạn",
-      position: "left",
+      position: "center",
       forceClick: true,
       requireDropdownOpen: true,
     },
@@ -157,7 +157,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       selector: '[data-tour="user-dropdown"]',
       title: "Khám phá Cộng đồng 🔙",
       description: "Click để khám phá tính năng cộng đồng",
-      position: "bottom",
+      position: "center",
       forceClick: true,
     },
     {
@@ -165,7 +165,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       selector: '[data-tour="community-menu"]',
       title: "Cộng đồng Yêu Thú Cưng 👥",
       description: "Click để tham gia cộng đồng yêu thú cưng",
-      position: "left",
+      position: "center",
       forceClick: true,
       requireDropdownOpen: true,
     },
@@ -174,7 +174,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       selector: '[data-tour="community-post-input"]',
       title: "Cộng đồng Shoppet! 👥",
       description: "Chia sẻ kinh nghiệm, kết nối với những người yêu thú cưng khác. Đây là nơi để học hỏi và giao lưu!",
-      position: "top",
+      position: "center",
       forceClick: false,
     },
 
@@ -184,7 +184,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       selector: '[data-tour="user-dropdown"]',
       title: "Các tính năng khác 🔙",
       description: "Click để xem các tính năng quản lý khác",
-      position: "bottom",
+      position: "center",
       forceClick: true,
     },
     {
@@ -192,7 +192,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       selector: '[data-tour="orders-menu"]',
       title: "Đơn hàng của tôi 📦",
       description: "Theo dõi tình trạng đơn hàng, xem lịch sử mua sắm và quản lý các đơn hàng của bạn.",
-      position: "left",
+      position: "bottom",
       forceClick: false,
       requireDropdownOpen: true,
     },
