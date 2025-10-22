@@ -159,20 +159,20 @@ const Profile = () => {
         onLogoutClick={handleLogout}
       />
 
-      <main className="container mx-auto px-4 py-8 pt-24 max-w-4xl">
-        <div className="grid md:grid-cols-3 gap-6">
+      <main className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 pt-20 sm:pt-24 max-w-4xl">
+        <div className="grid md:grid-cols-3 gap-4 sm:gap-6">
           {/* Profile Info */}
-          <Card className="md:col-span-2 p-6">
-            <div className="flex items-start gap-6 mb-6">
-              <Avatar className="h-24 w-24">
+          <Card className="md:col-span-2 p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6 mb-6">
+              <Avatar className="h-20 w-20 sm:h-24 sm:w-24 mx-auto sm:mx-0">
                 <AvatarImage src={profile?.avatar_url} />
-                <AvatarFallback className="text-2xl">{profile?.display_name?.[0] || "U"}</AvatarFallback>
+                <AvatarFallback className="text-xl sm:text-2xl">{profile?.display_name?.[0] || "U"}</AvatarFallback>
               </Avatar>
-              <div className="flex-1">
-                <h2 className="text-2xl font-bold mb-2">{profile?.display_name}</h2>
-                <p className="text-muted-foreground mb-4">{user?.email}</p>
+              <div className="flex-1 text-center sm:text-left w-full">
+                <h2 className="text-xl sm:text-2xl font-bold mb-1 sm:mb-2">{profile?.display_name}</h2>
+                <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4 break-all">{user?.email}</p>
                 {!isEditing && (
-                  <Button onClick={() => setIsEditing(true)} variant="outline">
+                  <Button onClick={() => setIsEditing(true)} variant="outline" className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation">
                     <Edit className="h-4 w-4 mr-2" />
                     Chỉnh sửa
                   </Button>
@@ -216,18 +216,18 @@ const Profile = () => {
           </Card>
 
           {/* Gamification Stats */}
-          <Card className="p-6">
-            <div className="text-center mb-6">
-              <div className={`inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-primary to-primary/80 rounded-full mb-4`}>
-                <Trophy className={`h-10 w-10 text-white`} />
+          <Card className="p-4 sm:p-6">
+            <div className="text-center mb-4 sm:mb-6">
+              <div className={`inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-primary to-primary/80 rounded-full mb-3 sm:mb-4`}>
+                <Trophy className={`h-8 w-8 sm:h-10 sm:w-10 text-white`} />
               </div>
-              <h3 className={`text-3xl font-bold mb-1 ${getLevelColor(profile?.points || 0)}`}>
+              <h3 className={`text-2xl sm:text-3xl font-bold mb-1 ${getLevelColor(profile?.points || 0)}`}>
                 Level {getLevel(profile?.points || 0)}
               </h3>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 {profile?.points || 0} điểm
               </p>
-              <p className="text-sm font-semibold text-primary mt-1">
+              <p className="text-xs sm:text-sm font-semibold text-primary mt-1">
                 Giảm {getDiscount(profile?.points || 0)}% tất cả đơn hàng
               </p>
             </div>

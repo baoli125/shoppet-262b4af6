@@ -72,25 +72,25 @@ const OnboardingModal = ({ open, onComplete }: OnboardingModalProps) => {
 
   return (
     <Dialog open={open}>
-      <DialogContent className="sm:max-w-md [&>button]:hidden">
+      <DialogContent className="w-[95vw] max-w-md mx-auto [&>button]:hidden">
         <DialogHeader>
-          <DialogTitle className="text-center text-2xl">
+          <DialogTitle className="text-center text-xl sm:text-2xl px-2">
             {t('onboarding.welcome')} 🐾
           </DialogTitle>
-          <DialogDescription className="text-center pt-4">
+          <DialogDescription className="text-center pt-3 sm:pt-4 px-2 text-sm sm:text-base">
             {t('onboarding.description')}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-6">
+        <div className="space-y-3 sm:space-y-4 py-4 sm:py-6 px-2">
           <Button
             onClick={() => handleChoice(true)}
             disabled={isLoading}
-            className="w-full h-auto py-6 flex flex-col gap-2 bg-gradient-to-br from-primary to-primary/80 hover:scale-105 transition-transform"
+            className="w-full h-auto py-5 sm:py-6 flex flex-col gap-1.5 sm:gap-2 bg-gradient-to-br from-primary to-primary/80 hover:scale-105 transition-transform touch-manipulation min-h-[80px] sm:min-h-[100px]"
           >
-            <span className="text-3xl">🌟</span>
-            <span className="font-semibold text-lg">{t('onboarding.petOwner')}</span>
-            <span className="text-xs opacity-90 font-normal">
+            <span className="text-2xl sm:text-3xl">🌟</span>
+            <span className="font-semibold text-base sm:text-lg">{t('onboarding.petOwner')}</span>
+            <span className="text-xs opacity-90 font-normal px-2">
               {t('onboarding.petOwnerDesc')}
             </span>
           </Button>
@@ -99,11 +99,11 @@ const OnboardingModal = ({ open, onComplete }: OnboardingModalProps) => {
             onClick={() => handleChoice(false)}
             disabled={isLoading}
             variant="outline"
-            className="w-full h-auto py-6 flex flex-col gap-2 hover:scale-105 transition-transform"
+            className="w-full h-auto py-5 sm:py-6 flex flex-col gap-1.5 sm:gap-2 hover:scale-105 transition-transform touch-manipulation min-h-[80px] sm:min-h-[100px]"
           >
-            <span className="text-3xl">🚀</span>
-            <span className="font-semibold text-lg">{t('onboarding.seller')}</span>
-            <span className="text-xs opacity-70 font-normal">
+            <span className="text-2xl sm:text-3xl">🚀</span>
+            <span className="font-semibold text-base sm:text-lg">{t('onboarding.seller')}</span>
+            <span className="text-xs opacity-70 font-normal px-2">
               {t('onboarding.sellerDesc')}
             </span>
           </Button>

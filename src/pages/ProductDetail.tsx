@@ -157,55 +157,56 @@ const ProductDetail = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="border-b border-border bg-card header-shadow sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-4">
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
+          <div className="flex items-center gap-3 sm:gap-4">
             <Button 
               variant="outline" 
               onClick={() => navigate("/marketplace")}
-              className="gap-2"
+              className="gap-1.5 sm:gap-2 h-10 sm:h-11 text-xs sm:text-sm touch-manipulation"
             >
-              <ArrowLeft className="w-5 h-5" />
-              Quay lại Marketplace
+              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span className="hidden sm:inline">Quay lại Marketplace</span>
+              <span className="sm:hidden">Quay lại</span>
             </Button>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">Chi tiết sản phẩm</h1>
+            <div className="hidden sm:block">
+              <h1 className="text-xl sm:text-2xl font-bold text-foreground">Chi tiết sản phẩm</h1>
             </div>
           </div>
         </div>
       </div>
 
       {/* Product Detail */}
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
           {/* Product Image */}
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             <Card className="overflow-hidden">
-              <div className="bg-muted relative max-h-96 flex items-center justify-center">
+              <div className="bg-muted relative max-h-64 sm:max-h-80 lg:max-h-96 flex items-center justify-center p-4">
                 <img
                   src={product.image_url || "https://via.placeholder.com/600"}
                   alt={product.name}
-                  className="w-full h-auto max-h-96 object-contain"
+                  className="w-full h-auto max-h-60 sm:max-h-72 lg:max-h-96 object-contain"
                 />
               </div>
             </Card>
           </div>
 
           {/* Product Info */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <div>
-              <div className="flex items-start gap-3 mb-3">
-                <Badge className="bg-primary">{getCategoryLabel(product.category)}</Badge>
+              <div className="flex items-start gap-2 sm:gap-3 mb-3 flex-wrap">
+                <Badge className="bg-primary text-xs sm:text-sm">{getCategoryLabel(product.category)}</Badge>
                 {product.pet_type && (
-                  <Badge variant="outline">{getPetTypeLabel(product.pet_type)}</Badge>
+                  <Badge variant="outline" className="text-xs sm:text-sm">{getPetTypeLabel(product.pet_type)}</Badge>
                 )}
               </div>
               
-              <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold mb-2">{product.name}</h1>
               {product.brand && (
-                <p className="text-lg text-muted-foreground mb-4">Thương hiệu: {product.brand}</p>
+                <p className="text-base sm:text-lg text-muted-foreground mb-3 sm:mb-4">Thương hiệu: {product.brand}</p>
               )}
               
-              <p className="text-muted-foreground">{product.description}</p>
+              <p className="text-sm sm:text-base text-muted-foreground">{product.description}</p>
             </div>
 
             <Separator />
@@ -213,32 +214,34 @@ const ProductDetail = () => {
             {/* Price and Stock */}
             <div>
               <div className="flex items-baseline gap-2 mb-2">
-                <span className="text-4xl font-bold text-primary">
+                <span className="text-3xl sm:text-4xl font-bold text-primary">
                   {product.price.toLocaleString()}đ
                 </span>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 Còn lại: {product.stock} sản phẩm
               </p>
             </div>
 
             {/* Quantity Selector */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 sm:gap-4">
               <span className="text-sm font-medium">Số lượng:</span>
               <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
                   size="icon"
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  className="h-10 w-10 sm:h-11 sm:w-11 touch-manipulation"
                 >
                   <Minus className="w-4 h-4" />
                 </Button>
-                <span className="w-12 text-center font-semibold">{quantity}</span>
+                <span className="w-10 sm:w-12 text-center font-semibold text-base sm:text-lg">{quantity}</span>
                 <Button
                   variant="outline"
                   size="icon"
                   onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
                   disabled={quantity >= product.stock}
+                  className="h-10 w-10 sm:h-11 sm:w-11 touch-manipulation"
                 >
                   <Plus className="w-4 h-4" />
                 </Button>
@@ -247,11 +250,11 @@ const ProductDetail = () => {
 
             {/* Add to Cart Button */}
             <Button
-              className="w-full btn-hero text-lg py-6"
+              className="w-full btn-hero text-base sm:text-lg py-5 sm:py-6 h-12 sm:h-14 touch-manipulation"
               onClick={addToCart}
               disabled={product.stock === 0}
             >
-              <ShoppingCart className="w-5 h-5 mr-2" />
+              <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
               Thêm vào giỏ hàng
             </Button>
 

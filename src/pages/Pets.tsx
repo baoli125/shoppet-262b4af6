@@ -259,15 +259,15 @@ const Pets = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="border-b border-border bg-card header-shadow">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
-                <ArrowLeft className="w-5 h-5" />
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+              <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="h-10 w-10 sm:h-11 sm:w-11 touch-manipulation flex-shrink-0">
+                <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
               </Button>
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">Hồ sơ Thú cưng</h1>
-                <p className="text-sm text-muted-foreground">
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-2xl font-bold text-foreground truncate">Hồ sơ Thú cưng</h1>
+                <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">
                   Quản lý thông tin và sức khỏe thú cưng
                 </p>
               </div>
@@ -275,12 +275,12 @@ const Pets = () => {
 
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="btn-hero" onClick={resetForm} data-tour="pets-add-button">
-                  <Plus className="w-5 h-5 mr-2" />
-                  Thêm thú cưng
+                <Button className="btn-hero h-10 sm:h-11 text-sm sm:text-base touch-manipulation flex-shrink-0" onClick={resetForm} data-tour="pets-add-button">
+                  <Plus className="w-4 h-4 sm:w-5 sm:h-5 sm:mr-2" />
+                  <span className="hidden sm:inline">Thêm thú cưng</span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>
                     {editingPet ? "Chỉnh sửa thú cưng" : "Thêm thú cưng mới"}
@@ -423,21 +423,21 @@ const Pets = () => {
       </div>
 
       {/* Pets Grid */}
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8">
         {pets.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">🐾</div>
-            <h2 className="text-2xl font-bold mb-2">Chưa có thú cưng nào</h2>
-            <p className="text-muted-foreground mb-6">
+          <div className="text-center py-8 sm:py-12 px-4">
+            <div className="text-5xl sm:text-6xl mb-3 sm:mb-4">🐾</div>
+            <h2 className="text-xl sm:text-2xl font-bold mb-2">Chưa có thú cưng nào</h2>
+            <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6">
               Thêm thú cưng đầu tiên để bắt đầu quản lý sức khỏe của bạn ấy
             </p>
-            <Button className="btn-hero" onClick={() => setIsDialogOpen(true)}>
-              <Plus className="w-5 h-5 mr-2" />
+            <Button className="btn-hero h-11 sm:h-12 text-sm sm:text-base touch-manipulation" onClick={() => setIsDialogOpen(true)}>
+              <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
               Thêm thú cưng
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {pets.map((pet) => (
               <Card key={pet.id} className="p-6 hover:shadow-lg transition-shadow">
                 <div className="flex items-start justify-between mb-4">

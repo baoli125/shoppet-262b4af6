@@ -107,14 +107,14 @@ const Orders = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="border-b border-border bg-card header-shadow">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
-              <ArrowLeft className="w-5 h-5" />
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="h-10 w-10 sm:h-11 sm:w-11 touch-manipulation">
+              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
             </Button>
             <div>
-              <h1 className="text-2xl font-bold text-foreground">Đơn hàng của tôi</h1>
-              <p className="text-sm text-muted-foreground">
+              <h1 className="text-lg sm:text-2xl font-bold text-foreground">Đơn hàng của tôi</h1>
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 Theo dõi trạng thái đơn hàng
               </p>
             </div>
@@ -123,39 +123,39 @@ const Orders = () => {
       </div>
 
       {/* Orders List */}
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8">
         {orders.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">📦</div>
-            <h2 className="text-2xl font-bold mb-2">Chưa có đơn hàng nào</h2>
-            <p className="text-muted-foreground mb-6">
+          <div className="text-center py-8 sm:py-12 px-4">
+            <div className="text-5xl sm:text-6xl mb-3 sm:mb-4">📦</div>
+            <h2 className="text-xl sm:text-2xl font-bold mb-2">Chưa có đơn hàng nào</h2>
+            <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6">
               Hãy mua sắm ngay để có đơn hàng đầu tiên
             </p>
-            <Button className="btn-hero" onClick={() => navigate("/marketplace")}>
+            <Button className="btn-hero h-11 sm:h-12 text-sm sm:text-base touch-manipulation" onClick={() => navigate("/marketplace")}>
               Khám phá sản phẩm
             </Button>
           </div>
         ) : (
-          <div className="space-y-6 max-w-4xl mx-auto">
+          <div className="space-y-4 sm:space-y-6 max-w-4xl mx-auto">
             {orders.map((order) => (
-              <Card key={order.id} className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <div className="flex items-center gap-3 mb-2">
+              <Card key={order.id} className="p-4 sm:p-6">
+                <div className="flex flex-col sm:flex-row items-start justify-between mb-4 gap-3 sm:gap-4">
+                  <div className="w-full sm:w-auto">
+                    <div className="flex items-center gap-2 sm:gap-3 mb-2">
                       {getStatusIcon(order.status)}
-                      <Badge className={`${getStatusColor(order.status)} text-white`}>
+                      <Badge className={`${getStatusColor(order.status)} text-white text-xs sm:text-sm`}>
                         {getStatusLabel(order.status)}
                       </Badge>
                     </div>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs sm:text-sm text-muted-foreground">
                       Đơn hàng #{order.id.slice(0, 8)}
                     </p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs sm:text-sm text-muted-foreground">
                       {new Date(order.created_at).toLocaleString("vi-VN")}
                     </p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-primary">
+                  <div className="text-left sm:text-right w-full sm:w-auto">
+                    <p className="text-xl sm:text-2xl font-bold text-primary">
                       {order.total_amount.toLocaleString()}đ
                     </p>
                   </div>

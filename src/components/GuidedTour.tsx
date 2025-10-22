@@ -592,10 +592,10 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
         <div className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm pointer-events-auto" />
       )}
 
-      {/* Chatbot Image - hiển thị khi showChatbotImage = true */}
+      {/* Chatbot Image - hiển thị khi showChatbotImage = true, ẩn trên mobile */}
       {currentStepData.showChatbotImage && (
         <div
-          className="fixed z-[101] rounded-2xl shadow-2xl overflow-hidden"
+          className="fixed z-[101] rounded-2xl shadow-2xl overflow-hidden hidden md:block"
           style={{
             bottom: "calc(15vh + 80px)",
             right: "24px",
@@ -659,7 +659,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
                   animation: "pulse 1s infinite ease-in-out",
                 }}
               >
-                <div className="bg-primary text-primary-foreground px-4 py-2 rounded-full shadow-lg text-sm font-bold whitespace-nowrap">
+                <div className="bg-primary text-primary-foreground px-3 py-1.5 sm:px-4 sm:py-2 rounded-full shadow-lg text-xs sm:text-sm font-bold whitespace-nowrap">
                   👆 Click vào đây
                 </div>
               </div>
@@ -680,62 +680,63 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
 
       {/* Tooltip */}
       <Card
-        className="fixed z-[103] p-6 shadow-2xl max-w-md border-2 border-primary/20"
+        className="fixed z-[103] p-4 sm:p-6 shadow-2xl w-[90vw] max-w-md border-2 border-primary/20 mx-4 sm:mx-0"
         style={{
           ...tooltipPosition,
           animation: "slide-in-tooltip 0.4s ease-out",
         }}
       >
-        <div className="flex items-start justify-between mb-4">
+        <div className="flex items-start justify-between mb-3 sm:mb-4">
           <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
-              <h3 className="text-lg font-bold text-primary">{currentStepData.title}</h3>
+            <div className="flex items-center gap-2 mb-1.5 sm:mb-2">
+              <h3 className="text-base sm:text-lg font-bold text-primary leading-tight">{currentStepData.title}</h3>
             </div>
-            <p className="text-sm leading-relaxed">{currentStepData.description}</p>
+            <p className="text-xs sm:text-sm leading-relaxed">{currentStepData.description}</p>
           </div>
           <Button
             variant="ghost"
             size="icon"
             onClick={skipTour}
-            className="ml-2 -mt-2 -mr-2 hover:bg-destructive/10 hover:text-destructive"
+            className="ml-2 -mt-2 -mr-2 hover:bg-destructive/10 hover:text-destructive h-8 w-8 sm:h-10 sm:w-10 touch-manipulation flex-shrink-0"
             title="Bỏ qua hướng dẫn"
           >
-            <X className="w-4 h-4" />
+            <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </Button>
         </div>
 
         {currentStepData.showCartIcon && (
-          <div className="mb-4 p-3 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg border border-primary/20">
-            <p className="text-sm font-medium flex items-center gap-2">
-              <span className="text-lg">👆</span>
+          <div className="mb-3 sm:mb-4 p-2.5 sm:p-3 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg border border-primary/20">
+            <p className="text-xs sm:text-sm font-medium flex items-center gap-2">
+              <span className="text-base sm:text-lg flex-shrink-0">👆</span>
               <span>Sau khi xem xong ở đây, hãy chú ý đến icon giỏ hàng nhấp nháy ở góc trên!</span>
             </p>
           </div>
         )}
 
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-muted-foreground">
+        <div className="flex items-center justify-between gap-2 sm:gap-4">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <span className="text-xs sm:text-sm font-medium text-muted-foreground whitespace-nowrap">
               Bước {currentStep + 1}/{steps.length}
             </span>
           </div>
 
           {!currentStepData.forceClick && (
-            <Button onClick={nextStep} className="btn-hero shadow-lg">
+            <Button onClick={nextStep} className="btn-hero shadow-lg h-9 sm:h-10 text-xs sm:text-sm touch-manipulation">
               {currentStep === steps.length - 1 ? "🎉 Hoàn thành" : "Tiếp theo →"}
             </Button>
           )}
 
           {currentStepData.forceClick && (
-            <div className="flex items-center gap-2 text-sm font-medium text-primary animate-pulse">
-              <span className="inline-block w-2 h-2 bg-primary rounded-full animate-ping"></span>
-              <span>Click vào phần được đánh dấu</span>
+            <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-medium text-primary animate-pulse">
+              <span className="inline-block w-1.5 h-1.5 sm:w-2 sm:h-2 bg-primary rounded-full animate-ping"></span>
+              <span className="hidden sm:inline">Click vào phần được đánh dấu</span>
+              <span className="sm:hidden">Click vào đây</span>
             </div>
           )}
         </div>
 
         {/* Progress bar */}
-        <div className="mt-4 h-1 bg-muted rounded-full overflow-hidden">
+        <div className="mt-3 sm:mt-4 h-1 sm:h-1.5 bg-muted rounded-full overflow-hidden">
           <div
             className="h-full bg-primary transition-all duration-300"
             style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
