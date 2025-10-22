@@ -392,15 +392,12 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
     const step = steps[currentStep];
     if (!step || !step.forceClick || !targetElement) return;
 
-    console.log(`👆 Setting up INTEGRATED click listener for step ${currentStep}:`, step.id);
+    console.log(`👆 Setting up ADVANCED click listener for step ${currentStep}:`, step.id);
 
     const handleClick = (e: MouseEvent) => {
-      console.log("🖱 INTEGRATED Click detected", e.target);
+      console.log("🖱 ADVANCED Click detected", e.target);
 
-      if (isProcessingClick) {
-        console.log("🛑 Already processing a click, ignoring...");
-        return;
-      }
+      if (isProcessingClick) return;
 
       const target = e.target as HTMLElement;
       const rect = targetElement.getBoundingClientRect();
@@ -411,69 +408,66 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
         clickX >= rect.left - 10 && clickX <= rect.right + 10 && clickY >= rect.top - 10 && clickY <= rect.bottom + 10;
 
       if (isWithinBounds || targetElement.contains(target)) {
-        console.log(`✓ INTEGRATED Valid click detected on step ${currentStep}:`, step.id);
-
-        // QUAN TRỌNG: Cho phép click gốc thực hiện TRƯỚC
-        // KHÔNG preventDefault() và KHÔNG stopPropagation() ở đây
+        console.log(`✓ ADVANCED Valid click on step ${currentStep}:`, step.id);
 
         setIsProcessingClick(true);
 
-        // 1. TRƯỚC TIÊN: Visual feedback
+        // Visual feedback
         targetElement.style.transform = "scale(0.95)";
         targetElement.style.transition = "transform 0.15s";
 
-        // 2. KÍCH HOẠT CLICK GỐC PROGRAMMATICALLY (nếu cần)
-        // Đảm bảo dropdown mở ra
-        if (step.requireDropdownOpen || step.selector?.includes("dropdown")) {
-          console.log("🔓 Programmatically triggering dropdown open");
-          setTimeout(() => {
-            targetElement.click(); // Kích hoạt click thật sự
-          }, 50);
-        }
+        // SMART DROPDOWN MANAGEMENT
+        const handleDropdownAndProceed = () => {
+          // Đảm bảo dropdown đã mở (nếu cần)
+          if (step.requireDropdownOpen) {
+            const dropdownContent = document.querySelector('[role="menu"]');
+            if (!dropdownContent) {
+              console.log("🔄 Dropdown chưa mở, triggering programmatically...");
+              targetElement.click();
 
-        // 3. SAU KHI CLICK GỐC ĐÃ XỬ LÝ: Chuyển bước tour
-        setTimeout(() => {
-          console.log(`➡️ INTEGRATED Advancing from step ${currentStep} to ${currentStep + 1}`);
+              // Đợi dropdown mở rồi mới chuyển bước
+              setTimeout(() => {
+                proceedToNextStep();
+              }, 400);
+              return;
+            }
+          }
+
+          // Nếu không cần dropdown, chuyển bước ngay
+          proceedToNextStep();
+        };
+
+        const proceedToNextStep = () => {
+          console.log(`➡️ ADVANCED Moving to step ${currentStep + 1}`);
 
           // Khôi phục visual
           if (targetElement) {
             targetElement.style.transform = "";
           }
 
-          // Đảm bảo dropdown đã mở trước khi chuyển bước (nếu cần)
-          if (step.requireDropdownOpen) {
-            const dropdownContent = document.querySelector('[role="menu"]');
-            if (!dropdownContent) {
-              console.log("⚠️ Dropdown chưa mở, thử lại...");
-              targetElement.click();
-            }
-          }
-
-          // CHUYỂN BƯỚC TOUR
+          // Chuyển bước tour
           if (currentStep < steps.length - 1) {
             setCurrentStep((prev) => prev + 1);
           } else {
             handleComplete();
           }
 
-          // Reset processing flag
           setTimeout(() => {
             setIsProcessingClick(false);
-          }, 150);
-        }, 300); // Đợi đủ thời gian cho click gốc và dropdown mở
-      } else {
-        console.log(`❌ Click outside target area, ignoring`);
+          }, 200);
+        };
+
+        // Bắt đầu quy trình
+        handleDropdownAndProceed();
       }
     };
 
-    // Remove previous listener
+    // Cleanup previous listener
     if (clickListenerRef.current) {
       document.removeEventListener("click", clickListenerRef.current, true);
     }
 
     clickListenerRef.current = handleClick;
-
-    // Add listener với capture phase
     document.addEventListener("click", handleClick, { capture: true });
 
     return () => {
