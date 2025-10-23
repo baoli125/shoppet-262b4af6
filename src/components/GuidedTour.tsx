@@ -153,7 +153,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       title: "Quản lý Thú cưng! 📋",
       description:
         "Tại đây bạn có thể thêm và quản lý thông tin sức khỏe, lịch tiêm phòng cho tất cả thú cưng của mình.",
-      position: "left",
+      position: "bottom",
       forceClick: false,
       showPetsImage: true,
     },
@@ -703,7 +703,11 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
             pointerEvents: "none",
           }}
         >
-          <img src={cartEmptyGuide} alt="Cart Guide" className="w-full h-full object-contain rounded-lg bg-background" />
+          <img
+            src={cartEmptyGuide}
+            alt="Cart Guide"
+            className="w-full h-full object-contain rounded-lg bg-background"
+          />
           {/* Highlight border around cart image */}
           <div
             className="absolute inset-0 rounded-2xl border-4 border-primary"
@@ -740,7 +744,11 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
             pointerEvents: "none",
           }}
         >
-          <img src={ordersEmptyGuide} alt="Orders Guide" className="w-full h-full object-contain rounded-lg bg-background" />
+          <img
+            src={ordersEmptyGuide}
+            alt="Orders Guide"
+            className="w-full h-full object-contain rounded-lg bg-background"
+          />
           {/* Highlight border around orders image */}
           <div
             className="absolute inset-0 rounded-2xl border-4 border-primary"
@@ -777,7 +785,11 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
             pointerEvents: "none",
           }}
         >
-          <img src={petsEmptyGuide} alt="Pets Guide" className="w-full h-full object-contain rounded-lg bg-background" />
+          <img
+            src={petsEmptyGuide}
+            alt="Pets Guide"
+            className="w-full h-full object-contain rounded-lg bg-background"
+          />
           {/* Highlight border around pets image */}
           <div
             className="absolute inset-0 rounded-2xl border-4 border-primary"
