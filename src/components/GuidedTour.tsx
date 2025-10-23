@@ -5,6 +5,7 @@ import { X, Sparkles } from "lucide-react";
 import chatbotGuideImage from "@/assets/chatbot-guide.png";
 import cartEmptyGuide from "@/assets/cart-empty-guide.png";
 import ordersEmptyGuide from "@/assets/orders-empty-guide.png";
+import petsEmptyGuide from "@/assets/pets-empty-guide.png";
 
 interface GuidedTourProps {
   isActive: boolean;
@@ -23,6 +24,7 @@ interface TourStep {
   showChatbotImage?: boolean;
   showCartImage?: boolean;
   showOrdersImage?: boolean;
+  showPetsImage?: boolean;
 }
 
 const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
@@ -147,12 +149,13 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
     },
     {
       id: "pets-overview",
-      selector: '[data-tour="pets-add-button"]',
+      selector: null,
       title: "Quản lý Thú cưng! 📋",
       description:
         "Tại đây bạn có thể thêm và quản lý thông tin sức khỏe, lịch tiêm phòng cho tất cả thú cưng của mình.",
-      position: "bottom",
+      position: "left",
       forceClick: false,
+      showPetsImage: true,
     },
 
     // === PHẦN COMMUNITY ===
@@ -685,16 +688,17 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
         </div>
       )}
 
-      {/* Cart Image - hiển thị khi showCartImage = true, ẩn trên mobile */}
+      {/* Cart Image - hiển thị khi showCartImage = true, đồng bộ với vị trí thực tế ở giữa */}
       {currentStepData.showCartImage && (
         <div
-          className="fixed z-[101] rounded-2xl shadow-2xl overflow-hidden hidden md:block"
+          className="fixed z-[101] rounded-2xl shadow-2xl overflow-hidden"
           style={{
             top: "50%",
-            right: "5%",
-            transform: "translateY(-50%)",
-            width: "480px",
-            height: "400px",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: "min(90vw, 480px)",
+            height: "auto",
+            maxHeight: "80vh",
             animation: "slide-in-tooltip 0.4s ease-out",
             pointerEvents: "none",
           }}
@@ -721,22 +725,60 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
         </div>
       )}
 
-      {/* Orders Image - hiển thị khi showOrdersImage = true, ẩn trên mobile */}
+      {/* Orders Image - hiển thị khi showOrdersImage = true, đồng bộ với vị trí thực tế ở giữa */}
       {currentStepData.showOrdersImage && (
         <div
-          className="fixed z-[101] rounded-2xl shadow-2xl overflow-hidden hidden md:block"
+          className="fixed z-[101] rounded-2xl shadow-2xl overflow-hidden"
           style={{
             top: "50%",
-            right: "5%",
-            transform: "translateY(-50%)",
-            width: "480px",
-            height: "400px",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: "min(90vw, 480px)",
+            height: "auto",
+            maxHeight: "80vh",
             animation: "slide-in-tooltip 0.4s ease-out",
             pointerEvents: "none",
           }}
         >
           <img src={ordersEmptyGuide} alt="Orders Guide" className="w-full h-full object-contain rounded-lg bg-background" />
           {/* Highlight border around orders image */}
+          <div
+            className="absolute inset-0 rounded-2xl border-4 border-primary"
+            style={{
+              animation: "blink-highlight 1.5s infinite ease-in-out",
+              boxShadow: "0 0 40px hsl(var(--primary) / 0.6)",
+              pointerEvents: "none",
+            }}
+          />
+          {/* Corner sparkles */}
+          <Sparkles
+            className="absolute -top-3 -right-3 w-6 h-6 text-primary animate-pulse"
+            style={{ animationDelay: "0s", pointerEvents: "none" }}
+          />
+          <Sparkles
+            className="absolute -bottom-3 -left-3 w-5 h-5 text-secondary animate-pulse"
+            style={{ animationDelay: "0.5s", pointerEvents: "none" }}
+          />
+        </div>
+      )}
+
+      {/* Pets Image - hiển thị khi showPetsImage = true, đồng bộ với vị trí thực tế ở giữa */}
+      {currentStepData.showPetsImage && (
+        <div
+          className="fixed z-[101] rounded-2xl shadow-2xl overflow-hidden"
+          style={{
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: "min(90vw, 480px)",
+            height: "auto",
+            maxHeight: "80vh",
+            animation: "slide-in-tooltip 0.4s ease-out",
+            pointerEvents: "none",
+          }}
+        >
+          <img src={petsEmptyGuide} alt="Pets Guide" className="w-full h-full object-contain rounded-lg bg-background" />
+          {/* Highlight border around pets image */}
           <div
             className="absolute inset-0 rounded-2xl border-4 border-primary"
             style={{
