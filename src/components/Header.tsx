@@ -90,8 +90,7 @@ const Header = ({
         <div className="flex items-center justify-between h-14 sm:h-16 md:h-20">
           {/* Logo & Brand - Mobile Optimized */}
           <a 
-            href="#home"
-            data-tour="logo"
+            href="#home" 
             className="flex items-center gap-2 hover:opacity-80 transition-opacity touch-manipulation"
             onClick={(e) => {
               e.preventDefault();
