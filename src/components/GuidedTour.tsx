@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { X, Sparkles } from "lucide-react";
 import chatbotGuideImage from "@/assets/chatbot-guide.png";
+import cartEmptyGuide from "@/assets/cart-empty-guide.png";
+import ordersEmptyGuide from "@/assets/orders-empty-guide.png";
 
 interface GuidedTourProps {
   isActive: boolean;
@@ -19,6 +21,8 @@ interface TourStep {
   requireDropdownOpen?: boolean;
   showCartIcon?: boolean;
   showChatbotImage?: boolean;
+  showCartImage?: boolean;
+  showOrdersImage?: boolean;
 }
 
 const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
@@ -189,20 +193,21 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
     },
     {
       id: "orders-menu",
-      selector: '[data-tour="orders-menu"]',
+      selector: null,
       title: "Đơn hàng của tôi 📦",
       description: "Theo dõi tình trạng đơn hàng, xem lịch sử mua sắm và quản lý các đơn hàng của bạn.",
-      position: "bottom",
+      position: "left",
       forceClick: false,
-      requireDropdownOpen: true,
+      showOrdersImage: true,
     },
     {
       id: "cart-icon",
-      selector: '[data-tour="cart-icon"]',
+      selector: null,
       title: "Giỏ hàng Nhanh 🛒",
       description: "Icon này cho phép bạn truy cập nhanh vào giỏ hàng. Click vào để xem các sản phẩm bạn đã chọn!",
-      position: "bottom",
+      position: "left",
       forceClick: false,
+      showCartImage: true,
     },
     {
       id: "tour-complete",
@@ -660,6 +665,78 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
         >
           <img src={chatbotGuideImage} alt="Chatbot Guide" className="w-full h-full object-cover rounded-lg" />
           {/* Highlight border around chatbot image */}
+          <div
+            className="absolute inset-0 rounded-2xl border-4 border-primary"
+            style={{
+              animation: "blink-highlight 1.5s infinite ease-in-out",
+              boxShadow: "0 0 40px hsl(var(--primary) / 0.6)",
+              pointerEvents: "none",
+            }}
+          />
+          {/* Corner sparkles */}
+          <Sparkles
+            className="absolute -top-3 -right-3 w-6 h-6 text-primary animate-pulse"
+            style={{ animationDelay: "0s", pointerEvents: "none" }}
+          />
+          <Sparkles
+            className="absolute -bottom-3 -left-3 w-5 h-5 text-secondary animate-pulse"
+            style={{ animationDelay: "0.5s", pointerEvents: "none" }}
+          />
+        </div>
+      )}
+
+      {/* Cart Image - hiển thị khi showCartImage = true, ẩn trên mobile */}
+      {currentStepData.showCartImage && (
+        <div
+          className="fixed z-[101] rounded-2xl shadow-2xl overflow-hidden hidden md:block"
+          style={{
+            top: "50%",
+            right: "5%",
+            transform: "translateY(-50%)",
+            width: "480px",
+            height: "400px",
+            animation: "slide-in-tooltip 0.4s ease-out",
+            pointerEvents: "none",
+          }}
+        >
+          <img src={cartEmptyGuide} alt="Cart Guide" className="w-full h-full object-contain rounded-lg bg-background" />
+          {/* Highlight border around cart image */}
+          <div
+            className="absolute inset-0 rounded-2xl border-4 border-primary"
+            style={{
+              animation: "blink-highlight 1.5s infinite ease-in-out",
+              boxShadow: "0 0 40px hsl(var(--primary) / 0.6)",
+              pointerEvents: "none",
+            }}
+          />
+          {/* Corner sparkles */}
+          <Sparkles
+            className="absolute -top-3 -right-3 w-6 h-6 text-primary animate-pulse"
+            style={{ animationDelay: "0s", pointerEvents: "none" }}
+          />
+          <Sparkles
+            className="absolute -bottom-3 -left-3 w-5 h-5 text-secondary animate-pulse"
+            style={{ animationDelay: "0.5s", pointerEvents: "none" }}
+          />
+        </div>
+      )}
+
+      {/* Orders Image - hiển thị khi showOrdersImage = true, ẩn trên mobile */}
+      {currentStepData.showOrdersImage && (
+        <div
+          className="fixed z-[101] rounded-2xl shadow-2xl overflow-hidden hidden md:block"
+          style={{
+            top: "50%",
+            right: "5%",
+            transform: "translateY(-50%)",
+            width: "480px",
+            height: "400px",
+            animation: "slide-in-tooltip 0.4s ease-out",
+            pointerEvents: "none",
+          }}
+        >
+          <img src={ordersEmptyGuide} alt="Orders Guide" className="w-full h-full object-contain rounded-lg bg-background" />
+          {/* Highlight border around orders image */}
           <div
             className="absolute inset-0 rounded-2xl border-4 border-primary"
             style={{
