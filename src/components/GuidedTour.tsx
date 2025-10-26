@@ -775,9 +775,9 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
         <div
           className="fixed z-[101] rounded-2xl shadow-2xl overflow-hidden bg-background flex items-center justify-center"
           style={{
-            top: "38%",
+            top: "45%",
             left: "50%",
-            transform: "translate(-50%, -50%) scale(0.50)",
+            transform: "translate(-50%, -50%) scale(0.53)",
             width: "min(95vw, 1200px)",
             height: "calc(100vh - 140px)",
             animation: "slide-in-tooltip 0.4s ease-out",
@@ -813,9 +813,9 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
         <div
           className="fixed z-[101] rounded-2xl shadow-2xl overflow-hidden bg-background flex items-center justify-center"
           style={{
-            top: "38%",
+            top: "45%",
             left: "50%",
-            transform: "translate(-50%, -50%) scale(0.50)",
+            transform: "translate(-50%, -50%) scale(0.53)",
             width: "min(95vw, 1200px)",
             height: "calc(100vh - 140px)",
             animation: "slide-in-tooltip 0.4s ease-out",
@@ -851,9 +851,9 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
         <div
           className="fixed z-[101] rounded-2xl shadow-2xl overflow-hidden bg-background flex items-center justify-center"
           style={{
-            top: "38%",
+            top: "45%",
             left: "50%",
-            transform: "translate(-50%, -50%) scale(0.50)",
+            transform: "translate(-50%, -50%) scale(0.53)",
             width: "min(95vw, 1200px)",
             height: "calc(100vh - 140px)",
             animation: "slide-in-tooltip 0.4s ease-out",
