@@ -777,7 +777,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
           style={{
             top: "45%",
             left: "50%",
-            transform: "translate(-50%, -50%) scale(0.75)",
+            transform: "translate(-50%, -50%) scale(0.70)",
             width: "min(95vw, 1200px)",
             height: "calc(100vh - 140px)",
             animation: "slide-in-tooltip 0.4s ease-out",
@@ -815,7 +815,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
           style={{
             top: "45%",
             left: "50%",
-            transform: "translate(-50%, -50%) scale(0.75)",
+            transform: "translate(-50%, -50%) scale(0.70)",
             width: "min(95vw, 1200px)",
             height: "calc(100vh - 140px)",
             animation: "slide-in-tooltip 0.4s ease-out",
@@ -853,7 +853,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
           style={{
             top: "45%",
             left: "50%",
-            transform: "translate(-50%, -50%) scale(0.75)",
+            transform: "translate(-50%, -50%) scale(0.70)",
             width: "min(95vw, 1200px)",
             height: "calc(100vh - 140px)",
             animation: "slide-in-tooltip 0.4s ease-out",
