@@ -276,12 +276,15 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
         };
       }
 
-      case "bottom":
+      case "bottom": {
+        const top = rect.top + rect.height + offset;
+        const maxTop = window.innerHeight - tooltipHeight - 10;
         return {
-          top: "83%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
+          top: `${Math.min(top, maxTop)}px`,
+          left: `${rect.left + rect.width / 2}px`,
+          transform: "translateX(-50%)",
         };
+      }
 
       case "left": {
         return {
@@ -621,13 +624,6 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
     return null;
   }
 
-  // Tooltip luôn ở giữa màn hình
-  const tooltipPosition = {
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-  };
-
   return (
     <>
       {/* Overlay with cutout - 4 divs creating darkness around target */}
@@ -713,17 +709,17 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
         </div>
       )}
 
-      {/* Cart Image - hiển thị khi showCartImage = true, đồng bộ với vị trí thực tế ở giữa */}
+      {/* Cart Image - hiển thị khi showCartImage = true, đồng bộ với vị trí thực tế */}
       {currentStepData.showCartImage && (
         <div
           className="fixed z-[101] rounded-2xl shadow-2xl overflow-hidden"
           style={{
-            top: "50%",
+            top: "120px",
             left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: "min(90vw, 480px)",
+            transform: "translateX(-50%)",
+            width: "min(90vw, 600px)",
             height: "auto",
-            maxHeight: "80vh",
+            maxHeight: "calc(100vh - 200px)",
             animation: "slide-in-tooltip 0.4s ease-out",
             pointerEvents: "none",
           }}
@@ -754,17 +750,17 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
         </div>
       )}
 
-      {/* Orders Image - hiển thị khi showOrdersImage = true, đồng bộ với vị trí thực tế ở giữa */}
+      {/* Orders Image - hiển thị khi showOrdersImage = true, đồng bộ với vị trí thực tế */}
       {currentStepData.showOrdersImage && (
         <div
           className="fixed z-[101] rounded-2xl shadow-2xl overflow-hidden"
           style={{
-            top: "50%",
+            top: "120px",
             left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: "min(90vw, 480px)",
+            transform: "translateX(-50%)",
+            width: "min(90vw, 600px)",
             height: "auto",
-            maxHeight: "80vh",
+            maxHeight: "calc(100vh - 200px)",
             animation: "slide-in-tooltip 0.4s ease-out",
             pointerEvents: "none",
           }}
@@ -795,17 +791,17 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
         </div>
       )}
 
-      {/* Pets Image - hiển thị khi showPetsImage = true, đồng bộ với vị trí thực tế ở giữa */}
+      {/* Pets Image - hiển thị khi showPetsImage = true, đồng bộ với vị trí thực tế */}
       {currentStepData.showPetsImage && (
         <div
           className="fixed z-[101] rounded-2xl shadow-2xl overflow-hidden"
           style={{
-            top: "50%",
+            top: "120px",
             left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: "min(90vw, 480px)",
+            transform: "translateX(-50%)",
+            width: "min(90vw, 600px)",
             height: "auto",
-            maxHeight: "80vh",
+            maxHeight: "calc(100vh - 200px)",
             animation: "slide-in-tooltip 0.4s ease-out",
             pointerEvents: "none",
           }}
