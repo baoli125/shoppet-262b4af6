@@ -773,23 +773,20 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       {/* Orders Image - hiển thị khi showOrdersImage = true */}
       {currentStepData.showOrdersImage && (
         <div
-          className="fixed z-[101] rounded-2xl shadow-2xl overflow-hidden bg-background"
+          className="fixed z-[101] rounded-2xl shadow-2xl overflow-hidden bg-background flex items-center justify-center"
           style={{
-            top: "100px", // Vị trí bắt đầu sau header
+            top: "50%",
             left: "50%",
-            transform: "translateX(-50%)",
-            width: "min(95vw, 1200px)", // Tăng kích thước tối đa
-            height: "calc(100vh - 140px)", // Chiều cao gần như toàn màn hình
+            transform: "translate(-50%, -50%) scale(0.75)",
+            width: "min(95vw, 1200px)",
+            height: "calc(100vh - 140px)",
             animation: "slide-in-tooltip 0.4s ease-out",
             pointerEvents: "none",
             border: "3px solid hsl(var(--primary))",
+            transformOrigin: "center center",
           }}
         >
-          <img
-            src={ordersEmptyGuide}
-            alt="Orders Guide"
-            className="w-full h-full object-cover rounded-lg" // Dùng object-cover để fill toàn bộ
-          />
+          <img src={ordersEmptyGuide} alt="Orders Guide" className="w-full h-full object-contain rounded-lg" />
           {/* Highlight border around orders image */}
           <div
             className="absolute inset-0 rounded-2xl border-3 border-primary"
@@ -814,23 +811,20 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       {/* Cart Image - hiển thị khi showCartImage = true */}
       {currentStepData.showCartImage && (
         <div
-          className="fixed z-[101] rounded-2xl shadow-2xl overflow-hidden bg-background"
+          className="fixed z-[101] rounded-2xl shadow-2xl overflow-hidden bg-background flex items-center justify-center"
           style={{
-            top: "100px", // Vị trí bắt đầu sau header
+            top: "50%",
             left: "50%",
-            transform: "translateX(-50%)",
-            width: "min(95vw, 1200px)", // Tăng kích thước tối đa
-            height: "calc(100vh - 140px)", // Chiều cao gần như toàn màn hình
+            transform: "translate(-50%, -50%) scale(0.75)",
+            width: "min(95vw, 1200px)",
+            height: "calc(100vh - 140px)",
             animation: "slide-in-tooltip 0.4s ease-out",
             pointerEvents: "none",
             border: "3px solid hsl(var(--primary))",
+            transformOrigin: "center center",
           }}
         >
-          <img
-            src={cartEmptyGuide}
-            alt="Cart Guide"
-            className="w-full h-full object-cover rounded-lg" // Dùng object-cover để fill toàn bộ
-          />
+          <img src={cartEmptyGuide} alt="Cart Guide" className="w-full h-full object-contain rounded-lg" />
           {/* Highlight border around cart image */}
           <div
             className="absolute inset-0 rounded-2xl border-3 border-primary"
@@ -855,23 +849,20 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       {/* Pets Image - hiển thị khi showPetsImage = true */}
       {currentStepData.showPetsImage && (
         <div
-          className="fixed z-[101] rounded-2xl shadow-2xl overflow-hidden bg-background"
+          className="fixed z-[101] rounded-2xl shadow-2xl overflow-hidden bg-background flex items-center justify-center"
           style={{
-            top: "100px", // Vị trí bắt đầu sau header
+            top: "50%",
             left: "50%",
-            transform: "translateX(-50%)",
-            width: "min(95vw, 1200px)", // Tăng kích thước tối đa
-            height: "calc(100vh - 140px)", // Chiều cao gần như toàn màn hình
+            transform: "translate(-50%, -50%) scale(0.75)",
+            width: "min(95vw, 1200px)",
+            height: "calc(100vh - 140px)",
             animation: "slide-in-tooltip 0.4s ease-out",
             pointerEvents: "none",
             border: "3px solid hsl(var(--primary))",
+            transformOrigin: "center center",
           }}
         >
-          <img
-            src={petsEmptyGuide}
-            alt="Pets Guide"
-            className="w-full h-full object-cover rounded-lg" // Dùng object-cover để fill toàn bộ
-          />
+          <img src={petsEmptyGuide} alt="Pets Guide" className="w-full h-full object-contain rounded-lg" />
           {/* Highlight border around pets image */}
           <div
             className="absolute inset-0 rounded-2xl border-3 border-primary"
