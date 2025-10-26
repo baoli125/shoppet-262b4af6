@@ -97,34 +97,31 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       title: "Chào mừng đến Marketplace! 🛍️",
       description:
         "Đây là Marketplace - nơi mua sắm tất cả sản phẩm cho thú cưng. Hãy bắt đầu với khung tìm kiếm để tìm sản phẩm bạn cần.",
-      position: "top",
+      position: "center",
       forceClick: false,
     },
     {
       id: "marketplace-category",
       selector: '[data-tour="marketplace-category"]',
       title: "Lọc theo Danh mục 📂",
-      description:
-        "Chọn danh mục để xem sản phẩm theo loại: Thức ăn, Đồ chơi, Phụ kiện, Thuốc, hoặc Chăm sóc.",
-      position: "top",
+      description: "Chọn danh mục để xem sản phẩm theo loại: Thức ăn, Đồ chơi, Phụ kiện, Thuốc, hoặc Chăm sóc.",
+      position: "center",
       forceClick: false,
     },
     {
       id: "marketplace-pet-type",
       selector: '[data-tour="marketplace-pet-type"]',
       title: "Lọc theo Loại Thú Cưng 🐾",
-      description:
-        "Chọn loại thú cưng để xem sản phẩm phù hợp: Chó, Mèo, Chim, hoặc Cá.",
-      position: "top",
+      description: "Chọn loại thú cưng để xem sản phẩm phù hợp: Chó, Mèo, Chim, hoặc Cá.",
+      position: "center",
       forceClick: false,
     },
     {
       id: "marketplace-sort",
       selector: '[data-tour="marketplace-sort"]',
       title: "Sắp xếp Sản phẩm 🔄",
-      description:
-        "Sắp xếp sản phẩm theo giá hoặc tên để dễ tìm kiếm hơn. Bạn cũng có thể đảo chiều sắp xếp!",
-      position: "top",
+      description: "Sắp xếp sản phẩm theo giá hoặc tên để dễ tìm kiếm hơn. Bạn cũng có thể đảo chiều sắp xếp!",
+      position: "center",
       forceClick: false,
     },
 
