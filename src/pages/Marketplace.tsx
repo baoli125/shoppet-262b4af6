@@ -251,7 +251,7 @@ const Marketplace = () => {
               </div>
             </div>
 
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <Select value={selectedCategory} onValueChange={setSelectedCategory} data-tour="marketplace-category">
               <SelectTrigger className="h-10 sm:h-11 text-sm sm:text-base">
                 <SelectValue placeholder={t('marketplace.category')} />
               </SelectTrigger>
@@ -265,7 +265,7 @@ const Marketplace = () => {
               </SelectContent>
             </Select>
 
-            <Select value={selectedPetType} onValueChange={setSelectedPetType}>
+            <Select value={selectedPetType} onValueChange={setSelectedPetType} data-tour="marketplace-pet-type">
               <SelectTrigger className="h-10 sm:h-11 text-sm sm:text-base">
                 <SelectValue placeholder={t('marketplace.petType')} />
               </SelectTrigger>
@@ -278,7 +278,7 @@ const Marketplace = () => {
               </SelectContent>
             </Select>
 
-            <div className="flex gap-2 sm:col-span-2 md:col-span-1">
+            <div className="flex gap-2 sm:col-span-2 md:col-span-1" data-tour="marketplace-sort">
               <Select value={sortBy} onValueChange={setSortBy}>
                 <SelectTrigger className="h-10 sm:h-11 text-sm sm:text-base">
                   <SelectValue placeholder="Sắp xếp" />

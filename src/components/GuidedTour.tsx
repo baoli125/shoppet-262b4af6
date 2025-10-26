@@ -96,8 +96,35 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       selector: '[data-tour="marketplace-search"]',
       title: "Chào mừng đến Marketplace! 🛍️",
       description:
-        "Đây là Marketplace - nơi mua sắm tất cả sản phẩm cho thú cưng. Bạn có thể tìm kiếm, lọc danh mục và xem chi tiết sản phẩm tại đây.",
-      position: "center",
+        "Đây là Marketplace - nơi mua sắm tất cả sản phẩm cho thú cưng. Hãy bắt đầu với khung tìm kiếm để tìm sản phẩm bạn cần.",
+      position: "top",
+      forceClick: false,
+    },
+    {
+      id: "marketplace-category",
+      selector: '[data-tour="marketplace-category"]',
+      title: "Lọc theo Danh mục 📂",
+      description:
+        "Chọn danh mục để xem sản phẩm theo loại: Thức ăn, Đồ chơi, Phụ kiện, Thuốc, hoặc Chăm sóc.",
+      position: "top",
+      forceClick: false,
+    },
+    {
+      id: "marketplace-pet-type",
+      selector: '[data-tour="marketplace-pet-type"]',
+      title: "Lọc theo Loại Thú Cưng 🐾",
+      description:
+        "Chọn loại thú cưng để xem sản phẩm phù hợp: Chó, Mèo, Chim, hoặc Cá.",
+      position: "top",
+      forceClick: false,
+    },
+    {
+      id: "marketplace-sort",
+      selector: '[data-tour="marketplace-sort"]',
+      title: "Sắp xếp Sản phẩm 🔄",
+      description:
+        "Sắp xếp sản phẩm theo giá hoặc tên để dễ tìm kiếm hơn. Bạn cũng có thể đảo chiều sắp xếp!",
+      position: "top",
       forceClick: false,
     },
 
@@ -751,12 +778,12 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
         <div
           className="fixed z-[101] rounded-2xl shadow-2xl overflow-hidden"
           style={{
-            top: "120px",
+            top: "50%",
             left: "50%",
-            transform: "translateX(-50%)",
-            width: "min(90vw, 600px)",
+            transform: "translate(-50%, -50%)",
+            width: "min(85vw, 400px)",
             height: "auto",
-            maxHeight: "calc(100vh - 200px)",
+            maxHeight: "calc(100vh - 300px)",
             animation: "slide-in-tooltip 0.4s ease-out",
             pointerEvents: "none",
           }}
@@ -792,12 +819,12 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
         <div
           className="fixed z-[101] rounded-2xl shadow-2xl overflow-hidden"
           style={{
-            top: "120px",
+            top: "50%",
             left: "50%",
-            transform: "translateX(-50%)",
-            width: "min(90vw, 600px)",
+            transform: "translate(-50%, -50%)",
+            width: "min(85vw, 400px)",
             height: "auto",
-            maxHeight: "calc(100vh - 200px)",
+            maxHeight: "calc(100vh - 300px)",
             animation: "slide-in-tooltip 0.4s ease-out",
             pointerEvents: "none",
           }}
@@ -833,12 +860,12 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
         <div
           className="fixed z-[101] rounded-2xl shadow-2xl overflow-hidden"
           style={{
-            top: "120px",
+            top: "50%",
             left: "50%",
-            transform: "translateX(-50%)",
-            width: "min(90vw, 600px)",
+            transform: "translate(-50%, -50%)",
+            width: "min(85vw, 400px)",
             height: "auto",
-            maxHeight: "calc(100vh - 200px)",
+            maxHeight: "calc(100vh - 300px)",
             animation: "slide-in-tooltip 0.4s ease-out",
             pointerEvents: "none",
           }}
