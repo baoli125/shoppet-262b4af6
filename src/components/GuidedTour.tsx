@@ -3,6 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { X, Sparkles } from "lucide-react";
 import chatbotGuideImage from "@/assets/chatbot-guide.png";
+import cartEmptyGuide from "@/assets/cart-empty-guide.png";
+import ordersEmptyGuide from "@/assets/orders-empty-guide.png";
+import petsEmptyGuide from "@/assets/pets-empty-guide.png";
 
 interface GuidedTourProps {
   isActive: boolean;
@@ -19,6 +22,9 @@ interface TourStep {
   requireDropdownOpen?: boolean;
   showCartIcon?: boolean;
   showChatbotImage?: boolean;
+  showCartImage?: boolean;
+  showOrdersImage?: boolean;
+  showPetsImage?: boolean;
 }
 
 const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
@@ -143,12 +149,13 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
     },
     {
       id: "pets-overview",
-      selector: '[data-tour="pets-add-button"]',
+      selector: null,
       title: "Quản lý Thú cưng! 📋",
       description:
         "Tại đây bạn có thể thêm và quản lý thông tin sức khỏe, lịch tiêm phòng cho tất cả thú cưng của mình.",
-      position: "bottom",
+      position: "center",
       forceClick: false,
+      showPetsImage: true,
     },
 
     // === PHẦN COMMUNITY ===
@@ -188,21 +195,47 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       forceClick: true,
     },
     {
-      id: "orders-menu",
+      id: "dropdown-to-orders",
       selector: '[data-tour="orders-menu"]',
       title: "Đơn hàng của tôi 📦",
-      description: "Theo dõi tình trạng đơn hàng, xem lịch sử mua sắm và quản lý các đơn hàng của bạn.",
-      position: "bottom",
-      forceClick: false,
+      description: "Click để xem đơn hàng và lịch sử mua sắm của bạn",
+      position: "center",
+      forceClick: true,
       requireDropdownOpen: true,
     },
     {
-      id: "cart-icon",
+      id: "orders-overview",
+      selector: null,
+      title: "Quản lý Đơn hàng! 📦",
+      description: "Theo dõi tình trạng đơn hàng, xem lịch sử mua sắm và quản lý các đơn hàng của bạn tại đây.",
+      position: "center",
+      forceClick: false,
+      showOrdersImage: true,
+    },
+    {
+      id: "back-to-home",
+      selector: '[data-tour="logo"]',
+      title: "Quay về Trang chủ 🏠",
+      description: "Click vào logo để quay về trang chủ",
+      position: "center",
+      forceClick: true,
+    },
+    {
+      id: "cart-icon-click",
       selector: '[data-tour="cart-icon"]',
       title: "Giỏ hàng Nhanh 🛒",
-      description: "Icon này cho phép bạn truy cập nhanh vào giỏ hàng. Click vào để xem các sản phẩm bạn đã chọn!",
-      position: "bottom",
+      description: "Click vào icon giỏ hàng để xem các sản phẩm bạn đã chọn",
+      position: "center",
+      forceClick: true,
+    },
+    {
+      id: "cart-overview",
+      selector: null,
+      title: "Giỏ hàng của bạn! 🛒",
+      description: "Tại đây bạn có thể xem tất cả sản phẩm đã chọn, điều chỉnh số lượng và tiến hành thanh toán.",
+      position: "center",
       forceClick: false,
+      showCartImage: true,
     },
     {
       id: "tour-complete",
@@ -660,6 +693,129 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
         >
           <img src={chatbotGuideImage} alt="Chatbot Guide" className="w-full h-full object-cover rounded-lg" />
           {/* Highlight border around chatbot image */}
+          <div
+            className="absolute inset-0 rounded-2xl border-4 border-primary"
+            style={{
+              animation: "blink-highlight 1.5s infinite ease-in-out",
+              boxShadow: "0 0 40px hsl(var(--primary) / 0.6)",
+              pointerEvents: "none",
+            }}
+          />
+          {/* Corner sparkles */}
+          <Sparkles
+            className="absolute -top-3 -right-3 w-6 h-6 text-primary animate-pulse"
+            style={{ animationDelay: "0s", pointerEvents: "none" }}
+          />
+          <Sparkles
+            className="absolute -bottom-3 -left-3 w-5 h-5 text-secondary animate-pulse"
+            style={{ animationDelay: "0.5s", pointerEvents: "none" }}
+          />
+        </div>
+      )}
+
+      {/* Cart Image - hiển thị khi showCartImage = true, đồng bộ với vị trí thực tế ở giữa */}
+      {currentStepData.showCartImage && (
+        <div
+          className="fixed z-[101] rounded-2xl shadow-2xl overflow-hidden"
+          style={{
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: "min(90vw, 480px)",
+            height: "auto",
+            maxHeight: "80vh",
+            animation: "slide-in-tooltip 0.4s ease-out",
+            pointerEvents: "none",
+          }}
+        >
+          <img
+            src={cartEmptyGuide}
+            alt="Cart Guide"
+            className="w-full h-full object-contain rounded-lg bg-background"
+          />
+          {/* Highlight border around cart image */}
+          <div
+            className="absolute inset-0 rounded-2xl border-4 border-primary"
+            style={{
+              animation: "blink-highlight 1.5s infinite ease-in-out",
+              boxShadow: "0 0 40px hsl(var(--primary) / 0.6)",
+              pointerEvents: "none",
+            }}
+          />
+          {/* Corner sparkles */}
+          <Sparkles
+            className="absolute -top-3 -right-3 w-6 h-6 text-primary animate-pulse"
+            style={{ animationDelay: "0s", pointerEvents: "none" }}
+          />
+          <Sparkles
+            className="absolute -bottom-3 -left-3 w-5 h-5 text-secondary animate-pulse"
+            style={{ animationDelay: "0.5s", pointerEvents: "none" }}
+          />
+        </div>
+      )}
+
+      {/* Orders Image - hiển thị khi showOrdersImage = true, đồng bộ với vị trí thực tế ở giữa */}
+      {currentStepData.showOrdersImage && (
+        <div
+          className="fixed z-[101] rounded-2xl shadow-2xl overflow-hidden"
+          style={{
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: "min(90vw, 480px)",
+            height: "auto",
+            maxHeight: "80vh",
+            animation: "slide-in-tooltip 0.4s ease-out",
+            pointerEvents: "none",
+          }}
+        >
+          <img
+            src={ordersEmptyGuide}
+            alt="Orders Guide"
+            className="w-full h-full object-contain rounded-lg bg-background"
+          />
+          {/* Highlight border around orders image */}
+          <div
+            className="absolute inset-0 rounded-2xl border-4 border-primary"
+            style={{
+              animation: "blink-highlight 1.5s infinite ease-in-out",
+              boxShadow: "0 0 40px hsl(var(--primary) / 0.6)",
+              pointerEvents: "none",
+            }}
+          />
+          {/* Corner sparkles */}
+          <Sparkles
+            className="absolute -top-3 -right-3 w-6 h-6 text-primary animate-pulse"
+            style={{ animationDelay: "0s", pointerEvents: "none" }}
+          />
+          <Sparkles
+            className="absolute -bottom-3 -left-3 w-5 h-5 text-secondary animate-pulse"
+            style={{ animationDelay: "0.5s", pointerEvents: "none" }}
+          />
+        </div>
+      )}
+
+      {/* Pets Image - hiển thị khi showPetsImage = true, đồng bộ với vị trí thực tế ở giữa */}
+      {currentStepData.showPetsImage && (
+        <div
+          className="fixed z-[101] rounded-2xl shadow-2xl overflow-hidden"
+          style={{
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: "min(90vw, 480px)",
+            height: "auto",
+            maxHeight: "80vh",
+            animation: "slide-in-tooltip 0.4s ease-out",
+            pointerEvents: "none",
+          }}
+        >
+          <img
+            src={petsEmptyGuide}
+            alt="Pets Guide"
+            className="w-full h-full object-contain rounded-lg bg-background"
+          />
+          {/* Highlight border around pets image */}
           <div
             className="absolute inset-0 rounded-2xl border-4 border-primary"
             style={{
