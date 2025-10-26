@@ -775,7 +775,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
         <div
           className="fixed z-[101] rounded-2xl shadow-2xl overflow-hidden bg-background flex items-center justify-center"
           style={{
-            top: "50%",
+            top: "440%",
             left: "50%",
             transform: "translate(-50%, -50%) scale(0.75)",
             width: "min(95vw, 1200px)",
@@ -813,7 +813,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
         <div
           className="fixed z-[101] rounded-2xl shadow-2xl overflow-hidden bg-background flex items-center justify-center"
           style={{
-            top: "50%",
+            top: "440%",
             left: "50%",
             transform: "translate(-50%, -50%) scale(0.75)",
             width: "min(95vw, 1200px)",
@@ -851,7 +851,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
         <div
           className="fixed z-[101] rounded-2xl shadow-2xl overflow-hidden bg-background flex items-center justify-center"
           style={{
-            top: "50%",
+            top: "440%",
             left: "50%",
             transform: "translate(-50%, -50%) scale(0.75)",
             width: "min(95vw, 1200px)",
