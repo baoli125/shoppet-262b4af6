@@ -770,6 +770,44 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
         </div>
       )}
 
+      {/* Pets Image - hiển thị khi showPetsImage = true */}
+      {currentStepData.showPetsImage && (
+        <div
+          className="fixed z-[101] rounded-2xl shadow-2xl overflow-hidden bg-background flex items-center justify-center"
+          style={{
+            top: "43%",
+            left: "50%",
+            transform: "translate(-50%, -50%) scale(0.53)",
+            width: "min(95vw, 1200px)",
+            height: "calc(100vh - 140px)",
+            animation: "slide-in-tooltip 0.4s ease-out",
+            pointerEvents: "none",
+            border: "3px solid hsl(var(--primary))",
+            transformOrigin: "center center",
+          }}
+        >
+          <img src={petsEmptyGuide} alt="Pets Guide" className="w-full h-full object-contain rounded-lg" />
+          {/* Highlight border around pets image */}
+          <div
+            className="absolute inset-0 rounded-2xl border-3 border-primary"
+            style={{
+              animation: "blink-highlight 1.5s infinite ease-in-out",
+              boxShadow: "0 0 30px hsl(var(--primary) / 0.6)",
+              pointerEvents: "none",
+            }}
+          />
+          {/* Corner sparkles */}
+          <Sparkles
+            className="absolute -top-3 -right-3 w-6 h-6 text-primary animate-pulse"
+            style={{ animationDelay: "0s", pointerEvents: "none" }}
+          />
+          <Sparkles
+            className="absolute -bottom-3 -left-3 w-5 h-5 text-secondary animate-pulse"
+            style={{ animationDelay: "0.5s", pointerEvents: "none" }}
+          />
+        </div>
+      )}
+
       {/* Orders Image - hiển thị khi showOrdersImage = true */}
       {currentStepData.showOrdersImage && (
         <div
@@ -777,7 +815,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
           style={{
             top: "43%",
             left: "50%",
-            transform: "translate(-50%, -50%) scale(0.53)",
+            transform: "translate(-50%, -50%) scale(0.45)",
             width: "min(95vw, 1200px)",
             height: "calc(100vh - 140px)",
             animation: "slide-in-tooltip 0.4s ease-out",
@@ -826,44 +864,6 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
         >
           <img src={cartEmptyGuide} alt="Cart Guide" className="w-full h-full object-contain rounded-lg" />
           {/* Highlight border around cart image */}
-          <div
-            className="absolute inset-0 rounded-2xl border-3 border-primary"
-            style={{
-              animation: "blink-highlight 1.5s infinite ease-in-out",
-              boxShadow: "0 0 30px hsl(var(--primary) / 0.6)",
-              pointerEvents: "none",
-            }}
-          />
-          {/* Corner sparkles */}
-          <Sparkles
-            className="absolute -top-3 -right-3 w-6 h-6 text-primary animate-pulse"
-            style={{ animationDelay: "0s", pointerEvents: "none" }}
-          />
-          <Sparkles
-            className="absolute -bottom-3 -left-3 w-5 h-5 text-secondary animate-pulse"
-            style={{ animationDelay: "0.5s", pointerEvents: "none" }}
-          />
-        </div>
-      )}
-
-      {/* Pets Image - hiển thị khi showPetsImage = true */}
-      {currentStepData.showPetsImage && (
-        <div
-          className="fixed z-[101] rounded-2xl shadow-2xl overflow-hidden bg-background flex items-center justify-center"
-          style={{
-            top: "43%",
-            left: "50%",
-            transform: "translate(-50%, -50%) scale(0.45)",
-            width: "min(95vw, 1200px)",
-            height: "calc(100vh - 140px)",
-            animation: "slide-in-tooltip 0.4s ease-out",
-            pointerEvents: "none",
-            border: "3px solid hsl(var(--primary))",
-            transformOrigin: "center center",
-          }}
-        >
-          <img src={petsEmptyGuide} alt="Pets Guide" className="w-full h-full object-contain rounded-lg" />
-          {/* Highlight border around pets image */}
           <div
             className="absolute inset-0 rounded-2xl border-3 border-primary"
             style={{
