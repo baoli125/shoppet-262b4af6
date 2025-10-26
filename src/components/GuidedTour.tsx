@@ -250,21 +250,56 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
   // 🔥 THÊM HÀM NÀY SAU MẢNG steps
   const getTooltipPosition = () => {
     const step = steps[currentStep];
-
-    // Nếu không có target element → hiển thị ở giữa
-    if (!step.selector || !targetElement) {
-      return {
-        top: "50%",
-        left: "50%",
-        transform: "translate(-50%, -50%)",
-      };
-    }
-
-    const rect = highlightPosition;
     const isMobile = window.innerWidth < 768;
     const tooltipWidth = isMobile ? window.innerWidth * 0.9 : 384;
     const tooltipHeight = isMobile ? 200 : 220;
     const offset = isMobile ? 15 : 20;
+
+    // Nếu không có target element → sử dụng position từ step
+    if (!step.selector || !targetElement) {
+      switch (step.position) {
+        case "top":
+          return {
+            top: `${offset}px`,
+            left: "50%",
+            transform: "translateX(-50%)",
+          };
+
+        case "bottom":
+          const bottomPosition = window.innerHeight - tooltipHeight - offset;
+          return {
+            top: `${bottomPosition}px`,
+            left: "50%",
+            transform: "translateX(-50%)",
+          };
+
+        case "left":
+          return {
+            top: "50%",
+            left: `${offset}px`,
+            transform: "translateY(-50%)",
+          };
+
+        case "right":
+          const rightPosition = window.innerWidth - tooltipWidth - offset;
+          return {
+            top: "50%",
+            left: `${rightPosition}px`,
+            transform: "translateY(-50%)",
+          };
+
+        case "center":
+        default:
+          return {
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+          };
+      }
+    }
+
+    // Có target element → giữ nguyên logic cũ
+    const rect = highlightPosition;
 
     switch (step.position) {
       case "top": {
@@ -287,10 +322,11 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       }
 
       case "left": {
+        const left = Math.max(rect.left - tooltipWidth - offset, 10);
         return {
-          top: "50%",
-          left: "5%",
-          transform: "translate(-50%, -50%)",
+          top: `${rect.top + rect.height / 2}px`,
+          left: `${left}px`,
+          transform: "translateY(-50%)",
         };
       }
 
@@ -313,6 +349,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
         };
     }
   };
+
   useEffect(() => {
     if (!isActive) return;
 
