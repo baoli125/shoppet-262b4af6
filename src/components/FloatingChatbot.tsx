@@ -19,6 +19,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import type { User } from "@supabase/supabase-js";
+import pawHandIcon from "@/assets/paw-hand-icon.png";
 
 interface Message {
   role: "user" | "assistant";
@@ -170,7 +171,11 @@ const FloatingChatbot = ({ user, isNewUser }: FloatingChatbotProps) => {
         className="fixed bottom-[15vh] right-3 sm:right-4 md:right-6 h-14 w-14 sm:h-16 sm:w-16 rounded-full shadow-lg hover:scale-110 active:scale-105 transition-transform z-50 bg-gradient-to-br from-primary to-primary/80 touch-manipulation"
         size="icon"
       >
-        {isOpen ? <X className="h-6 w-6 sm:h-8 sm:w-8" /> : <span className="text-3xl sm:text-4xl">🐾</span>}
+        {isOpen ? (
+          <X className="h-6 w-6 sm:h-8 sm:w-8" />
+        ) : (
+          <img src={pawHandIcon} alt="Tay Nhỏ" className="h-8 w-8 sm:h-10 sm:w-10 object-contain" />
+        )}
       </Button>
 
       {/* Login Alert Dialog */}
