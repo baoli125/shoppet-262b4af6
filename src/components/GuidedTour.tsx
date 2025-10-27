@@ -915,9 +915,6 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
                   animation: "pulse 1s infinite ease-in-out",
                 }}
               >
-                <div className="bg-primary text-primary-foreground px-4 py-2 rounded-full shadow-lg text-sm font-bold whitespace-nowrap">
-                  👆 Click vào đây
-                </div>
               </div>
             )}
 
