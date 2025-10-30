@@ -159,20 +159,20 @@ const Profile = () => {
         onLogoutClick={handleLogout}
       />
 
-      <main className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 pt-20 sm:pt-24 max-w-4xl">
-        <div className="grid md:grid-cols-3 gap-4 sm:gap-6">
+      <main className="container mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8 pt-16 sm:pt-20 md:pt-24 max-w-4xl">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
           {/* Profile Info */}
-          <Card className="md:col-span-2 p-4 sm:p-6">
-            <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6 mb-6">
-              <Avatar className="h-20 w-20 sm:h-24 sm:w-24 mx-auto sm:mx-0">
+          <Card className="md:col-span-2 p-4 sm:p-5 md:p-6">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 mb-6">
+              <Avatar className="h-20 w-20 sm:h-24 sm:w-24 flex-shrink-0">
                 <AvatarImage src={profile?.avatar_url} />
                 <AvatarFallback className="text-xl sm:text-2xl">{profile?.display_name?.[0] || "U"}</AvatarFallback>
               </Avatar>
-              <div className="flex-1 text-center sm:text-left w-full">
-                <h2 className="text-xl sm:text-2xl font-bold mb-1 sm:mb-2">{profile?.display_name}</h2>
-                <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4 break-all">{user?.email}</p>
+              <div className="flex-1 text-center sm:text-left w-full min-w-0">
+                <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-1 sm:mb-2 truncate">{profile?.display_name}</h2>
+                <p className="text-xs sm:text-sm md:text-base text-muted-foreground mb-3 sm:mb-4 break-all">{user?.email}</p>
                 {!isEditing && (
-                  <Button onClick={() => setIsEditing(true)} variant="outline" className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation">
+                  <Button onClick={() => setIsEditing(true)} variant="outline" className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation w-full sm:w-auto">
                     <Edit className="h-4 w-4 mr-2" />
                     Chỉnh sửa
                   </Button>
@@ -183,42 +183,45 @@ const Profile = () => {
             {isEditing ? (
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="displayName">Tên hiển thị</Label>
+                  <Label htmlFor="displayName" className="text-sm">Tên hiển thị</Label>
                   <Input
                     id="displayName"
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
+                    className="h-11 text-base mt-1.5"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="phone">Số điện thoại</Label>
+                  <Label htmlFor="phone" className="text-sm">Số điện thoại</Label>
                   <Input
                     id="phone"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="0900 123 456"
+                    className="h-11 text-base mt-1.5"
                   />
                 </div>
-                <div className="flex gap-2">
-                  <Button onClick={handleUpdateProfile}>Lưu</Button>
-                  <Button variant="outline" onClick={() => setIsEditing(false)}>
+                <div className="flex gap-2 pt-2">
+                  <Button onClick={handleUpdateProfile} className="flex-1 h-11 touch-manipulation">Lưu</Button>
+                  <Button variant="outline" onClick={() => setIsEditing(false)} className="flex-1 h-11 touch-manipulation">
                     Hủy
                   </Button>
                 </div>
               </div>
             ) : (
-              <div className="space-y-2">
-                <p>
-                  <span className="font-semibold">Số điện thoại:</span> {profile?.phone || "Chưa cập nhật"}
+              <div className="space-y-2 text-sm sm:text-base">
+                <p className="flex flex-col sm:flex-row sm:items-center gap-1">
+                  <span className="font-semibold">Số điện thoại:</span> 
+                  <span className="text-muted-foreground">{profile?.phone || "Chưa cập nhật"}</span>
                 </p>
               </div>
             )}
           </Card>
 
           {/* Gamification Stats */}
-          <Card className="p-4 sm:p-6">
+          <Card className="p-4 sm:p-5 md:p-6">
             <div className="text-center mb-4 sm:mb-6">
-              <div className={`inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-primary to-primary/80 rounded-full mb-3 sm:mb-4`}>
+              <div className={`inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-primary to-primary/80 rounded-full mb-3`}>
                 <Trophy className={`h-8 w-8 sm:h-10 sm:w-10 text-white`} />
               </div>
               <h3 className={`text-2xl sm:text-3xl font-bold mb-1 ${getLevelColor(profile?.points || 0)}`}>
@@ -227,13 +230,13 @@ const Profile = () => {
               <p className="text-xs sm:text-sm text-muted-foreground">
                 {profile?.points || 0} điểm
               </p>
-              <p className="text-xs sm:text-sm font-semibold text-primary mt-1">
+              <p className="text-xs sm:text-sm font-semibold text-primary mt-1.5">
                 Giảm {getDiscount(profile?.points || 0)}% tất cả đơn hàng
               </p>
             </div>
 
             {getNextLevelPoints(profile?.points || 0) > 0 && (
-              <div className="mb-6">
+              <div className="mb-5 sm:mb-6">
                 <div className="flex justify-between text-xs text-muted-foreground mb-2">
                   <span>Level {getLevel(profile?.points || 0)}</span>
                   <span>Level {getLevel(profile?.points || 0) + 1}</span>
@@ -245,12 +248,12 @@ const Profile = () => {
               </div>
             )}
 
-            <div className="space-y-2 text-sm mb-6">
-              <div className="flex justify-between">
+            <div className="space-y-2.5 text-sm mb-5 sm:mb-6">
+              <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Đơn hàng hoàn thành:</span>
                 <span className="font-semibold">-</span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Bài viết:</span>
                 <span className="font-semibold">-</span>
               </div>
@@ -259,66 +262,66 @@ const Profile = () => {
         </div>
 
         {/* Discount Benefits Card */}
-        <Card className="p-6 mt-6">
-          <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-primary" />
-            🎯 Ưu đãi giảm giá theo level
+        <Card className="p-4 sm:p-5 md:p-6 mt-4 sm:mt-6">
+          <h3 className="text-base sm:text-lg md:text-xl font-bold mb-3 sm:mb-4 flex items-center gap-2">
+            <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+            <span className="truncate">🎯 Ưu đãi giảm giá theo level</span>
           </h3>
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             {levelThresholds.map((threshold) => (
               <div
                 key={threshold.level}
-                className={`flex justify-between items-center p-3 rounded-lg ${
+                className={`flex justify-between items-center p-2.5 sm:p-3 rounded-lg transition-colors ${
                   getLevel(profile?.points || 0) === threshold.level
                     ? "bg-primary/10 border-2 border-primary"
                     : "bg-muted/50"
                 }`}
               >
-                <div className="flex items-center gap-3">
-                  <div className={`font-bold ${threshold.color}`}>
-                    Level {threshold.level}
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                  <div className={`font-bold text-sm sm:text-base ${threshold.color} flex-shrink-0`}>
+                    Lv {threshold.level}
                   </div>
-                  <div className="text-sm text-muted-foreground">
+                  <div className="text-xs sm:text-sm text-muted-foreground truncate">
                     ({threshold.points} điểm)
                   </div>
                 </div>
-                <div className="font-semibold text-primary">
-                  Giảm {threshold.discount}%
+                <div className="font-semibold text-primary text-sm sm:text-base flex-shrink-0 ml-2">
+                  -{threshold.discount}%
                 </div>
               </div>
             ))}
           </div>
-          <div className="mt-4 p-3 bg-blue-500/10 rounded-lg">
-            <p className="text-sm text-center">
+          <div className="mt-3 sm:mt-4 p-2.5 sm:p-3 bg-blue-500/10 rounded-lg">
+            <p className="text-xs sm:text-sm text-center leading-relaxed">
               💡 <span className="font-semibold">Mẹo:</span> Mỗi 10,000 VND = 1 điểm | Mỗi bài viết = 10 điểm
             </p>
           </div>
         </Card>
 
         {/* Badges */}
-        <Card className="p-6 mt-6">
-          <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-            <Award className="h-5 w-5" />
-            Huy hiệu của tôi
+        <Card className="p-4 sm:p-5 md:p-6 mt-4 sm:mt-6">
+          <h3 className="text-base sm:text-lg md:text-xl font-bold mb-3 sm:mb-4 flex items-center gap-2">
+            <Award className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+            <span>Huy hiệu của tôi</span>
           </h3>
           {badges.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
               {badges.map((userBadge) => (
                 <div
                   key={userBadge.id}
-                  className="flex flex-col items-center p-4 bg-muted rounded-lg hover:bg-muted/80 transition-colors"
+                  className="flex flex-col items-center p-3 sm:p-4 bg-muted rounded-lg hover:bg-muted/80 transition-colors touch-manipulation"
                 >
-                  <div className="text-4xl mb-2">{userBadge.badges.icon}</div>
-                  <p className="font-semibold text-sm text-center">{userBadge.badges.name}</p>
-                  <p className="text-xs text-muted-foreground text-center">{userBadge.badges.description}</p>
+                  <div className="text-3xl sm:text-4xl mb-2">{userBadge.badges.icon}</div>
+                  <p className="font-semibold text-xs sm:text-sm text-center line-clamp-2">{userBadge.badges.name}</p>
+                  <p className="text-xs text-muted-foreground text-center line-clamp-2 mt-1">{userBadge.badges.description}</p>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              <Star className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>Chưa có huy hiệu nào</p>
-              <p className="text-sm">Hoàn thành các nhiệm vụ để nhận huy hiệu!</p>
+            <div className="text-center py-6 sm:py-8 text-muted-foreground">
+              <Star className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 opacity-50" />
+              <p className="text-sm sm:text-base mb-1">Chưa có huy hiệu nào</p>
+              <p className="text-xs sm:text-sm">Hoàn thành các nhiệm vụ để nhận huy hiệu!</p>
             </div>
           )}
         </Card>

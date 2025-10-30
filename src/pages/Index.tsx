@@ -79,34 +79,34 @@ const Index = () => {
         <HeroCarousel />
 
         {/* About Section - Mobile Optimized */}
-        <section id="about" className="py-12 sm:py-16 md:py-20 bg-card">
-          <div className="container mx-auto px-3 sm:px-4">
+        <section id="about" className="py-8 sm:py-12 md:py-16 lg:py-20 bg-card">
+          <div className="container mx-auto px-3 sm:px-4 md:px-6">
             <div className="max-w-4xl mx-auto text-center">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 text-foreground">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 md:mb-6 text-foreground">
                 {t('about.title')}
               </h2>
-              <p className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-8 leading-relaxed">
+              <p className="text-sm sm:text-base md:text-lg text-muted-foreground mb-6 sm:mb-8 leading-relaxed px-2">
                 {t('about.subtitle')}
               </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8 mt-8 sm:mt-10 md:mt-12">
-                <div className="p-4 sm:p-5 md:p-6 bg-background rounded-xl sm:rounded-2xl">
-                  <div className="text-3xl sm:text-4xl mb-3 sm:mb-4">🛍️</div>
-                  <h3 className="text-lg sm:text-xl font-semibold mb-2 text-foreground">{t('about.marketplace.title')}</h3>
-                  <p className="text-sm sm:text-base text-muted-foreground">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 md:gap-6 lg:gap-8 mt-6 sm:mt-8 md:mt-10">
+                <div className="p-4 sm:p-5 md:p-6 bg-background rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                  <div className="text-3xl sm:text-4xl mb-3">🛍️</div>
+                  <h3 className="text-base sm:text-lg md:text-xl font-semibold mb-2 text-foreground">{t('about.marketplace.title')}</h3>
+                  <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
                     {t('about.marketplace.description')}
                   </p>
                 </div>
-                <div className="p-4 sm:p-5 md:p-6 bg-background rounded-xl sm:rounded-2xl">
-                  <div className="text-3xl sm:text-4xl mb-3 sm:mb-4">🤖</div>
-                  <h3 className="text-lg sm:text-xl font-semibold mb-2 text-foreground">{t('about.aiAssistant.title')}</h3>
-                  <p className="text-sm sm:text-base text-muted-foreground">
+                <div className="p-4 sm:p-5 md:p-6 bg-background rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                  <div className="text-3xl sm:text-4xl mb-3">🤖</div>
+                  <h3 className="text-base sm:text-lg md:text-xl font-semibold mb-2 text-foreground">{t('about.aiAssistant.title')}</h3>
+                  <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
                     {t('about.aiAssistant.description')}
                   </p>
                 </div>
-                <div className="p-4 sm:p-5 md:p-6 bg-background rounded-xl sm:rounded-2xl sm:col-span-2 md:col-span-1">
-                  <div className="text-3xl sm:text-4xl mb-3 sm:mb-4">👥</div>
-                  <h3 className="text-lg sm:text-xl font-semibold mb-2 text-foreground">{t('about.community.title')}</h3>
-                  <p className="text-sm sm:text-base text-muted-foreground">
+                <div className="p-4 sm:p-5 md:p-6 bg-background rounded-xl shadow-sm hover:shadow-md transition-shadow sm:col-span-2 md:col-span-1">
+                  <div className="text-3xl sm:text-4xl mb-3">👥</div>
+                  <h3 className="text-base sm:text-lg md:text-xl font-semibold mb-2 text-foreground">{t('about.community.title')}</h3>
+                  <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
                     {t('about.community.description')}
                   </p>
                 </div>
@@ -116,42 +116,42 @@ const Index = () => {
         </section>
 
         {/* Footer - Mobile Optimized */}
-        <footer className="bg-card border-t border-border py-8 sm:py-10 md:py-12">
-          <div className="container mx-auto px-3 sm:px-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 mb-6 sm:mb-8">
+        <footer className="bg-card border-t border-border py-6 sm:py-8 md:py-10 lg:py-12">
+          <div className="container mx-auto px-3 sm:px-4 md:px-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 mb-6 sm:mb-8 text-center sm:text-left">
               <div>
-                <h4 className="text-lg font-semibold mb-4 text-foreground">{t('about.title')}</h4>
-                <p className="text-muted-foreground text-sm">
+                <h4 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-foreground">{t('about.title')}</h4>
+                <p className="text-muted-foreground text-sm leading-relaxed">
                   {t('footer.description')}
                 </p>
               </div>
               <div>
-                <h4 className="text-lg font-semibold mb-4 text-foreground">
+                <h4 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-foreground">
                   {t('header.language') === 'Ngôn ngữ' ? 'Liên hệ' : 'Contact'}
                 </h4>
                 <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li>📧 ShoppetLazyBeo@gmail.com</li>
+                  <li className="break-all">📧 ShoppetLazyBeo@gmail.com</li>
                   <li>📞 0900 123 456</li>
                   <li>📍 Việt Nam</li>
                 </ul>
               </div>
-              <div>
-                <h4 className="text-lg font-semibold mb-4 text-foreground">{t('footer.followUs')}</h4>
-                <div className="flex gap-4">
-                  <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+              <div className="sm:col-span-2 md:col-span-1">
+                <h4 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-foreground">{t('footer.followUs')}</h4>
+                <div className="flex gap-3 sm:gap-4 justify-center sm:justify-start flex-wrap">
+                  <a href="#" className="text-muted-foreground hover:text-primary transition-colors text-sm touch-manipulation py-2">
                     Facebook
                   </a>
-                  <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+                  <a href="#" className="text-muted-foreground hover:text-primary transition-colors text-sm touch-manipulation py-2">
                     Instagram
                   </a>
-                  <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+                  <a href="#" className="text-muted-foreground hover:text-primary transition-colors text-sm touch-manipulation py-2">
                     TikTok
                   </a>
                 </div>
               </div>
             </div>
-            <div className="text-center pt-8 border-t border-border">
-              <p className="text-sm text-muted-foreground">
+            <div className="text-center pt-6 sm:pt-8 border-t border-border">
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 © 2025 Shoppet. {t('footer.allRightsReserved')}
               </p>
             </div>
