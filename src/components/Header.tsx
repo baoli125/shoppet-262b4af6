@@ -108,8 +108,8 @@ const Header = ({
             />
           </a>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-8">
+          {/* Mobile & Desktop Navigation - Always visible */}
+          <nav className="flex items-center gap-3 sm:gap-4 md:gap-8">
             {menuItems.map((item) => (
               <a
                 key={item.label}
@@ -118,7 +118,7 @@ const Header = ({
                   e.preventDefault();
                   handleMenuItemClick(item.href);
                 }}
-                className={`text-base font-medium transition-colors relative ${
+                className={`text-sm sm:text-base font-medium transition-colors relative ${
                   item.active 
                     ? "text-primary after:absolute after:bottom-[-8px] after:left-0 after:right-0 after:h-0.5 after:bg-primary" 
                     : "text-header-text hover:text-primary"
@@ -253,27 +253,6 @@ const Header = ({
         {/* Mobile Menu - Optimized for Touch */}
         {mobileMenuOpen && (
           <div className="md:hidden py-3 border-t border-header-border animate-fade-in">
-            {/* Mobile Navigation */}
-            <nav className="flex flex-col gap-1 mb-3">
-              {menuItems.map((item) => (
-                <a
-                  key={item.label}
-                  href={item.href}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleMenuItemClick(item.href);
-                  }}
-                  className={`px-4 py-3 rounded-lg transition-colors touch-manipulation min-h-[48px] flex items-center ${
-                    item.active 
-                      ? "bg-primary/10 text-primary font-semibold" 
-                      : "text-header-text hover:bg-muted active:bg-muted/80"
-                  }`}
-                >
-                  {item.label}
-                </a>
-              ))}
-            </nav>
-
             {/* Mobile Auth Section - Touch Optimized */}
             {!isLoggedIn ? (
               <div className="flex flex-col gap-1 pt-3 border-t border-header-border">
