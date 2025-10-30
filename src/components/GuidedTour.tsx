@@ -271,105 +271,116 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       forceClick: false,
     },
   ];
-  // 🔥 THÊM HÀM NÀY SAU MẢNG steps
+  // Tối ưu tooltip position cho mobile
   const getTooltipPosition = () => {
     const step = steps[currentStep];
     const isMobile = window.innerWidth < 768;
-    const tooltipWidth = isMobile ? window.innerWidth * 0.9 : 384;
-    const tooltipHeight = isMobile ? 200 : 220;
-    const offset = isMobile ? 15 : 20;
+    const padding = isMobile ? 16 : 20;
+    const tooltipMaxWidth = isMobile ? window.innerWidth - (padding * 2) : 448;
 
-    // Nếu không có target element → sử dụng position từ step
+    // Không có target element → center screen
     if (!step.selector || !targetElement) {
+      if (isMobile) {
+        return {
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          maxWidth: `${tooltipMaxWidth}px`,
+        };
+      }
+
       switch (step.position) {
         case "top":
           return {
-            top: `${offset}px`,
+            top: `${padding}px`,
             left: "50%",
             transform: "translateX(-50%)",
+            maxWidth: `${tooltipMaxWidth}px`,
           };
-
         case "bottom":
-          const bottomPosition = window.innerHeight - tooltipHeight - offset;
           return {
-            top: `${bottomPosition}px`,
+            bottom: `${padding}px`,
             left: "50%",
             transform: "translateX(-50%)",
+            maxWidth: `${tooltipMaxWidth}px`,
           };
-
-        case "left":
-          return {
-            top: "50%",
-            left: `${offset}px`,
-            transform: "translateY(-50%)",
-          };
-
-        case "right":
-          const rightPosition = window.innerWidth - tooltipWidth - offset;
-          return {
-            top: "50%",
-            left: `${rightPosition}px`,
-            transform: "translateY(-50%)",
-          };
-
         case "center":
         default:
           return {
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
+            maxWidth: `${tooltipMaxWidth}px`,
           };
       }
     }
 
-    // Có target element → giữ nguyên logic cũ
+    // Có target element
     const rect = highlightPosition;
+    const tooltipHeight = 280; // ước tính
 
+    if (isMobile) {
+      // Mobile: ưu tiên bottom, fallback top
+      const spaceBelow = window.innerHeight - (rect.top + rect.height);
+      const spaceAbove = rect.top;
+
+      if (spaceBelow > tooltipHeight + padding) {
+        // Đủ chỗ phía dưới
+        return {
+          top: `${rect.top + rect.height + 12}px`,
+          left: "50%",
+          transform: "translateX(-50%)",
+          maxWidth: `${tooltipMaxWidth}px`,
+        };
+      } else if (spaceAbove > tooltipHeight + padding) {
+        // Đủ chỗ phía trên
+        return {
+          bottom: `${window.innerHeight - rect.top + 12}px`,
+          left: "50%",
+          transform: "translateX(-50%)",
+          maxWidth: `${tooltipMaxWidth}px`,
+        };
+      } else {
+        // Không đủ chỗ → center screen
+        return {
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          maxWidth: `${tooltipMaxWidth}px`,
+        };
+      }
+    }
+
+    // Desktop: theo position
     switch (step.position) {
       case "top": {
-        const top = Math.max(rect.top - tooltipHeight - offset, 10);
+        const top = Math.max(rect.top - tooltipHeight - 20, padding);
         return {
           top: `${top}px`,
           left: `${rect.left + rect.width / 2}px`,
           transform: "translateX(-50%)",
+          maxWidth: `${tooltipMaxWidth}px`,
         };
       }
-
       case "bottom": {
-        const top = rect.top + rect.height + offset;
-        const maxTop = window.innerHeight - tooltipHeight - 10;
+        const top = Math.min(
+          rect.top + rect.height + 20,
+          window.innerHeight - tooltipHeight - padding
+        );
         return {
-          top: `${Math.min(top, maxTop)}px`,
+          top: `${top}px`,
           left: `${rect.left + rect.width / 2}px`,
           transform: "translateX(-50%)",
+          maxWidth: `${tooltipMaxWidth}px`,
         };
       }
-
-      case "left": {
-        const left = Math.max(rect.left - tooltipWidth - offset, 10);
-        return {
-          top: `${rect.top + rect.height / 2}px`,
-          left: `${left}px`,
-          transform: "translateY(-50%)",
-        };
-      }
-
-      case "right": {
-        const left = rect.left + rect.width + offset;
-        const maxLeft = window.innerWidth - tooltipWidth - 10;
-        return {
-          top: `${rect.top + rect.height / 2}px`,
-          left: `${Math.min(left, maxLeft)}px`,
-          transform: "translateY(-50%)",
-        };
-      }
-
       case "center":
       default:
         return {
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
+          maxWidth: `${tooltipMaxWidth}px`,
         };
     }
   };
@@ -735,21 +746,21 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
         <div className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm pointer-events-auto" />
       )}
 
-      {/* Chatbot Image - hiển thị khi showChatbotImage = true, ẩn trên mobile */}
+      {/* Chatbot Image - responsive */}
       {currentStepData.showChatbotImage && (
         <div
-          className="fixed z-[101] rounded-2xl shadow-2xl overflow-hidden hidden md:block"
+          className="fixed z-[101] rounded-2xl shadow-2xl overflow-hidden"
           style={{
-            bottom: "calc(15vh + 80px)",
-            right: "24px",
-            width: "384px",
-            height: "500px",
+            bottom: window.innerWidth < 768 ? "calc(15vh + 70px)" : "calc(15vh + 80px)",
+            right: window.innerWidth < 768 ? "12px" : "24px",
+            width: window.innerWidth < 768 ? "calc(100vw - 24px)" : "384px",
+            height: window.innerWidth < 768 ? "auto" : "500px",
+            maxWidth: "384px",
             animation: "slide-in-tooltip 0.4s ease-out",
             pointerEvents: "none",
           }}
         >
-          <img src={chatbotGuideImage} alt="Chatbot Guide" className="w-full h-full object-cover rounded-lg" />
-          {/* Highlight border around chatbot image */}
+          <img src={chatbotGuideImage} alt="Chatbot Guide" className="w-full h-auto object-cover rounded-lg" />
           <div
             className="absolute inset-0 rounded-2xl border-4 border-primary"
             style={{
@@ -758,36 +769,45 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
               pointerEvents: "none",
             }}
           />
-          {/* Corner sparkles */}
           <Sparkles
-            className="absolute -top-3 -right-3 w-6 h-6 text-primary animate-pulse"
+            className="absolute -top-2 -right-2 w-5 h-5 sm:w-6 sm:h-6 text-primary animate-pulse"
             style={{ animationDelay: "0s", pointerEvents: "none" }}
           />
           <Sparkles
-            className="absolute -bottom-3 -left-3 w-5 h-5 text-secondary animate-pulse"
+            className="absolute -bottom-2 -left-2 w-4 h-4 sm:w-5 sm:h-5 text-secondary animate-pulse"
             style={{ animationDelay: "0.5s", pointerEvents: "none" }}
           />
         </div>
       )}
 
-      {/* Pets Image - hiển thị khi showPetsImage = true */}
-      {currentStepData.showPetsImage && (
+      {/* Pets/Orders/Cart Images - responsive */}
+      {(currentStepData.showPetsImage || currentStepData.showOrdersImage || currentStepData.showCartImage) && (
         <div
-          className="fixed z-[101] rounded-2xl shadow-2xl overflow-hidden bg-background flex items-center justify-center"
+          className="fixed z-[101] rounded-2xl shadow-2xl overflow-hidden bg-background/95 backdrop-blur-sm flex items-center justify-center"
           style={{
-            top: "43%",
+            top: "50%",
             left: "50%",
-            transform: "translate(-50%, -50%) scale(0.45)",
-            width: "min(95vw, 1200px)",
-            height: "calc(100vh - 140px)",
+            transform: window.innerWidth < 768 
+              ? "translate(-50%, -50%) scale(0.85)" 
+              : "translate(-50%, -50%) scale(0.5)",
+            width: "min(90vw, 1000px)",
+            height: window.innerWidth < 768 ? "70vh" : "calc(100vh - 160px)",
+            maxHeight: "800px",
             animation: "slide-in-tooltip 0.4s ease-out",
             pointerEvents: "none",
             border: "3px solid hsl(var(--primary))",
             transformOrigin: "center center",
           }}
         >
-          <img src={petsEmptyGuide} alt="Pets Guide" className="w-full h-full object-contain rounded-lg" />
-          {/* Highlight border around pets image */}
+          <img 
+            src={
+              currentStepData.showPetsImage ? petsEmptyGuide :
+              currentStepData.showOrdersImage ? ordersEmptyGuide :
+              cartEmptyGuide
+            } 
+            alt="Guide" 
+            className="w-full h-full object-contain rounded-lg p-2" 
+          />
           <div
             className="absolute inset-0 rounded-2xl border-3 border-primary"
             style={{
@@ -796,147 +816,58 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
               pointerEvents: "none",
             }}
           />
-          {/* Corner sparkles */}
           <Sparkles
-            className="absolute -top-3 -right-3 w-6 h-6 text-primary animate-pulse"
+            className="absolute -top-2 -right-2 w-5 h-5 sm:w-6 sm:h-6 text-primary animate-pulse"
             style={{ animationDelay: "0s", pointerEvents: "none" }}
           />
           <Sparkles
-            className="absolute -bottom-3 -left-3 w-5 h-5 text-secondary animate-pulse"
+            className="absolute -bottom-2 -left-2 w-4 h-4 sm:w-5 sm:h-5 text-secondary animate-pulse"
             style={{ animationDelay: "0.5s", pointerEvents: "none" }}
           />
         </div>
       )}
 
-      {/* Orders Image - hiển thị khi showOrdersImage = true */}
-      {currentStepData.showOrdersImage && (
-        <div
-          className="fixed z-[101] rounded-2xl shadow-2xl overflow-hidden bg-background flex items-center justify-center"
-          style={{
-            top: "43%",
-            left: "50%",
-            transform: "translate(-50%, -50%) scale(0.45)",
-            width: "min(95vw, 1200px)",
-            height: "calc(100vh - 140px)",
-            animation: "slide-in-tooltip 0.4s ease-out",
-            pointerEvents: "none",
-            border: "3px solid hsl(var(--primary))",
-            transformOrigin: "center center",
-          }}
-        >
-          <img src={ordersEmptyGuide} alt="Orders Guide" className="w-full h-full object-contain rounded-lg" />
-          {/* Highlight border around orders image */}
-          <div
-            className="absolute inset-0 rounded-2xl border-3 border-primary"
-            style={{
-              animation: "blink-highlight 1.5s infinite ease-in-out",
-              boxShadow: "0 0 30px hsl(var(--primary) / 0.6)",
-              pointerEvents: "none",
-            }}
-          />
-          {/* Corner sparkles */}
-          <Sparkles
-            className="absolute -top-3 -right-3 w-6 h-6 text-primary animate-pulse"
-            style={{ animationDelay: "0s", pointerEvents: "none" }}
-          />
-          <Sparkles
-            className="absolute -bottom-3 -left-3 w-5 h-5 text-secondary animate-pulse"
-            style={{ animationDelay: "0.5s", pointerEvents: "none" }}
-          />
-        </div>
-      )}
-
-      {/* Cart Image - hiển thị khi showCartImage = true */}
-      {currentStepData.showCartImage && (
-        <div
-          className="fixed z-[101] rounded-2xl shadow-2xl overflow-hidden bg-background flex items-center justify-center"
-          style={{
-            top: "43%",
-            left: "50%",
-            transform: "translate(-50%, -50%) scale(0.45)",
-            width: "min(95vw, 1200px)",
-            height: "calc(100vh - 140px)",
-            animation: "slide-in-tooltip 0.4s ease-out",
-            pointerEvents: "none",
-            border: "3px solid hsl(var(--primary))",
-            transformOrigin: "center center",
-          }}
-        >
-          <img src={cartEmptyGuide} alt="Cart Guide" className="w-full h-full object-contain rounded-lg" />
-          {/* Highlight border around cart image */}
-          <div
-            className="absolute inset-0 rounded-2xl border-3 border-primary"
-            style={{
-              animation: "blink-highlight 1.5s infinite ease-in-out",
-              boxShadow: "0 0 30px hsl(var(--primary) / 0.6)",
-              pointerEvents: "none",
-            }}
-          />
-          {/* Corner sparkles */}
-          <Sparkles
-            className="absolute -top-3 -right-3 w-6 h-6 text-primary animate-pulse"
-            style={{ animationDelay: "0s", pointerEvents: "none" }}
-          />
-          <Sparkles
-            className="absolute -bottom-3 -left-3 w-5 h-5 text-secondary animate-pulse"
-            style={{ animationDelay: "0.5s", pointerEvents: "none" }}
-          />
-        </div>
-      )}
 
       {/* Highlight - Hollow animated border */}
       {targetElement && (
-        <>
-          {/* Outer pulsing border - HOLLOW SQUARE */}
+        <div
+          className="fixed pointer-events-none transition-all duration-500"
+          style={{
+            top: `${highlightPosition.top - 8}px`,
+            left: `${highlightPosition.left - 8}px`,
+            width: `${highlightPosition.width + 16}px`,
+            height: `${highlightPosition.height + 16}px`,
+            zIndex: 101,
+          }}
+        >
           <div
-            className="fixed pointer-events-none transition-all duration-500"
+            className="absolute inset-0 rounded-xl border-[3px] sm:border-4 border-primary pointer-events-none"
             style={{
-              top: `${highlightPosition.top - 12}px`,
-              left: `${highlightPosition.left - 12}px`,
-              width: `${highlightPosition.width + 24}px`,
-              height: `${highlightPosition.height + 24}px`,
-              zIndex: 101,
+              animation: "blink-highlight 1.5s infinite ease-in-out",
+              boxShadow: "0 0 30px hsl(var(--primary) / 0.6)",
+              background: "transparent",
             }}
-          >
-            {/* Animated hollow border */}
-            <div
-              className="absolute inset-0 rounded-xl border-4 border-primary pointer-events-none"
-              style={{
-                animation: "blink-highlight 1.5s infinite ease-in-out",
-                boxShadow: "0 0 40px hsl(var(--primary) / 0.6)",
-                background: "transparent",
-              }}
-            />
-
-            {currentStepData.forceClick && (
-              <div
-                className="absolute pointer-events-none top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-                style={{
-                  animation: "pulse 1s infinite ease-in-out",
-                }}
-              >
-              </div>
-            )}
-
-            {/* Corner sparkles */}
-            <Sparkles
-              className="absolute -top-3 -right-3 w-6 h-6 text-primary animate-pulse pointer-events-none"
-              style={{ animationDelay: "0s" }}
-            />
-            <Sparkles
-              className="absolute -bottom-3 -left-3 w-5 h-5 text-secondary animate-pulse pointer-events-none"
-              style={{ animationDelay: "0.5s" }}
-            />
-          </div>
-        </>
+          />
+          <Sparkles
+            className="absolute -top-2 -right-2 w-4 h-4 sm:w-6 sm:h-6 text-primary animate-pulse pointer-events-none"
+            style={{ animationDelay: "0s" }}
+          />
+          <Sparkles
+            className="absolute -bottom-2 -left-2 w-3 h-3 sm:w-5 sm:h-5 text-secondary animate-pulse pointer-events-none"
+            style={{ animationDelay: "0.5s" }}
+          />
+        </div>
       )}
 
       {/* Tooltip */}
       <Card
-        className="fixed z-[103] p-4 sm:p-6 shadow-2xl w-[90vw] max-w-md border-2 border-primary/20 mx-4 sm:mx-0"
+        className="fixed z-[103] shadow-2xl border-2 border-primary/20"
         style={{
-          ...getTooltipPosition(), // ✅ MỚI: vị trí động
+          ...getTooltipPosition(),
           animation: "slide-in-tooltip 0.4s ease-out",
+          padding: window.innerWidth < 768 ? "16px" : "24px",
+          width: window.innerWidth < 768 ? "calc(100vw - 32px)" : "auto",
+          margin: window.innerWidth < 768 ? "0 16px" : "0",
         }}
       >
         <div className="flex items-start justify-between mb-3 sm:mb-4">
