@@ -746,56 +746,85 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
         <div className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm pointer-events-auto" />
       )}
 
-      {/* Chatbot Image - responsive */}
+      {/* Chatbot Image - Mobile Optimized */}
       {currentStepData.showChatbotImage && (
         <div
-          className="fixed z-[101] rounded-2xl shadow-2xl overflow-hidden"
+          className="fixed z-[101] rounded-xl sm:rounded-2xl shadow-2xl overflow-hidden"
           style={{
-            bottom: window.innerWidth < 768 ? "calc(15vh + 70px)" : "calc(15vh + 80px)",
-            right: window.innerWidth < 768 ? "12px" : "24px",
-            width: window.innerWidth < 768 ? "calc(100vw - 24px)" : "384px",
-            height: window.innerWidth < 768 ? "auto" : "500px",
-            maxWidth: "384px",
+            bottom: (() => {
+              const width = window.innerWidth;
+              if (width < 480) return "calc(10vh + 60px)"; // Extra small
+              if (width < 768) return "calc(12vh + 65px)"; // Mobile
+              return "calc(15vh + 80px)"; // Desktop
+            })(),
+            right: window.innerWidth < 768 ? "8px" : "24px",
+            width: (() => {
+              const width = window.innerWidth;
+              if (width < 480) return "calc(100vw - 16px)"; // Extra small
+              if (width < 768) return "calc(100vw - 20px)"; // Mobile
+              return "384px"; // Desktop
+            })(),
+            height: "auto",
+            maxWidth: window.innerWidth < 768 ? "100%" : "384px",
+            maxHeight: window.innerWidth < 480 ? "40vh" : "50vh",
             animation: "slide-in-tooltip 0.4s ease-out",
             pointerEvents: "none",
           }}
         >
-          <img src={chatbotGuideImage} alt="Chatbot Guide" className="w-full h-auto object-cover rounded-lg" />
+          <img 
+            src={chatbotGuideImage} 
+            alt="Chatbot Guide" 
+            className="w-full h-auto object-contain rounded-lg" 
+          />
           <div
-            className="absolute inset-0 rounded-2xl border-4 border-primary"
+            className="absolute inset-0 rounded-xl sm:rounded-2xl border-3 sm:border-4 border-primary"
             style={{
               animation: "blink-highlight 1.5s infinite ease-in-out",
-              boxShadow: "0 0 40px hsl(var(--primary) / 0.6)",
+              boxShadow: "0 0 30px hsl(var(--primary) / 0.6)",
               pointerEvents: "none",
             }}
           />
           <Sparkles
-            className="absolute -top-2 -right-2 w-5 h-5 sm:w-6 sm:h-6 text-primary animate-pulse"
+            className="absolute -top-1.5 -right-1.5 sm:-top-2 sm:-right-2 w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-primary animate-pulse"
             style={{ animationDelay: "0s", pointerEvents: "none" }}
           />
           <Sparkles
-            className="absolute -bottom-2 -left-2 w-4 h-4 sm:w-5 sm:h-5 text-secondary animate-pulse"
+            className="absolute -bottom-1.5 -left-1.5 sm:-bottom-2 sm:-left-2 w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 text-secondary animate-pulse"
             style={{ animationDelay: "0.5s", pointerEvents: "none" }}
           />
         </div>
       )}
 
-      {/* Pets/Orders/Cart Images - responsive */}
+      {/* Pets/Orders/Cart Images - Mobile First Optimized */}
       {(currentStepData.showPetsImage || currentStepData.showOrdersImage || currentStepData.showCartImage) && (
         <div
-          className="fixed z-[101] rounded-2xl shadow-2xl overflow-hidden bg-background/95 backdrop-blur-sm flex items-center justify-center"
+          className="fixed z-[101] rounded-xl sm:rounded-2xl shadow-2xl overflow-hidden bg-background/95 backdrop-blur-sm flex items-center justify-center"
           style={{
             top: "50%",
             left: "50%",
-            transform: window.innerWidth < 768 
-              ? "translate(-50%, -50%) scale(0.85)" 
-              : "translate(-50%, -50%) scale(0.5)",
-            width: "min(90vw, 1000px)",
-            height: window.innerWidth < 768 ? "70vh" : "calc(100vh - 160px)",
-            maxHeight: "800px",
+            transform: (() => {
+              const width = window.innerWidth;
+              if (width < 480) return "translate(-50%, -50%) scale(0.55)"; // Extra small
+              if (width < 640) return "translate(-50%, -50%) scale(0.65)"; // Small mobile
+              if (width < 768) return "translate(-50%, -50%) scale(0.75)"; // Large mobile
+              return "translate(-50%, -50%) scale(0.5)"; // Desktop
+            })(),
+            width: (() => {
+              const width = window.innerWidth;
+              if (width < 480) return "95vw";
+              if (width < 768) return "92vw";
+              return "min(90vw, 1000px)";
+            })(),
+            height: (() => {
+              const width = window.innerWidth;
+              if (width < 480) return "60vh";
+              if (width < 768) return "65vh";
+              return "calc(100vh - 160px)";
+            })(),
+            maxHeight: window.innerWidth < 768 ? "70vh" : "800px",
             animation: "slide-in-tooltip 0.4s ease-out",
             pointerEvents: "none",
-            border: "3px solid hsl(var(--primary))",
+            border: window.innerWidth < 768 ? "2px solid hsl(var(--primary))" : "3px solid hsl(var(--primary))",
             transformOrigin: "center center",
           }}
         >
@@ -806,144 +835,177 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
               cartEmptyGuide
             } 
             alt="Guide" 
-            className="w-full h-full object-contain rounded-lg p-2" 
+            className="w-full h-full object-contain rounded-lg p-1 sm:p-2" 
           />
           <div
-            className="absolute inset-0 rounded-2xl border-3 border-primary"
+            className="absolute inset-0 rounded-xl sm:rounded-2xl border-2 sm:border-3 border-primary"
             style={{
               animation: "blink-highlight 1.5s infinite ease-in-out",
-              boxShadow: "0 0 30px hsl(var(--primary) / 0.6)",
+              boxShadow: "0 0 20px hsl(var(--primary) / 0.5)",
               pointerEvents: "none",
             }}
           />
           <Sparkles
-            className="absolute -top-2 -right-2 w-5 h-5 sm:w-6 sm:h-6 text-primary animate-pulse"
+            className="absolute -top-1.5 -right-1.5 sm:-top-2 sm:-right-2 w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-primary animate-pulse"
             style={{ animationDelay: "0s", pointerEvents: "none" }}
           />
           <Sparkles
-            className="absolute -bottom-2 -left-2 w-4 h-4 sm:w-5 sm:h-5 text-secondary animate-pulse"
+            className="absolute -bottom-1.5 -left-1.5 sm:-bottom-2 sm:-left-2 w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 text-secondary animate-pulse"
             style={{ animationDelay: "0.5s", pointerEvents: "none" }}
           />
         </div>
       )}
 
 
-      {/* Highlight - Hollow animated border */}
+      {/* Highlight - Hollow animated border - Mobile Optimized */}
       {targetElement && (
         <div
           className="fixed pointer-events-none transition-all duration-500"
           style={{
-            top: `${highlightPosition.top - 8}px`,
-            left: `${highlightPosition.left - 8}px`,
-            width: `${highlightPosition.width + 16}px`,
-            height: `${highlightPosition.height + 16}px`,
+            top: `${highlightPosition.top - (window.innerWidth < 768 ? 6 : 8)}px`,
+            left: `${highlightPosition.left - (window.innerWidth < 768 ? 6 : 8)}px`,
+            width: `${highlightPosition.width + (window.innerWidth < 768 ? 12 : 16)}px`,
+            height: `${highlightPosition.height + (window.innerWidth < 768 ? 12 : 16)}px`,
             zIndex: 101,
           }}
         >
           <div
-            className="absolute inset-0 rounded-xl border-[3px] sm:border-4 border-primary pointer-events-none"
+            className="absolute inset-0 rounded-lg sm:rounded-xl border-[2.5px] sm:border-[3px] md:border-4 border-primary pointer-events-none"
             style={{
               animation: "blink-highlight 1.5s infinite ease-in-out",
-              boxShadow: "0 0 30px hsl(var(--primary) / 0.6)",
+              boxShadow: window.innerWidth < 768 
+                ? "0 0 20px hsl(var(--primary) / 0.5)" 
+                : "0 0 30px hsl(var(--primary) / 0.6)",
               background: "transparent",
             }}
           />
           <Sparkles
-            className="absolute -top-2 -right-2 w-4 h-4 sm:w-6 sm:h-6 text-primary animate-pulse pointer-events-none"
+            className="absolute -top-1.5 -right-1.5 sm:-top-2 sm:-right-2 w-3 h-3 sm:w-4 sm:h-4 md:w-6 md:h-6 text-primary animate-pulse pointer-events-none"
             style={{ animationDelay: "0s" }}
           />
           <Sparkles
-            className="absolute -bottom-2 -left-2 w-3 h-3 sm:w-5 sm:h-5 text-secondary animate-pulse pointer-events-none"
+            className="absolute -bottom-1.5 -left-1.5 sm:-bottom-2 sm:-left-2 w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-5 md:h-5 text-secondary animate-pulse pointer-events-none"
             style={{ animationDelay: "0.5s" }}
           />
         </div>
       )}
 
-      {/* Tooltip */}
+      {/* Tooltip - Mobile First */}
       <Card
         className="fixed z-[103] shadow-2xl border-2 border-primary/20"
         style={{
           ...getTooltipPosition(),
           animation: "slide-in-tooltip 0.4s ease-out",
-          padding: window.innerWidth < 768 ? "16px" : "24px",
-          width: window.innerWidth < 768 ? "calc(100vw - 32px)" : "auto",
-          margin: window.innerWidth < 768 ? "0 16px" : "0",
+          padding: (() => {
+            const width = window.innerWidth;
+            if (width < 480) return "12px";
+            if (width < 768) return "14px";
+            return "24px";
+          })(),
+          width: (() => {
+            const width = window.innerWidth;
+            if (width < 480) return "calc(100vw - 24px)";
+            if (width < 768) return "calc(100vw - 32px)";
+            return "auto";
+          })(),
+          margin: window.innerWidth < 768 ? "0 auto" : "0",
         }}
       >
-        <div className="flex items-start justify-between mb-3 sm:mb-4">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1.5 sm:mb-2">
-              <h3 className="text-base sm:text-lg font-bold text-primary leading-tight">{currentStepData.title}</h3>
+        <div className="flex items-start justify-between mb-2 sm:mb-3 md:mb-4 gap-2">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-1.5">
+              <h3 className="text-sm sm:text-base md:text-lg font-bold text-primary leading-tight">{currentStepData.title}</h3>
             </div>
-            <p className="text-xs sm:text-sm leading-relaxed">{currentStepData.description}</p>
+            <p className="text-xs sm:text-sm leading-relaxed break-words">{currentStepData.description}</p>
           </div>
           <Button
             variant="ghost"
             size="icon"
             onClick={skipTour}
-            className="ml-2 -mt-2 -mr-2 hover:bg-destructive/10 hover:text-destructive h-8 w-8 sm:h-10 sm:w-10 touch-manipulation flex-shrink-0"
+            className="ml-1 sm:ml-2 -mt-1 sm:-mt-2 -mr-1 sm:-mr-2 hover:bg-destructive/10 hover:text-destructive h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 touch-manipulation flex-shrink-0"
             title="Bỏ qua hướng dẫn"
           >
-            <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <X className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4" />
           </Button>
         </div>
 
         {currentStepData.showCartIcon && (
-          <div className="mb-3 sm:mb-4 p-2.5 sm:p-3 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg border border-primary/20">
-            <p className="text-xs sm:text-sm font-medium flex items-center gap-2">
-              <span className="text-base sm:text-lg flex-shrink-0">👆</span>
-              <span>Sau khi xem xong ở đây, hãy chú ý đến icon giỏ hàng nhấp nháy ở góc trên!</span>
+          <div className="mb-2 sm:mb-3 md:mb-4 p-2 sm:p-2.5 md:p-3 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg border border-primary/20">
+            <p className="text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2">
+              <span className="text-sm sm:text-base md:text-lg flex-shrink-0">👆</span>
+              <span className="break-words">Sau khi xem xong ở đây, hãy chú ý đến icon giỏ hàng nhấp nháy ở góc trên!</span>
             </p>
           </div>
         )}
 
-        <div className="flex items-center justify-between gap-2 sm:gap-4">
-          <div className="flex items-center gap-1.5 sm:gap-2">
+        <div className="flex items-center justify-between gap-2 sm:gap-3 md:gap-4">
+          <div className="flex items-center gap-1 sm:gap-1.5">
             <span className="text-xs sm:text-sm font-medium text-muted-foreground whitespace-nowrap">
-              Bước {currentStep + 1}/{steps.length}
+              {currentStep + 1}/{steps.length}
             </span>
           </div>
 
           {!currentStepData.forceClick && (
-            <Button onClick={nextStep} className="btn-hero shadow-lg h-9 sm:h-10 text-xs sm:text-sm touch-manipulation">
-              {currentStep === steps.length - 1 ? "🎉 Hoàn thành" : "Tiếp theo →"}
+            <Button onClick={nextStep} className="btn-hero shadow-lg h-9 sm:h-10 text-xs sm:text-sm px-3 sm:px-4 touch-manipulation flex-shrink-0">
+              {currentStep === steps.length - 1 ? "🎉 Xong" : "Tiếp →"}
             </Button>
           )}
 
           {currentStepData.forceClick && (
-            <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-medium text-primary animate-pulse">
+            <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2 text-xs sm:text-sm font-medium text-primary animate-pulse">
               <span className="inline-block w-1.5 h-1.5 sm:w-2 sm:h-2 bg-primary rounded-full animate-ping"></span>
               <span className="hidden sm:inline">Click vào phần được đánh dấu</span>
-              <span className="sm:hidden">Click vào đây</span>
+              <span className="sm:hidden">Click đây</span>
             </div>
           )}
         </div>
 
-        {/* Progress bar */}
-        <div className="mt-3 sm:mt-4 h-1 sm:h-1.5 bg-muted rounded-full overflow-hidden">
+        {/* Progress bar - Mobile Optimized */}
+        <div className="mt-2 sm:mt-3 md:mt-4 h-1 sm:h-1.5 bg-muted rounded-full overflow-hidden">
           <div
-            className="h-full bg-primary transition-all duration-300"
+            className="h-full bg-gradient-to-r from-primary to-primary/80 transition-all duration-300"
             style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
           />
         </div>
       </Card>
 
-      {/* Special highlight for cart icon in final step */}
+      {/* Special highlight for cart icon - Mobile Optimized */}
       {currentStepData.showCartIcon && (
         <div
           className="fixed z-[101] pointer-events-none"
           style={{
-            top: "16px",
-            right: window.innerWidth < 768 ? "60px" : "240px", // Adjust for mobile
+            top: (() => {
+              const width = window.innerWidth;
+              if (width < 480) return "12px";
+              if (width < 768) return "14px";
+              return "16px";
+            })(),
+            right: (() => {
+              const width = window.innerWidth;
+              if (width < 480) return "50px";
+              if (width < 768) return "55px";
+              return "240px";
+            })(),
           }}
         >
           <div style={{ animation: "blink-highlight 1.5s infinite ease-in-out" }}>
-            <div className="w-14 h-14 rounded-full border-4 border-primary shadow-[0_0_40px_hsl(var(--primary)/0.8)]" />
+            <div 
+              className="rounded-full border-primary shadow-[0_0_30px_hsl(var(--primary)/0.7)]"
+              style={{
+                width: window.innerWidth < 768 ? "48px" : "56px",
+                height: window.innerWidth < 768 ? "48px" : "56px",
+                borderWidth: window.innerWidth < 768 ? "3px" : "4px",
+              }}
+            />
           </div>
           {/* Pulse rings */}
           <div
-            className="absolute inset-0 w-14 h-14 rounded-full border-2 border-primary/50"
-            style={{ animation: "pulse-ring 2s infinite ease-out" }}
+            className="absolute inset-0 rounded-full border-2 border-primary/50"
+            style={{ 
+              animation: "pulse-ring 2s infinite ease-out",
+              width: window.innerWidth < 768 ? "48px" : "56px",
+              height: window.innerWidth < 768 ? "48px" : "56px",
+            }}
           />
         </div>
       )}
