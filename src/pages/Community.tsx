@@ -249,7 +249,7 @@ const Community = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pt-14 sm:pt-16 md:pt-20">
       <Header
         isLoggedIn={!!user}
         userName={profile?.display_name || user?.email}
@@ -259,37 +259,37 @@ const Community = () => {
         onLogoutClick={handleLogout}
       />
 
-      <main className="container mx-auto px-4 py-8 max-w-2xl">
-        <h1 className="text-3xl font-bold mb-8 text-center">Cộng đồng Shoppet 🐾</h1>
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8 max-w-2xl">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 md:mb-8 text-center">Cộng đồng Shoppet 🐾</h1>
 
-        {/* Create Post */}
-        <Card className="p-6 mb-8">
-          <div className="flex gap-4">
-            <Avatar>
+        {/* Create Post - Mobile Optimized */}
+        <Card className="p-4 sm:p-5 md:p-6 mb-4 sm:mb-6 md:mb-8">
+          <div className="flex gap-3 sm:gap-4">
+            <Avatar className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0">
               <AvatarImage src={profile?.avatar_url} />
               <AvatarFallback>{profile?.display_name?.[0] || "U"}</AvatarFallback>
             </Avatar>
-            <div className="flex-1 space-y-4">
+            <div className="flex-1 space-y-3 sm:space-y-4 min-w-0">
               <Textarea
                 data-tour="community-post-input"
                 placeholder="Chia sẻ điều gì đó với cộng đồng..."
                 value={newPost}
                 onChange={(e) => setNewPost(e.target.value)}
-                className="min-h-[100px]"
+                className="min-h-[100px] sm:min-h-[120px] text-sm sm:text-base resize-none"
               />
               
-              {/* Image Preview */}
+              {/* Image Preview - Mobile Optimized */}
               {imagePreview && (
                 <div className="relative">
                   <img 
                     src={imagePreview} 
                     alt="Preview" 
-                    className="rounded-lg max-h-64 object-cover"
+                    className="rounded-lg max-h-48 sm:max-h-64 w-full object-cover"
                   />
                   <Button
                     variant="destructive"
                     size="icon"
-                    className="absolute top-2 right-2"
+                    className="absolute top-2 right-2 h-9 w-9 sm:h-10 sm:w-10 touch-manipulation"
                     onClick={() => {
                       setImageFile(null);
                       setImagePreview(null);
@@ -306,9 +306,11 @@ const Community = () => {
                   size="sm"
                   onClick={() => document.getElementById('post-image-upload')?.click()}
                   type="button"
+                  className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
                 >
                   <ImageIcon className="h-4 w-4 mr-2" />
-                  Thêm ảnh
+                  <span className="hidden sm:inline">Thêm ảnh</span>
+                  <span className="sm:hidden">Ảnh</span>
                 </Button>
                 <input
                   id="post-image-upload"
@@ -320,7 +322,7 @@ const Community = () => {
                 <Button 
                   onClick={handleCreatePost} 
                   disabled={!newPost.trim() || isSubmitting} 
-                  className="flex-1"
+                  className="flex-1 h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
                 >
                   <Send className="h-4 w-4 mr-2" />
                   Đăng bài
@@ -330,46 +332,51 @@ const Community = () => {
           </div>
         </Card>
 
-        {/* Posts Feed */}
-        <div className="space-y-6">
+        {/* Posts Feed - Mobile Optimized */}
+        <div className="space-y-4 sm:space-y-6">
           {posts.map((post) => (
-            <Card key={post.id} className="p-6">
-              <div className="flex gap-4">
-                <Avatar>
+            <Card key={post.id} className="p-4 sm:p-5 md:p-6">
+              <div className="flex gap-3 sm:gap-4">
+                <Avatar className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0">
                   <AvatarImage src={post.profiles.avatar_url || undefined} />
                   <AvatarFallback>{post.profiles.display_name[0]}</AvatarFallback>
                 </Avatar>
-                <div className="flex-1">
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <p className="font-semibold">{post.profiles.display_name}</p>
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between items-start mb-2 gap-2">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold text-sm sm:text-base truncate">{post.profiles.display_name}</p>
                       <p className="text-xs text-muted-foreground">
                         {formatDistanceToNow(new Date(post.created_at), { addSuffix: true, locale: vi })}
                       </p>
                     </div>
                     {user?.id === post.user_id && (
-                      <Button variant="ghost" size="icon" onClick={() => handleDeletePost(post.id)}>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={() => handleDeletePost(post.id)}
+                        className="h-9 w-9 sm:h-10 sm:w-10 flex-shrink-0 touch-manipulation"
+                      >
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
                     )}
                   </div>
-                  <p className="text-foreground mb-4 whitespace-pre-wrap">{post.content}</p>
+                  <p className="text-foreground text-sm sm:text-base mb-3 sm:mb-4 whitespace-pre-wrap break-words">{post.content}</p>
                   {post.image_url && (
-                    <img src={post.image_url} alt="Post" className="rounded-lg mb-4 max-h-96 object-cover" />
+                    <img src={post.image_url} alt="Post" className="rounded-lg mb-3 sm:mb-4 max-h-64 sm:max-h-80 md:max-h-96 w-full object-cover" />
                   )}
-                  <div className="flex gap-4">
+                  <div className="flex gap-3 sm:gap-4">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => handleLike(post.id)}
-                      className={likedPosts.has(post.id) ? "text-red-500" : ""}
+                      className={`h-9 sm:h-10 touch-manipulation ${likedPosts.has(post.id) ? "text-red-500" : ""}`}
                     >
-                      <Heart className={`h-4 w-4 mr-1 ${likedPosts.has(post.id) ? "fill-current" : ""}`} />
-                      {post.likes_count}
+                      <Heart className={`h-4 w-4 mr-1.5 ${likedPosts.has(post.id) ? "fill-current" : ""}`} />
+                      <span className="text-sm">{post.likes_count}</span>
                     </Button>
-                    <Button variant="ghost" size="sm">
-                      <MessageCircle className="h-4 w-4 mr-1" />
-                      {post.comments_count}
+                    <Button variant="ghost" size="sm" className="h-9 sm:h-10 touch-manipulation">
+                      <MessageCircle className="h-4 w-4 mr-1.5" />
+                      <span className="text-sm">{post.comments_count}</span>
                     </Button>
                   </div>
                 </div>
@@ -378,9 +385,9 @@ const Community = () => {
           ))}
 
           {posts.length === 0 && (
-            <div className="text-center py-12 text-muted-foreground">
-              <p className="text-4xl mb-4">🐾</p>
-              <p>Chưa có bài viết nào. Hãy là người đầu tiên chia sẻ!</p>
+            <div className="text-center py-8 sm:py-12 text-muted-foreground">
+              <p className="text-4xl sm:text-5xl mb-3 sm:mb-4">🐾</p>
+              <p className="text-sm sm:text-base">Chưa có bài viết nào. Hãy là người đầu tiên chia sẻ!</p>
             </div>
           )}
         </div>

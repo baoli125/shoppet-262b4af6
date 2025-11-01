@@ -175,17 +175,17 @@ const ProductDetail = () => {
         </div>
       </div>
 
-      {/* Product Detail */}
-      <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
-          {/* Product Image */}
+      {/* Product Detail - Mobile First */}
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
+          {/* Product Image - Mobile Optimized */}
           <div className="space-y-3 sm:space-y-4">
             <Card className="overflow-hidden">
-              <div className="bg-muted relative max-h-64 sm:max-h-80 lg:max-h-96 flex items-center justify-center p-4">
+              <div className="bg-muted relative aspect-square sm:aspect-auto sm:max-h-96 flex items-center justify-center p-3 sm:p-4">
                 <img
                   src={product.image_url || "https://via.placeholder.com/600"}
                   alt={product.name}
-                  className="w-full h-auto max-h-60 sm:max-h-72 lg:max-h-96 object-contain"
+                  className="w-full h-full object-contain"
                 />
               </div>
             </Card>
@@ -266,19 +266,19 @@ const ProductDetail = () => {
           </div>
         </div>
 
-        {/* Product Details Tabs */}
-        <div className="mt-12">
-          <h2 className="text-2xl font-bold mb-6">Thông tin chi tiết</h2>
+        {/* Product Details Tabs - Mobile Optimized */}
+        <div className="mt-6 sm:mt-8 md:mt-12">
+          <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Thông tin chi tiết</h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
             {/* Weight */}
             {product.weight && (
-              <Card className="p-6">
-                <div className="flex items-start gap-3">
-                  <Package className="w-6 h-6 text-primary mt-1" />
+              <Card className="p-4 sm:p-5 md:p-6">
+                <div className="flex items-start gap-2.5 sm:gap-3">
+                  <Package className="w-5 h-5 sm:w-6 sm:h-6 text-primary mt-0.5 sm:mt-1 flex-shrink-0" />
                   <div>
-                    <h3 className="font-semibold mb-2">Trọng lượng / Dung tích</h3>
-                    <p className="text-muted-foreground">{product.weight}</p>
+                    <h3 className="font-semibold text-sm sm:text-base mb-1.5 sm:mb-2">Trọng lượng / Dung tích</h3>
+                    <p className="text-muted-foreground text-sm sm:text-base">{product.weight}</p>
                   </div>
                 </div>
               </Card>
@@ -286,12 +286,12 @@ const ProductDetail = () => {
 
             {/* Calories */}
             {product.calories && (
-              <Card className="p-6">
-                <div className="flex items-start gap-3">
-                  <Flame className="w-6 h-6 text-primary mt-1" />
+              <Card className="p-4 sm:p-5 md:p-6">
+                <div className="flex items-start gap-2.5 sm:gap-3">
+                  <Flame className="w-5 h-5 sm:w-6 sm:h-6 text-primary mt-0.5 sm:mt-1 flex-shrink-0" />
                   <div>
-                    <h3 className="font-semibold mb-2">Năng lượng</h3>
-                    <p className="text-muted-foreground">{product.calories} kcal</p>
+                    <h3 className="font-semibold text-sm sm:text-base mb-1.5 sm:mb-2">Năng lượng</h3>
+                    <p className="text-muted-foreground text-sm sm:text-base">{product.calories} kcal</p>
                   </div>
                 </div>
               </Card>
@@ -299,12 +299,12 @@ const ProductDetail = () => {
 
             {/* Ingredients */}
             {product.ingredients && (
-              <Card className="p-6 md:col-span-2">
-                <div className="flex items-start gap-3">
-                  <Leaf className="w-6 h-6 text-primary mt-1" />
-                  <div className="flex-1">
-                    <h3 className="font-semibold mb-2">Thành phần</h3>
-                    <p className="text-muted-foreground whitespace-pre-line">{product.ingredients}</p>
+              <Card className="p-4 sm:p-5 md:p-6 md:col-span-2">
+                <div className="flex items-start gap-2.5 sm:gap-3">
+                  <Leaf className="w-5 h-5 sm:w-6 sm:h-6 text-primary mt-0.5 sm:mt-1 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-sm sm:text-base mb-1.5 sm:mb-2">Thành phần</h3>
+                    <p className="text-muted-foreground text-sm sm:text-base whitespace-pre-line break-words">{product.ingredients}</p>
                   </div>
                 </div>
               </Card>
@@ -312,12 +312,12 @@ const ProductDetail = () => {
 
             {/* Nutritional Info */}
             {product.nutritional_info && (
-              <Card className="p-6 md:col-span-2">
-                <div className="flex items-start gap-3">
-                  <Info className="w-6 h-6 text-primary mt-1" />
-                  <div className="flex-1">
-                    <h3 className="font-semibold mb-2">Thông tin dinh dưỡng</h3>
-                    <p className="text-muted-foreground whitespace-pre-line">{product.nutritional_info}</p>
+              <Card className="p-4 sm:p-5 md:p-6 md:col-span-2">
+                <div className="flex items-start gap-2.5 sm:gap-3">
+                  <Info className="w-5 h-5 sm:w-6 sm:h-6 text-primary mt-0.5 sm:mt-1 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-sm sm:text-base mb-1.5 sm:mb-2">Thông tin dinh dưỡng</h3>
+                    <p className="text-muted-foreground text-sm sm:text-base whitespace-pre-line break-words">{product.nutritional_info}</p>
                   </div>
                 </div>
               </Card>
@@ -325,12 +325,12 @@ const ProductDetail = () => {
 
             {/* Features */}
             {product.features && (
-              <Card className="p-6 md:col-span-2">
-                <div className="flex items-start gap-3">
-                  <Info className="w-6 h-6 text-primary mt-1" />
-                  <div className="flex-1">
-                    <h3 className="font-semibold mb-2">Đặc điểm nổi bật</h3>
-                    <p className="text-muted-foreground whitespace-pre-line">{product.features}</p>
+              <Card className="p-4 sm:p-5 md:p-6 md:col-span-2">
+                <div className="flex items-start gap-2.5 sm:gap-3">
+                  <Info className="w-5 h-5 sm:w-6 sm:h-6 text-primary mt-0.5 sm:mt-1 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-sm sm:text-base mb-1.5 sm:mb-2">Đặc điểm nổi bật</h3>
+                    <p className="text-muted-foreground text-sm sm:text-base whitespace-pre-line break-words">{product.features}</p>
                   </div>
                 </div>
               </Card>
@@ -338,12 +338,12 @@ const ProductDetail = () => {
 
             {/* Usage Instructions */}
             {product.usage_instructions && (
-              <Card className="p-6 md:col-span-2">
-                <div className="flex items-start gap-3">
-                  <Info className="w-6 h-6 text-primary mt-1" />
-                  <div className="flex-1">
-                    <h3 className="font-semibold mb-2">Hướng dẫn sử dụng</h3>
-                    <p className="text-muted-foreground whitespace-pre-line">{product.usage_instructions}</p>
+              <Card className="p-4 sm:p-5 md:p-6 md:col-span-2">
+                <div className="flex items-start gap-2.5 sm:gap-3">
+                  <Info className="w-5 h-5 sm:w-6 sm:h-6 text-primary mt-0.5 sm:mt-1 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-sm sm:text-base mb-1.5 sm:mb-2">Hướng dẫn sử dụng</h3>
+                    <p className="text-muted-foreground text-sm sm:text-base whitespace-pre-line break-words">{product.usage_instructions}</p>
                   </div>
                 </div>
               </Card>
