@@ -174,7 +174,7 @@ const FloatingChatbot = ({ user, isNewUser }: FloatingChatbotProps) => {
         {isOpen ? (
           <X className="h-6 w-6 sm:h-8 sm:w-8" />
         ) : (
-          <img src={pawHandIcon} alt="Tay Nhỏ" className="h-8 w-8 sm:h-10 sm:w-10 object-cover rounded-full" />
+          <img src={pawHandIcon} alt="Tay Nhỏ" className="h-full w-full object-cover rounded-full" />
         )}
       </Button>
 
