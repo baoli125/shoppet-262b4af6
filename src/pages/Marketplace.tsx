@@ -321,7 +321,7 @@ const Marketplace = () => {
             {filteredProducts.map((product) => (
               <Card 
                 key={product.id} 
-                className="overflow-hidden hover:shadow-lg active:shadow-xl transition-shadow cursor-pointer touch-manipulation"
+                className="product-card cursor-pointer touch-manipulation animate-scale-in"
                 onClick={() => navigate(`/product/${product.id}`)}
               >
                 <div className="aspect-square bg-muted relative">

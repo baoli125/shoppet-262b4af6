@@ -168,7 +168,7 @@ const FloatingChatbot = ({ user, isNewUser }: FloatingChatbotProps) => {
       <Button
         data-tour="chatbot"
         onClick={handleChatbotClick}
-        className="fixed bottom-[15vh] right-3 sm:right-4 md:right-6 h-14 w-14 sm:h-16 sm:w-16 rounded-full shadow-lg hover:scale-110 active:scale-105 transition-transform z-50 bg-gradient-to-br from-primary to-primary/80 touch-manipulation"
+        className="fixed bottom-[15vh] right-3 sm:right-4 md:right-6 h-14 w-14 sm:h-16 sm:w-16 rounded-full shadow-lg hover:shadow-glow hover:scale-110 active:scale-105 transition-all duration-300 z-50 bg-gradient-to-br from-primary to-primary/80 touch-manipulation animate-bounce-subtle"
         size="icon"
       >
         {isOpen ? (

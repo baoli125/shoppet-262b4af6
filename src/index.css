@@ -175,15 +175,31 @@ All colors MUST be HSL.
   /* 🐾 Shoppet Component Styles - Pet-friendly & Modern */
   
   .btn-hero {
-    @apply bg-primary hover:bg-secondary text-primary-foreground font-bold px-8 py-3.5 rounded-2xl shadow-md hover:shadow-glow transition-all duration-300 hover:scale-105 hover:-translate-y-0.5;
+    @apply bg-primary hover:bg-secondary text-primary-foreground font-bold px-8 py-3.5 rounded-full shadow-md hover:shadow-glow transition-all duration-300 hover:scale-105 hover:-translate-y-0.5;
   }
   
   .btn-outline-blue {
-    @apply border-2 border-accent text-accent hover:bg-accent hover:text-white font-semibold px-6 py-2.5 rounded-2xl transition-all duration-300 hover:scale-105;
+    @apply border-2 border-accent text-accent hover:bg-accent hover:text-white font-semibold px-6 py-2.5 rounded-full transition-all duration-300 hover:scale-105;
   }
   
   .btn-solid-blue {
-    @apply bg-accent hover:bg-[hsl(var(--accent-hover))] text-white font-semibold px-6 py-2.5 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105;
+    @apply bg-accent hover:bg-[hsl(var(--accent-hover))] text-white font-semibold px-6 py-2.5 rounded-full shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105;
+  }
+  
+  .header-glass {
+    @apply bg-header-bg/80 backdrop-blur-lg border-b border-header-border/50;
+  }
+  
+  .card-modern {
+    @apply bg-card rounded-2xl p-6 shadow-soft hover:shadow-md transition-all duration-300 hover:-translate-y-1;
+  }
+  
+  .gradient-hero {
+    background: var(--gradient-hero);
+  }
+  
+  .gradient-overlay {
+    background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.4) 100%);
   }
   
   .quick-action-card {
@@ -191,7 +207,11 @@ All colors MUST be HSL.
   }
   
   .product-card {
-    @apply bg-card border-2 border-border rounded-3xl overflow-hidden hover:shadow-lg hover:border-primary transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1;
+    @apply bg-card border-2 border-border rounded-2xl overflow-hidden hover:shadow-lg hover:border-primary transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1;
+  }
+  
+  .post-card {
+    @apply bg-card rounded-2xl p-6 shadow-soft hover:shadow-md transition-all duration-200;
   }
   
   .header-shadow {

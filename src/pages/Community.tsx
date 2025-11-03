@@ -263,7 +263,7 @@ const Community = () => {
         <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 md:mb-8 text-center">Cộng đồng Shoppet 🐾</h1>
 
         {/* Create Post - Mobile Optimized */}
-        <Card className="p-4 sm:p-5 md:p-6 mb-4 sm:mb-6 md:mb-8">
+        <Card className="post-card mb-4 sm:mb-6 md:mb-8 animate-fade-in">
           <div className="flex gap-3 sm:gap-4">
             <Avatar className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0">
               <AvatarImage src={profile?.avatar_url} />
@@ -335,7 +335,7 @@ const Community = () => {
         {/* Posts Feed - Mobile Optimized */}
         <div className="space-y-4 sm:space-y-6">
           {posts.map((post) => (
-            <Card key={post.id} className="p-4 sm:p-5 md:p-6">
+            <Card key={post.id} className="post-card animate-fade-in-up">
               <div className="flex gap-3 sm:gap-4">
                 <Avatar className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0">
                   <AvatarImage src={post.profiles.avatar_url || undefined} />

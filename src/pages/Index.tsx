@@ -82,28 +82,28 @@ const Index = () => {
         <section id="about" className="py-8 sm:py-12 md:py-16 lg:py-20 bg-card">
           <div className="container mx-auto px-3 sm:px-4 md:px-6">
             <div className="max-w-4xl mx-auto text-center">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 md:mb-6 text-foreground">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 md:mb-6 text-foreground animate-fade-in">
                 {t('about.title')}
               </h2>
-              <p className="text-sm sm:text-base md:text-lg text-muted-foreground mb-6 sm:mb-8 leading-relaxed px-2">
+              <p className="text-sm sm:text-base md:text-lg text-muted-foreground mb-6 sm:mb-8 leading-relaxed px-2 animate-fade-in-up">
                 {t('about.subtitle')}
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 md:gap-6 lg:gap-8 mt-6 sm:mt-8 md:mt-10">
-                <div className="p-4 sm:p-5 md:p-6 bg-background rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                <div className="card-modern animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
                   <div className="text-3xl sm:text-4xl mb-3">🛍️</div>
                   <h3 className="text-base sm:text-lg md:text-xl font-semibold mb-2 text-foreground">{t('about.marketplace.title')}</h3>
                   <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
                     {t('about.marketplace.description')}
                   </p>
                 </div>
-                <div className="p-4 sm:p-5 md:p-6 bg-background rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                <div className="card-modern animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
                   <div className="text-3xl sm:text-4xl mb-3">🤖</div>
                   <h3 className="text-base sm:text-lg md:text-xl font-semibold mb-2 text-foreground">{t('about.aiAssistant.title')}</h3>
                   <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
                     {t('about.aiAssistant.description')}
                   </p>
                 </div>
-                <div className="p-4 sm:p-5 md:p-6 bg-background rounded-xl shadow-sm hover:shadow-md transition-shadow sm:col-span-2 md:col-span-1">
+                <div className="card-modern animate-fade-in-up sm:col-span-2 md:col-span-1" style={{ animationDelay: '0.3s' }}>
                   <div className="text-3xl sm:text-4xl mb-3">👥</div>
                   <h3 className="text-base sm:text-lg md:text-xl font-semibold mb-2 text-foreground">{t('about.community.title')}</h3>
                   <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
