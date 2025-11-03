@@ -8,67 +8,78 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Shoppet Pet Care Design System */
-    --background: 35 76% 94%;
-    --foreground: 0 0% 20%;
-
+    /* 🐾 Shoppet Pet Care Brand Design System */
+    
+    /* Background - Kem sữa nhẹ nhàng */
+    --background: 39 71% 93%;
+    --foreground: 25 19% 29%;
+    
+    /* Card - Trắng sáng */
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 20%;
-
+    --card-foreground: 25 19% 29%;
+    
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 20%;
-
-    /* Primary - Warm Orange */
-    --primary: 14 100% 67%;
+    --popover-foreground: 25 19% 29%;
+    
+    /* Primary - Cam pastel chính #FFA75D */
+    --primary: 25 100% 68%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 14 100% 60%;
-
-    /* Secondary - Light Orange */
-    --secondary: 29 100% 71%;
-    --secondary-foreground: 0 0% 20%;
-    --secondary-hover: 29 100% 65%;
-
-    /* Accent - Yellow */
-    --accent: 42 100% 71%;
-    --accent-foreground: 0 0% 20%;
-    --accent-hover: 42 100% 65%;
-
-    /* Muted - Cream tones */
-    --muted: 35 50% 90%;
-    --muted-foreground: 0 0% 45%;
+    --primary-hover: 25 100% 62%;
+    --primary-glow: 25 100% 75%;
+    
+    /* Secondary - Cam đậm #F16C5B */
+    --secondary: 6 85% 65%;
+    --secondary-foreground: 0 0% 100%;
+    --secondary-hover: 6 85% 58%;
+    
+    /* Accent - Xanh bạc hà #8BD7C6 */
+    --accent: 168 51% 69%;
+    --accent-foreground: 25 19% 29%;
+    --accent-hover: 168 51% 62%;
+    
+    /* Muted - Kem sữa đậm hơn cho nền phụ */
+    --muted: 39 60% 88%;
+    --muted-foreground: 25 10% 50%;
 
     /* Header specific */
     --header-bg: 0 0% 100%;
-    --header-border: 0 0% 91%;
-    --header-text: 0 0% 20%;
-    --header-blue: 211 70% 58%;
-    --header-blue-hover: 211 70% 52%;
-
-    /* Destructive */
-    --destructive: 0 84% 60%;
+    --header-border: 39 60% 88%;
+    --header-text: 25 19% 29%;
+    --header-blue: 168 51% 69%;
+    --header-blue-hover: 168 51% 62%;
+    
+    /* Success - Xanh bạc hà */
+    --success: 168 51% 69%;
+    --success-foreground: 0 0% 100%;
+    
+    /* Destructive - Đỏ cam */
+    --destructive: 6 85% 65%;
     --destructive-foreground: 0 0% 100%;
-
-    --border: 0 0% 91%;
-    --input: 0 0% 91%;
-    --ring: 14 100% 67%;
-
-    --radius: 0.75rem;
     
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(14 100% 67%), hsl(29 100% 71%));
-    --gradient-accent: linear-gradient(135deg, hsl(29 100% 71%), hsl(42 100% 71%));
-    --gradient-hero: linear-gradient(135deg, hsl(14 100% 67% / 0.9), hsl(42 100% 71% / 0.8));
+    --border: 39 40% 85%;
+    --input: 39 40% 90%;
+    --ring: 25 100% 68%;
     
-    /* Shadows */
-    --shadow-sm: 0 2px 8px hsl(0 0% 0% / 0.06);
-    --shadow-md: 0 4px 16px hsl(0 0% 0% / 0.1);
-    --shadow-lg: 0 8px 32px hsl(0 0% 0% / 0.15);
-    --shadow-header: 0 2px 12px hsl(0 0% 0% / 0.08);
+    --radius: 1rem;
     
-    /* Transitions */
+    /* 🎨 Gradients - Ấm áp và dễ thương */
+    --gradient-primary: linear-gradient(135deg, hsl(25 100% 68%), hsl(6 85% 65%));
+    --gradient-accent: linear-gradient(135deg, hsl(168 51% 69%), hsl(25 100% 75%));
+    --gradient-hero: linear-gradient(135deg, hsl(25 100% 68% / 0.95), hsl(168 51% 69% / 0.9));
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(39 71% 98%));
+    
+    /* ✨ Shadows - Nhẹ nhàng với màu cam */
+    --shadow-sm: 0 2px 8px hsl(25 100% 68% / 0.08);
+    --shadow-md: 0 4px 16px hsl(25 100% 68% / 0.15);
+    --shadow-lg: 0 8px 32px hsl(25 100% 68% / 0.2);
+    --shadow-glow: 0 0 40px hsl(25 100% 75% / 0.4);
+    --shadow-header: 0 2px 12px hsl(25 100% 68% / 0.1);
+    
+    /* 🎬 Transitions - Mượt mà */
     --transition-base: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-fast: all 0.15s ease;
+    --transition-fast: all 0.2s ease;
     --transition-slow: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
     --sidebar-background: 0 0% 98%;
 
@@ -88,39 +99,43 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 15 25% 30%;
-    --foreground: 35 76% 94%;
-
-    --card: 0 0% 15%;
-    --card-foreground: 35 76% 94%;
-
-    --popover: 0 0% 15%;
-    --popover-foreground: 35 76% 94%;
-
-    --primary: 14 100% 67%;
-    --primary-foreground: 0 0% 100%;
-    --primary-hover: 14 100% 60%;
-
-    --secondary: 29 100% 71%;
-    --secondary-foreground: 0 0% 20%;
-    --secondary-hover: 29 100% 65%;
-
-    --muted: 0 0% 25%;
-    --muted-foreground: 0 0% 70%;
-
-    --accent: 42 100% 71%;
-    --accent-foreground: 0 0% 20%;
-
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 0 0% 25%;
-    --input: 0 0% 25%;
-    --ring: 14 100% 67%;
+    --background: 25 30% 15%;
+    --foreground: 39 71% 93%;
     
-    --header-bg: 0 0% 15%;
-    --header-border: 0 0% 25%;
-    --header-text: 35 76% 94%;
+    --card: 25 20% 18%;
+    --card-foreground: 39 71% 93%;
+    
+    --popover: 25 20% 18%;
+    --popover-foreground: 39 71% 93%;
+    
+    --primary: 25 100% 68%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 25 100% 62%;
+    --primary-glow: 25 100% 75%;
+    
+    --secondary: 6 85% 65%;
+    --secondary-foreground: 0 0% 100%;
+    --secondary-hover: 6 85% 58%;
+    
+    --muted: 25 15% 25%;
+    --muted-foreground: 39 30% 70%;
+    
+    --accent: 168 51% 69%;
+    --accent-foreground: 25 30% 15%;
+    
+    --success: 168 51% 69%;
+    --success-foreground: 0 0% 100%;
+    
+    --destructive: 6 85% 65%;
+    --destructive-foreground: 0 0% 100%;
+    
+    --border: 25 15% 30%;
+    --input: 25 15% 25%;
+    --ring: 25 100% 68%;
+    
+    --header-bg: 25 20% 18%;
+    --header-border: 25 15% 30%;
+    --header-text: 39 71% 93%;
     
     --sidebar-background: 0 0% 15%;
     --sidebar-foreground: 35 76% 94%;
@@ -139,34 +154,73 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
   
   html {
     scroll-behavior: smooth;
   }
+  
+  /* Font weights for Nunito */
+  .font-light { font-weight: 300; }
+  .font-normal { font-weight: 400; }
+  .font-medium { font-weight: 500; }
+  .font-semibold { font-weight: 600; }
+  .font-bold { font-weight: 700; }
+  .font-extrabold { font-weight: 800; }
 }
 
 @layer components {
-  /* Shoppet Component Styles */
+  /* 🐾 Shoppet Component Styles - Pet-friendly & Modern */
+  
   .btn-hero {
-    @apply bg-primary hover:bg-[hsl(var(--primary-hover))] text-primary-foreground font-semibold px-8 py-3 rounded-full shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105;
+    @apply bg-primary hover:bg-secondary text-primary-foreground font-bold px-8 py-3.5 rounded-2xl shadow-md hover:shadow-glow transition-all duration-300 hover:scale-105 hover:-translate-y-0.5;
   }
   
   .btn-outline-blue {
-    @apply border-2 border-[hsl(var(--header-blue))] text-[hsl(var(--header-blue))] hover:bg-[hsl(var(--header-blue))] hover:text-white font-medium px-6 py-2 rounded-full transition-all duration-300;
+    @apply border-2 border-accent text-accent hover:bg-accent hover:text-white font-semibold px-6 py-2.5 rounded-2xl transition-all duration-300 hover:scale-105;
   }
   
   .btn-solid-blue {
-    @apply bg-[hsl(var(--header-blue))] hover:bg-[hsl(var(--header-blue-hover))] text-white font-medium px-6 py-2 rounded-full shadow-sm hover:shadow-md transition-all duration-300;
+    @apply bg-accent hover:bg-[hsl(var(--accent-hover))] text-white font-semibold px-6 py-2.5 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105;
   }
   
   .quick-action-card {
-    @apply bg-card hover:bg-card/80 border border-border rounded-2xl p-6 text-center cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 hover:border-primary;
+    @apply bg-gradient-to-br from-card to-card/50 hover:from-card hover:to-muted/30 border-2 border-border rounded-3xl p-6 text-center cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 hover:border-primary;
+  }
+  
+  .product-card {
+    @apply bg-card border-2 border-border rounded-3xl overflow-hidden hover:shadow-lg hover:border-primary transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1;
   }
   
   .header-shadow {
     box-shadow: var(--shadow-header);
+  }
+  
+  .pet-badge {
+    @apply inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-accent/20 text-accent border border-accent/30;
+  }
+  
+  .shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .shimmer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.1), transparent);
+    animation: shimmer 2s infinite;
+  }
+  
+  @keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
   }
   
   /* Onboarding Tour Animations */
