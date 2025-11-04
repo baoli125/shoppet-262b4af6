@@ -199,6 +199,14 @@ All colors MUST be HSL.
     @apply bg-accent-sky hover:bg-[hsl(var(--header-blue-hover))] text-white font-semibold px-6 py-3 rounded-full shadow-sm hover:shadow-md transition-all duration-300 hover:scale-[1.02] active:scale-[0.98];
   }
   
+  /* Backwards compatibility with existing JSX classes */
+  .btn-solid-blue {
+    @apply bg-accent-sky hover:bg-[hsl(var(--header-blue-hover))] text-white font-semibold px-6 py-3 rounded-full shadow-sm hover:shadow-md transition-all duration-300 hover:scale-[1.02] active:scale-[0.98];
+  }
+  .btn-outline-blue {
+    @apply border-2 border-border text-foreground hover:border-primary hover:bg-primary/5 font-medium px-6 py-3 rounded-full transition-all duration-300 hover:scale-[1.01] active:scale-[0.99];
+  }
+  
   .header-glass {
     @apply bg-header-bg/95 backdrop-blur-xl border-b border-header-border/60 supports-[backdrop-filter]:bg-header-bg/80;
   }
