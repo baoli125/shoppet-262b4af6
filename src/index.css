@@ -8,79 +8,79 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* 🐾 Shoppet Modern Pet Lifestyle Design System - Rover/WagWalking Inspired */
+    /* 🐾 Shoppet Premium Pet Lifestyle - Vietnamese Optimized */
     
-    /* Background - Clean white & subtle cream */
-    --background: 45 100% 99%;
-    --foreground: 220 13% 13%;
+    /* Background - Ultra clean & warm */
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
     
-    /* Card - Pure white with soft shadows */
+    /* Card - Clean with subtle warmth */
     --card: 0 0% 100%;
-    --card-foreground: 220 13% 13%;
+    --card-foreground: 222 47% 11%;
     
     --popover: 0 0% 100%;
-    --popover-foreground: 220 13% 13%;
+    --popover-foreground: 222 47% 11%;
     
-    /* Primary - Modern orange #F97316 (Rover-style) */
+    /* Primary - Vibrant Orange (Shoppet Brand) */
     --primary: 24 95% 53%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 24 95% 48%;
-    --primary-glow: 24 95% 68%;
-    --primary-light: 24 95% 95%;
+    --primary-hover: 24 95% 47%;
+    --primary-glow: 24 95% 70%;
+    --primary-light: 24 100% 97%;
     
-    /* Secondary - Soft mint #A7F3D0 */
-    --secondary: 158 64% 80%;
-    --secondary-foreground: 220 13% 13%;
-    --secondary-hover: 158 64% 72%;
+    /* Secondary - Fresh Mint Green */
+    --secondary: 158 64% 75%;
+    --secondary-foreground: 222 47% 11%;
+    --secondary-hover: 158 64% 68%;
     
-    /* Accent - Light cream #FFF7ED & sky blue */
-    --accent: 39 100% 97%;
-    --accent-foreground: 220 13% 13%;
-    --accent-hover: 39 100% 94%;
-    --accent-sky: 199 89% 48%;
+    /* Accent - Warm Cream & Sky Blue */
+    --accent: 39 100% 98%;
+    --accent-foreground: 222 47% 11%;
+    --accent-hover: 39 100% 95%;
+    --accent-sky: 199 89% 50%;
     
-    /* Muted - Light gray for subtle backgrounds */
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 9% 46%;
+    /* Muted - Soft neutral tones */
+    --muted: 210 20% 98%;
+    --muted-foreground: 215 16% 47%;
 
-    /* Header specific - Glassmorphism */
+    /* Header - Premium glassmorphism */
     --header-bg: 0 0% 100%;
-    --header-border: 220 14% 96%;
-    --header-text: 220 13% 13%;
-    --header-blue: 199 89% 48%;
-    --header-blue-hover: 199 89% 42%;
+    --header-border: 210 20% 95%;
+    --header-text: 222 47% 11%;
+    --header-blue: 199 89% 50%;
+    --header-blue-hover: 199 89% 44%;
     
-    /* Success - Fresh mint */
+    /* Success - Vibrant green */
     --success: 158 64% 52%;
     --success-foreground: 0 0% 100%;
     
-    /* Destructive - Warm red */
-    --destructive: 0 84% 60%;
+    /* Destructive - Modern red */
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
     
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
     --ring: 24 95% 53%;
     
     --radius: 1rem;
     
-    /* 🎨 Modern Gradients - Premium & Warm */
-    --gradient-primary: linear-gradient(135deg, hsl(24 95% 53%), hsl(24 95% 68%));
-    --gradient-secondary: linear-gradient(135deg, hsl(158 64% 80%), hsl(158 64% 90%));
-    --gradient-hero: linear-gradient(135deg, hsl(24 95% 53% / 0.9), hsl(24 95% 68% / 0.7));
-    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(39 100% 99%));
-    --gradient-warm: linear-gradient(135deg, hsl(24 95% 53%), hsl(45 93% 58%));
-    --gradient-glass: linear-gradient(135deg, hsl(0 0% 100% / 0.9), hsl(0 0% 100% / 0.7));
+    /* 🎨 Premium Gradients - Warm & Inviting */
+    --gradient-primary: linear-gradient(135deg, hsl(24 95% 53%), hsl(24 95% 62%));
+    --gradient-secondary: linear-gradient(135deg, hsl(158 64% 75%), hsl(158 64% 85%));
+    --gradient-hero: linear-gradient(135deg, hsl(24 95% 53% / 0.95), hsl(24 95% 62% / 0.85));
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(39 100% 98%));
+    --gradient-warm: linear-gradient(135deg, hsl(24 95% 53%), hsl(38 92% 50%));
+    --gradient-glass: linear-gradient(135deg, hsl(0 0% 100% / 0.95), hsl(0 0% 100% / 0.85));
     
-    /* ✨ Premium Shadows - Soft & Elevated */
-    --shadow-xs: 0 1px 2px hsl(220 13% 13% / 0.05);
-    --shadow-sm: 0 2px 8px hsl(220 13% 13% / 0.08), 0 1px 3px hsl(220 13% 13% / 0.04);
-    --shadow-md: 0 4px 16px hsl(220 13% 13% / 0.10), 0 2px 6px hsl(220 13% 13% / 0.05);
-    --shadow-lg: 0 12px 32px hsl(220 13% 13% / 0.12), 0 4px 12px hsl(220 13% 13% / 0.06);
-    --shadow-xl: 0 20px 48px hsl(220 13% 13% / 0.15), 0 8px 20px hsl(220 13% 13% / 0.08);
-    --shadow-glow: 0 0 48px hsl(24 95% 53% / 0.3), 0 8px 24px hsl(24 95% 53% / 0.15);
-    --shadow-header: 0 1px 3px hsl(220 13% 13% / 0.05);
-    --shadow-card-hover: 0 8px 24px hsl(220 13% 13% / 0.12), 0 4px 12px hsl(24 95% 53% / 0.08);
+    /* ✨ Premium Shadows - Ultra Soft */
+    --shadow-xs: 0 1px 2px hsl(222 47% 11% / 0.04);
+    --shadow-sm: 0 2px 8px hsl(222 47% 11% / 0.06), 0 1px 3px hsl(222 47% 11% / 0.03);
+    --shadow-md: 0 4px 16px hsl(222 47% 11% / 0.08), 0 2px 6px hsl(222 47% 11% / 0.04);
+    --shadow-lg: 0 12px 32px hsl(222 47% 11% / 0.10), 0 4px 12px hsl(222 47% 11% / 0.05);
+    --shadow-xl: 0 20px 48px hsl(222 47% 11% / 0.12), 0 8px 20px hsl(222 47% 11% / 0.06);
+    --shadow-glow: 0 0 48px hsl(24 95% 53% / 0.25), 0 8px 24px hsl(24 95% 53% / 0.12);
+    --shadow-header: 0 1px 3px hsl(222 47% 11% / 0.04);
+    --shadow-card-hover: 0 12px 28px hsl(222 47% 11% / 0.10), 0 4px 12px hsl(24 95% 53% / 0.06);
     
     /* 🎬 Smooth Transitions - Rover-style */
     --transition-base: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -164,9 +164,10 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Poppins', 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: 'Be Vietnam Pro', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     font-feature-settings: 'kern' 1, 'liga' 1;
-    letter-spacing: -0.011em;
+    letter-spacing: -0.01em;
+    line-height: 1.6;
   }
   
   html {
@@ -183,27 +184,27 @@ All colors MUST be HSL.
 }
 
 @layer components {
-  /* 🐾 Shoppet Modern Component Styles - Rover/WagWalking Inspired */
+  /* 🐾 Shoppet Premium Components - Pet Lifestyle Optimized */
   
   .btn-hero {
-    @apply relative bg-primary hover:bg-primary-hover text-primary-foreground font-semibold px-8 py-4 rounded-full shadow-md hover:shadow-glow transition-all duration-200 hover:scale-[1.02] active:scale-[0.98];
+    @apply relative bg-primary hover:bg-primary-hover text-primary-foreground font-semibold px-8 py-4 rounded-full shadow-sm hover:shadow-glow transition-all duration-300 hover:scale-[1.02] active:scale-[0.98];
     background: var(--gradient-warm);
   }
   
-  .btn-outline-blue {
-    @apply border-2 border-primary/20 text-primary hover:border-primary hover:bg-primary/5 font-semibold px-6 py-3 rounded-full transition-all duration-200 hover:scale-[1.02] active:scale-[0.98];
+  .btn-outline-modern {
+    @apply border-2 border-border text-foreground hover:border-primary hover:bg-primary/5 font-medium px-6 py-3 rounded-full transition-all duration-300 hover:scale-[1.01] active:scale-[0.99];
   }
   
-  .btn-solid-blue {
-    @apply bg-accent-sky hover:bg-[hsl(var(--header-blue-hover))] text-white font-semibold px-6 py-3 rounded-full shadow-sm hover:shadow-md transition-all duration-200 hover:scale-[1.02] active:scale-[0.98];
+  .btn-solid-sky {
+    @apply bg-accent-sky hover:bg-[hsl(var(--header-blue-hover))] text-white font-semibold px-6 py-3 rounded-full shadow-sm hover:shadow-md transition-all duration-300 hover:scale-[1.02] active:scale-[0.98];
   }
   
   .header-glass {
-    @apply bg-header-bg/90 backdrop-blur-xl border-b border-header-border/50 supports-[backdrop-filter]:bg-header-bg/60;
+    @apply bg-header-bg/95 backdrop-blur-xl border-b border-header-border/60 supports-[backdrop-filter]:bg-header-bg/80;
   }
   
   .card-modern {
-    @apply bg-card rounded-2xl p-8 shadow-sm hover:shadow-card-hover transition-all duration-200 hover:-translate-y-1;
+    @apply bg-card rounded-2xl p-8 shadow-xs hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1;
   }
   
   .gradient-hero {
@@ -215,15 +216,15 @@ All colors MUST be HSL.
   }
   
   .quick-action-card {
-    @apply bg-card hover:bg-card border border-border hover:border-primary/30 rounded-2xl p-8 text-center cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-[1.02] hover:-translate-y-1;
+    @apply bg-card hover:bg-accent/50 border border-border/60 hover:border-primary/40 rounded-2xl p-8 text-center cursor-pointer transition-all duration-300 hover:shadow-md hover:scale-[1.02] hover:-translate-y-1;
   }
   
   .product-card {
-    @apply bg-card border border-border/50 rounded-2xl overflow-hidden shadow-xs hover:shadow-card-hover hover:border-primary/30 transition-all duration-200 hover:scale-[1.01] hover:-translate-y-1;
+    @apply bg-card border border-border/40 rounded-2xl overflow-hidden shadow-xs hover:shadow-card-hover hover:border-primary/40 transition-all duration-300 hover:scale-[1.01] hover:-translate-y-1;
   }
   
   .post-card {
-    @apply bg-card rounded-2xl p-6 shadow-xs hover:shadow-md transition-all duration-200 border border-border/30;
+    @apply bg-card rounded-2xl p-6 shadow-xs hover:shadow-md transition-all duration-300 border border-border/40;
   }
   
   .header-shadow {
@@ -231,19 +232,19 @@ All colors MUST be HSL.
   }
   
   .pet-badge {
-    @apply inline-flex items-center px-4 py-1.5 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20;
+    @apply inline-flex items-center px-4 py-2 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/30;
   }
   
   .badge-new {
-    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-accent-sky/10 text-accent-sky border border-accent-sky/20;
+    @apply inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-accent-sky/10 text-accent-sky border border-accent-sky/30;
   }
   
   .badge-sale {
-    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-destructive/10 text-destructive border border-destructive/20;
+    @apply inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-destructive/10 text-destructive border border-destructive/30;
   }
   
   .badge-hot {
-    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20;
+    @apply inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/30;
   }
   
   .shimmer {
