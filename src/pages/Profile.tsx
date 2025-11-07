@@ -7,31 +7,40 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Star, Award, Edit, TrendingUp } from "lucide-react";
+import { Trophy, Star, Award, Edit, TrendingUp, Save, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Profile = () => {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [badges, setBadges] = useState<any[]>([]);
   const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [phone, setPhone] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    const loadData = async () => {
+      setIsLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         navigate("/");
         return;
       }
       setUser(user);
-      fetchProfile(user.id);
-      fetchBadges(user.id);
-    });
+      await Promise.all([
+        fetchProfile(user.id),
+        fetchBadges(user.id)
+      ]);
+      setIsLoading(false);
+    };
+    loadData();
   }, [navigate]);
 
   const fetchProfile = async (userId: string) => {
@@ -56,6 +65,7 @@ const Profile = () => {
   };
 
   const handleUpdateProfile = async () => {
+    setIsSaving(true);
     try {
       const { error } = await supabase
         .from("profiles")
@@ -68,7 +78,7 @@ const Profile = () => {
       if (error) throw error;
 
       setIsEditing(false);
-      fetchProfile(user.id);
+      await fetchProfile(user.id);
       toast({
         title: "Cập nhật thành công! ✨",
         description: "Thông tin cá nhân đã được cập nhật.",
@@ -80,6 +90,8 @@ const Profile = () => {
         description: "Không thể cập nhật thông tin.",
         variant: "destructive",
       });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -160,50 +172,105 @@ const Profile = () => {
       />
 
       <main className="container mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8 pt-16 sm:pt-20 md:pt-24 max-w-4xl">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-          {/* Profile Info */}
-          <Card className="md:col-span-2 p-4 sm:p-5 md:p-6">
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+            <Card className="md:col-span-2 p-4 sm:p-5 md:p-6">
+              <div className="flex items-start gap-4 mb-6">
+                <Skeleton className="h-20 w-20 sm:h-24 sm:w-24 rounded-full" />
+                <div className="flex-1 space-y-3">
+                  <Skeleton className="h-6 w-40" />
+                  <Skeleton className="h-4 w-60" />
+                  <Skeleton className="h-10 w-28" />
+                </div>
+              </div>
+              <div className="space-y-3">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-3/4" />
+              </div>
+            </Card>
+            <Card className="p-4 sm:p-5 md:p-6">
+              <div className="text-center mb-6">
+                <Skeleton className="h-20 w-20 rounded-full mx-auto mb-3" />
+                <Skeleton className="h-8 w-24 mx-auto mb-2" />
+                <Skeleton className="h-4 w-20 mx-auto" />
+              </div>
+            </Card>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+            {/* Profile Info */}
+            <Card className="md:col-span-2 p-4 sm:p-5 md:p-6 hover:shadow-lg transition-shadow duration-300 animate-fade-in">
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 mb-6">
-              <Avatar className="h-20 w-20 sm:h-24 sm:w-24 flex-shrink-0">
-                <AvatarImage src={profile?.avatar_url} />
-                <AvatarFallback className="text-xl sm:text-2xl">{profile?.display_name?.[0] || "U"}</AvatarFallback>
-              </Avatar>
+              <div className="relative group">
+                <Avatar className="h-20 w-20 sm:h-24 sm:w-24 flex-shrink-0 ring-4 ring-primary/10 transition-all group-hover:ring-primary/30">
+                  <AvatarImage src={profile?.avatar_url} />
+                  <AvatarFallback className="text-xl sm:text-2xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground">
+                    {profile?.display_name?.[0] || "U"}
+                  </AvatarFallback>
+                </Avatar>
+              </div>
               <div className="flex-1 text-center sm:text-left w-full min-w-0">
                 <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-1 sm:mb-2 truncate">{profile?.display_name}</h2>
                 <p className="text-xs sm:text-sm md:text-base text-muted-foreground mb-3 sm:mb-4 break-all">{user?.email}</p>
                 {!isEditing && (
-                  <Button onClick={() => setIsEditing(true)} variant="outline" className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation w-full sm:w-auto">
+                  <Button onClick={() => setIsEditing(true)} variant="outline" className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation w-full sm:w-auto hover:bg-primary hover:text-primary-foreground transition-colors">
                     <Edit className="h-4 w-4 mr-2" />
-                    Chỉnh sửa
+                    Chỉnh sửa thông tin
                   </Button>
                 )}
               </div>
             </div>
 
             {isEditing ? (
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="displayName" className="text-sm">Tên hiển thị</Label>
+              <div className="space-y-4 animate-fade-in">
+                <div className="space-y-2">
+                  <Label htmlFor="displayName" className="text-sm font-medium">Tên hiển thị</Label>
                   <Input
                     id="displayName"
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
-                    className="h-11 text-base mt-1.5"
+                    className="h-11 text-base"
                   />
                 </div>
-                <div>
-                  <Label htmlFor="phone" className="text-sm">Số điện thoại</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="phone" className="text-sm font-medium">Số điện thoại</Label>
                   <Input
                     id="phone"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="0900 123 456"
-                    className="h-11 text-base mt-1.5"
+                    className="h-11 text-base"
                   />
                 </div>
                 <div className="flex gap-2 pt-2">
-                  <Button onClick={handleUpdateProfile} className="flex-1 h-11 touch-manipulation">Lưu</Button>
-                  <Button variant="outline" onClick={() => setIsEditing(false)} className="flex-1 h-11 touch-manipulation">
+                  <Button 
+                    onClick={handleUpdateProfile} 
+                    className="flex-1 h-11 btn-hero touch-manipulation"
+                    disabled={isSaving}
+                  >
+                    {isSaving ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                        Đang lưu...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-4 w-4 mr-2" />
+                        Lưu thay đổi
+                      </>
+                    )}
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setIsEditing(false);
+                      setDisplayName(profile?.display_name || "");
+                      setPhone(profile?.phone || "");
+                    }} 
+                    className="flex-1 h-11 touch-manipulation"
+                    disabled={isSaving}
+                  >
+                    <X className="h-4 w-4 mr-2" />
                     Hủy
                   </Button>
                 </div>
@@ -219,7 +286,7 @@ const Profile = () => {
           </Card>
 
           {/* Gamification Stats */}
-          <Card className="p-4 sm:p-5 md:p-6">
+          <Card className="p-4 sm:p-5 md:p-6 hover:shadow-lg transition-shadow duration-300 animate-fade-in border-2 border-primary/10">
             <div className="text-center mb-4 sm:mb-6">
               <div className={`inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-primary to-primary/80 rounded-full mb-3`}>
                 <Trophy className={`h-8 w-8 sm:h-10 sm:w-10 text-white`} />
@@ -260,9 +327,11 @@ const Profile = () => {
             </div>
           </Card>
         </div>
+        )}
 
         {/* Discount Benefits Card */}
-        <Card className="p-4 sm:p-5 md:p-6 mt-4 sm:mt-6">
+        {!isLoading && (
+        <Card className="p-4 sm:p-5 md:p-6 mt-4 sm:mt-6 hover:shadow-lg transition-shadow duration-300 animate-fade-in">
           <h3 className="text-base sm:text-lg md:text-xl font-bold mb-3 sm:mb-4 flex items-center gap-2">
             <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
             <span className="truncate">🎯 Ưu đãi giảm giá theo level</span>
@@ -297,9 +366,11 @@ const Profile = () => {
             </p>
           </div>
         </Card>
+        )}
 
         {/* Badges */}
-        <Card className="p-4 sm:p-5 md:p-6 mt-4 sm:mt-6">
+        {!isLoading && (
+        <Card className="p-4 sm:p-5 md:p-6 mt-4 sm:mt-6 hover:shadow-lg transition-shadow duration-300 animate-fade-in">
           <h3 className="text-base sm:text-lg md:text-xl font-bold mb-3 sm:mb-4 flex items-center gap-2">
             <Award className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
             <span>Huy hiệu của tôi</span>
@@ -325,6 +396,7 @@ const Profile = () => {
             </div>
           )}
         </Card>
+        )}
       </main>
     </div>
   );
