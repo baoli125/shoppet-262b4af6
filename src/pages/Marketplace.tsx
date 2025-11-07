@@ -306,102 +306,122 @@ const Marketplace = () => {
         </div>
       </div>
 
-      {/* Products Grid - Mobile Optimized */}
+      {/* Products Grid - 4 Column Modern Layout */}
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8">
         {filteredProducts.length === 0 ? (
-          <div className="text-center py-8 sm:py-12">
-            <div className="text-4xl sm:text-5xl md:text-6xl mb-3 sm:mb-4">🛍️</div>
-            <h2 className="text-xl sm:text-2xl font-bold mb-2">{t('marketplace.noProducts')}</h2>
-            <p className="text-sm sm:text-base text-muted-foreground">
+          <div className="text-center py-12 sm:py-16">
+            <div className="text-5xl sm:text-6xl md:text-7xl mb-4 animate-fade-in">🛍️</div>
+            <h2 className="text-2xl sm:text-3xl font-bold mb-3">{t('marketplace.noProducts')}</h2>
+            <p className="text-base sm:text-lg text-muted-foreground max-w-md mx-auto">
               {t('marketplace.noProductsDesc')}
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
-            {filteredProducts.map((product) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 md:gap-6">
+            {filteredProducts.map((product, index) => (
               <Card 
                 key={product.id} 
-                className="product-card cursor-pointer touch-manipulation animate-scale-in"
+                className="group overflow-hidden border-2 border-transparent hover:border-primary/20 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 cursor-pointer touch-manipulation"
                 onClick={() => navigate(`/product/${product.id}`)}
+                style={{ animationDelay: `${index * 50}ms` }}
               >
-                <div className="aspect-square bg-muted relative">
+                {/* Image Section with Hover Effect */}
+                <div className="aspect-square bg-muted/30 relative overflow-hidden">
                   <img
                     src={product.image_url || "https://via.placeholder.com/300"}
                     alt={product.name}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
-                  <Badge className="absolute top-2 right-2 bg-primary text-xs sm:text-sm">
+                  {/* Overlay on Hover */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  
+                  {/* Category Badge */}
+                  <Badge className="absolute top-3 right-3 bg-primary/90 backdrop-blur-sm text-xs sm:text-sm font-semibold shadow-lg">
                     {getCategoryLabel(product.category)}
                   </Badge>
+                  
+                  {/* Pet Type Icon */}
+                  {product.pet_type && (
+                    <div className="absolute top-3 left-3 w-8 h-8 sm:w-10 sm:h-10 bg-background/90 backdrop-blur-sm rounded-full flex items-center justify-center text-lg sm:text-xl shadow-lg">
+                      {getPetTypeLabel(product.pet_type).split(" ")[0]}
+                    </div>
+                  )}
                 </div>
 
-                <div className="p-3 sm:p-4">
-                  <div className="flex items-start justify-between mb-2 gap-2">
-                    <h3 className="font-semibold text-base sm:text-lg line-clamp-2 flex-1">{product.name}</h3>
-                    {product.pet_type && (
-                      <span className="text-lg sm:text-xl flex-shrink-0">{getPetTypeLabel(product.pet_type).split(" ")[0]}</span>
+                {/* Content Section */}
+                <div className="p-4 sm:p-5 space-y-3">
+                  {/* Title and Brand */}
+                  <div className="space-y-1">
+                    <h3 className="font-bold text-base sm:text-lg line-clamp-2 text-foreground group-hover:text-primary transition-colors duration-200">
+                      {product.name}
+                    </h3>
+                    {product.brand && (
+                      <p className="text-xs sm:text-sm text-muted-foreground font-medium">{product.brand}</p>
                     )}
                   </div>
 
-                  {product.brand && (
-                    <p className="text-xs sm:text-sm text-muted-foreground mb-1.5 sm:mb-2">{product.brand}</p>
-                  )}
-
-                  <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 mb-2 sm:mb-3">
+                  {/* Description */}
+                  <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 leading-relaxed">
                     {product.description}
                   </p>
 
-                  <div className="flex items-center justify-between mb-3 sm:mb-4">
-                    <span className="text-lg sm:text-xl md:text-2xl font-bold text-primary">
-                      {product.price.toLocaleString()}đ
-                    </span>
-                    <span className="text-xs sm:text-sm text-muted-foreground">
-                      {t('marketplace.stock')} {product.stock}
-                    </span>
+                  {/* Price and Stock */}
+                  <div className="flex items-end justify-between pt-2">
+                    <div>
+                      <span className="text-xl sm:text-2xl font-bold text-primary block">
+                        {product.price.toLocaleString()}đ
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        Còn {product.stock} sp
+                      </span>
+                    </div>
                   </div>
 
-                  {cartItems[product.id] ? (
-                    <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                  {/* Action Buttons */}
+                  <div onClick={(e) => e.stopPropagation()}>
+                    {cartItems[product.id] ? (
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            updateCartQuantity(product.id, -1);
+                          }}
+                          className="h-10 w-10 sm:h-11 sm:w-11 rounded-full touch-manipulation hover:bg-destructive hover:text-destructive-foreground hover:border-destructive"
+                        >
+                          <Minus className="w-4 h-4" />
+                        </Button>
+                        <span className="flex-1 text-center font-bold text-lg">
+                          {cartItems[product.id]}
+                        </span>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            updateCartQuantity(product.id, 1);
+                          }}
+                          disabled={cartItems[product.id] >= product.stock}
+                          className="h-10 w-10 sm:h-11 sm:w-11 rounded-full touch-manipulation hover:bg-primary hover:text-primary-foreground hover:border-primary"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ) : (
                       <Button
-                        variant="outline"
-                        size="icon"
+                        className="w-full btn-hero h-11 sm:h-12 text-sm sm:text-base font-semibold touch-manipulation shadow-lg"
                         onClick={(e) => {
                           e.stopPropagation();
-                          updateCartQuantity(product.id, -1);
+                          addToCart(product.id);
                         }}
-                        className="h-10 w-10 sm:h-11 sm:w-11 touch-manipulation flex-shrink-0"
+                        disabled={product.stock === 0}
                       >
-                        <Minus className="w-4 h-4" />
+                        <ShoppingCart className="w-4 h-4 mr-2" />
+                        {t('marketplace.addToCart')}
                       </Button>
-                      <span className="flex-1 text-center font-semibold text-base sm:text-lg">
-                        {cartItems[product.id]}
-                      </span>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          updateCartQuantity(product.id, 1);
-                        }}
-                        disabled={cartItems[product.id] >= product.stock}
-                        className="h-10 w-10 sm:h-11 sm:w-11 touch-manipulation flex-shrink-0"
-                      >
-                        <Plus className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <Button
-                      className="w-full btn-hero h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        addToCart(product.id);
-                      }}
-                      disabled={product.stock === 0}
-                    >
-                      <ShoppingCart className="w-4 h-4 mr-2" />
-                      {t('marketplace.addToCart')}
-                    </Button>
-                  )}
+                    )}
+                  </div>
                 </div>
               </Card>
             ))}

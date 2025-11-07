@@ -4,10 +4,17 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, ShoppingCart, Plus, Minus, Package, Flame, Leaf, Info } from "lucide-react";
+import { ArrowLeft, ShoppingCart, Plus, Minus, Package, Flame, Leaf, Info, Heart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 interface Product {
   id: string;
@@ -36,6 +43,7 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [cartQuantity, setCartQuantity] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
 
   useEffect(() => {
     if (id) {
@@ -43,6 +51,20 @@ const ProductDetail = () => {
       fetchCartQuantity();
     }
   }, [id]);
+
+  const fetchRelatedProducts = async (category: string, currentId: string) => {
+    const { data } = await supabase
+      .from("products")
+      .select("*")
+      .eq("is_active", true)
+      .eq("category", category as any)
+      .neq("id", currentId)
+      .limit(8);
+    
+    if (data) {
+      setRelatedProducts(data);
+    }
+  };
 
   const fetchProduct = async () => {
     const { data, error } = await supabase
@@ -60,6 +82,7 @@ const ProductDetail = () => {
       navigate("/marketplace");
     } else {
       setProduct(data);
+      fetchRelatedProducts(data.category, data.id);
     }
     setLoading(false);
   };
@@ -175,136 +198,157 @@ const ProductDetail = () => {
         </div>
       </div>
 
-      {/* Product Detail - Mobile First */}
+      {/* Product Detail - 2 Column Layout */}
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
-          {/* Product Image - Mobile Optimized */}
-          <div className="space-y-3 sm:space-y-4">
-            <Card className="overflow-hidden">
-              <div className="bg-muted relative aspect-square sm:aspect-auto sm:max-h-96 flex items-center justify-center p-3 sm:p-4">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 sm:gap-8 md:gap-10">
+          {/* Left Column: Product Image */}
+          <div className="lg:col-span-2 space-y-4">
+            <Card className="overflow-hidden border-2 hover:border-primary/30 transition-all duration-300">
+              <div className="bg-gradient-to-br from-background to-muted/30 relative aspect-square flex items-center justify-center p-6">
                 <img
                   src={product.image_url || "https://via.placeholder.com/600"}
                   alt={product.name}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-contain drop-shadow-2xl"
                 />
               </div>
             </Card>
+            
+            {/* Quick Info Cards */}
+            <div className="grid grid-cols-2 gap-3">
+              {product.weight && (
+                <Card className="p-4 text-center hover:shadow-lg transition-shadow">
+                  <Package className="w-5 h-5 text-primary mx-auto mb-2" />
+                  <p className="text-xs text-muted-foreground mb-1">Trọng lượng</p>
+                  <p className="font-semibold text-sm">{product.weight}</p>
+                </Card>
+              )}
+              {product.calories && (
+                <Card className="p-4 text-center hover:shadow-lg transition-shadow">
+                  <Flame className="w-5 h-5 text-primary mx-auto mb-2" />
+                  <p className="text-xs text-muted-foreground mb-1">Năng lượng</p>
+                  <p className="font-semibold text-sm">{product.calories} kcal</p>
+                </Card>
+              )}
+            </div>
           </div>
 
-          {/* Product Info */}
-          <div className="space-y-4 sm:space-y-6">
-            <div>
-              <div className="flex items-start gap-2 sm:gap-3 mb-3 flex-wrap">
-                <Badge className="bg-primary text-xs sm:text-sm">{getCategoryLabel(product.category)}</Badge>
+          {/* Right Column: Product Info & Actions */}
+          <div className="lg:col-span-3 space-y-6">
+            {/* Header Section */}
+            <div className="space-y-4">
+              <div className="flex items-start gap-3 flex-wrap">
+                <Badge className="bg-primary text-sm font-semibold px-3 py-1">
+                  {getCategoryLabel(product.category)}
+                </Badge>
                 {product.pet_type && (
-                  <Badge variant="outline" className="text-xs sm:text-sm">{getPetTypeLabel(product.pet_type)}</Badge>
+                  <Badge variant="outline" className="text-sm font-semibold px-3 py-1 border-2">
+                    {getPetTypeLabel(product.pet_type)}
+                  </Badge>
                 )}
               </div>
               
-              <h1 className="text-2xl sm:text-3xl font-bold mb-2">{product.name}</h1>
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight">{product.name}</h1>
+              
               {product.brand && (
-                <p className="text-base sm:text-lg text-muted-foreground mb-3 sm:mb-4">Thương hiệu: {product.brand}</p>
+                <p className="text-lg text-muted-foreground">
+                  Thương hiệu: <span className="font-semibold text-foreground">{product.brand}</span>
+                </p>
               )}
               
-              <p className="text-sm sm:text-base text-muted-foreground">{product.description}</p>
+              <p className="text-base leading-relaxed text-muted-foreground">{product.description}</p>
             </div>
 
-            <Separator />
+            <Separator className="my-6" />
 
-            {/* Price and Stock */}
-            <div>
-              <div className="flex items-baseline gap-2 mb-2">
-                <span className="text-3xl sm:text-4xl font-bold text-primary">
-                  {product.price.toLocaleString()}đ
-                </span>
+            {/* Price Section - Prominent */}
+            <Card className="p-6 bg-gradient-to-br from-primary/5 to-accent/5 border-2 border-primary/20">
+              <div className="flex items-end justify-between flex-wrap gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Giá sản phẩm</p>
+                  <span className="text-4xl sm:text-5xl font-bold text-primary block">
+                    {product.price.toLocaleString()}đ
+                  </span>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-muted-foreground mb-1">Tình trạng</p>
+                  <Badge variant={product.stock > 0 ? "default" : "destructive"} className="text-base px-4 py-1">
+                    {product.stock > 0 ? `Còn ${product.stock} sản phẩm` : "Hết hàng"}
+                  </Badge>
+                </div>
               </div>
-              <p className="text-xs sm:text-sm text-muted-foreground">
-                Còn lại: {product.stock} sản phẩm
-              </p>
-            </div>
+            </Card>
 
-            {/* Quantity Selector */}
-            <div className="flex items-center gap-3 sm:gap-4">
-              <span className="text-sm font-medium">Số lượng:</span>
-              <div className="flex items-center gap-2">
+            {/* Quantity Selector & Actions */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                <span className="text-base font-semibold">Số lượng:</span>
+                <div className="flex items-center gap-3">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    className="h-12 w-12 rounded-full border-2 hover:bg-primary hover:text-primary-foreground hover:border-primary"
+                  >
+                    <Minus className="w-5 h-5" />
+                  </Button>
+                  <span className="w-16 text-center font-bold text-2xl">{quantity}</span>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
+                    disabled={quantity >= product.stock}
+                    className="h-12 w-12 rounded-full border-2 hover:bg-primary hover:text-primary-foreground hover:border-primary"
+                  >
+                    <Plus className="w-5 h-5" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3">
+                <Button
+                  className="flex-1 btn-hero text-lg py-6 h-14 font-semibold shadow-xl hover:shadow-2xl"
+                  onClick={addToCart}
+                  disabled={product.stock === 0}
+                >
+                  <ShoppingCart className="w-5 h-5 mr-2" />
+                  Thêm vào giỏ hàng
+                </Button>
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="h-10 w-10 sm:h-11 sm:w-11 touch-manipulation"
+                  className="h-14 w-14 border-2 hover:bg-destructive hover:text-destructive-foreground hover:border-destructive"
                 >
-                  <Minus className="w-4 h-4" />
-                </Button>
-                <span className="w-10 sm:w-12 text-center font-semibold text-base sm:text-lg">{quantity}</span>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
-                  disabled={quantity >= product.stock}
-                  className="h-10 w-10 sm:h-11 sm:w-11 touch-manipulation"
-                >
-                  <Plus className="w-4 h-4" />
+                  <Heart className="w-5 h-5" />
                 </Button>
               </div>
+
+              {cartQuantity > 0 && (
+                <Card className="p-4 bg-accent/20 border-accent">
+                  <p className="text-sm text-center font-medium">
+                    ✓ Bạn đã có <span className="font-bold text-primary">{cartQuantity}</span> sản phẩm này trong giỏ hàng
+                  </p>
+                </Card>
+              )}
             </div>
-
-            {/* Add to Cart Button */}
-            <Button
-              className="w-full btn-hero text-base sm:text-lg py-5 sm:py-6 h-12 sm:h-14 touch-manipulation"
-              onClick={addToCart}
-              disabled={product.stock === 0}
-            >
-              <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-              Thêm vào giỏ hàng
-            </Button>
-
-            {cartQuantity > 0 && (
-              <p className="text-sm text-center text-muted-foreground">
-                Bạn đã có {cartQuantity} sản phẩm này trong giỏ hàng
-              </p>
-            )}
           </div>
         </div>
 
-        {/* Product Details Tabs - Mobile Optimized */}
-        <div className="mt-6 sm:mt-8 md:mt-12">
-          <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Thông tin chi tiết</h2>
+        {/* Product Details Section */}
+        <div className="mt-10 sm:mt-12 md:mt-16">
+          <h2 className="text-2xl sm:text-3xl font-bold mb-6">Thông tin chi tiết</h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
-            {/* Weight */}
-            {product.weight && (
-              <Card className="p-4 sm:p-5 md:p-6">
-                <div className="flex items-start gap-2.5 sm:gap-3">
-                  <Package className="w-5 h-5 sm:w-6 sm:h-6 text-primary mt-0.5 sm:mt-1 flex-shrink-0" />
-                  <div>
-                    <h3 className="font-semibold text-sm sm:text-base mb-1.5 sm:mb-2">Trọng lượng / Dung tích</h3>
-                    <p className="text-muted-foreground text-sm sm:text-base">{product.weight}</p>
-                  </div>
-                </div>
-              </Card>
-            )}
-
-            {/* Calories */}
-            {product.calories && (
-              <Card className="p-4 sm:p-5 md:p-6">
-                <div className="flex items-start gap-2.5 sm:gap-3">
-                  <Flame className="w-5 h-5 sm:w-6 sm:h-6 text-primary mt-0.5 sm:mt-1 flex-shrink-0" />
-                  <div>
-                    <h3 className="font-semibold text-sm sm:text-base mb-1.5 sm:mb-2">Năng lượng</h3>
-                    <p className="text-muted-foreground text-sm sm:text-base">{product.calories} kcal</p>
-                  </div>
-                </div>
-              </Card>
-            )}
-
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
             {/* Ingredients */}
             {product.ingredients && (
-              <Card className="p-4 sm:p-5 md:p-6 md:col-span-2">
-                <div className="flex items-start gap-2.5 sm:gap-3">
-                  <Leaf className="w-5 h-5 sm:w-6 sm:h-6 text-primary mt-0.5 sm:mt-1 flex-shrink-0" />
+              <Card className="p-6 hover:shadow-xl transition-shadow border-2 hover:border-primary/20">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Leaf className="w-6 h-6 text-primary" />
+                  </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-sm sm:text-base mb-1.5 sm:mb-2">Thành phần</h3>
-                    <p className="text-muted-foreground text-sm sm:text-base whitespace-pre-line break-words">{product.ingredients}</p>
+                    <h3 className="font-bold text-lg mb-2">Thành phần</h3>
+                    <p className="text-muted-foreground leading-relaxed whitespace-pre-line break-words">{product.ingredients}</p>
                   </div>
                 </div>
               </Card>
@@ -312,12 +356,14 @@ const ProductDetail = () => {
 
             {/* Nutritional Info */}
             {product.nutritional_info && (
-              <Card className="p-4 sm:p-5 md:p-6 md:col-span-2">
-                <div className="flex items-start gap-2.5 sm:gap-3">
-                  <Info className="w-5 h-5 sm:w-6 sm:h-6 text-primary mt-0.5 sm:mt-1 flex-shrink-0" />
+              <Card className="p-6 hover:shadow-xl transition-shadow border-2 hover:border-primary/20">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
+                    <Info className="w-6 h-6 text-accent" />
+                  </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-sm sm:text-base mb-1.5 sm:mb-2">Thông tin dinh dưỡng</h3>
-                    <p className="text-muted-foreground text-sm sm:text-base whitespace-pre-line break-words">{product.nutritional_info}</p>
+                    <h3 className="font-bold text-lg mb-2">Thông tin dinh dưỡng</h3>
+                    <p className="text-muted-foreground leading-relaxed whitespace-pre-line break-words">{product.nutritional_info}</p>
                   </div>
                 </div>
               </Card>
@@ -325,12 +371,14 @@ const ProductDetail = () => {
 
             {/* Features */}
             {product.features && (
-              <Card className="p-4 sm:p-5 md:p-6 md:col-span-2">
-                <div className="flex items-start gap-2.5 sm:gap-3">
-                  <Info className="w-5 h-5 sm:w-6 sm:h-6 text-primary mt-0.5 sm:mt-1 flex-shrink-0" />
+              <Card className="p-6 hover:shadow-xl transition-shadow border-2 hover:border-primary/20 md:col-span-2">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center flex-shrink-0">
+                    <Info className="w-6 h-6 text-secondary" />
+                  </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-sm sm:text-base mb-1.5 sm:mb-2">Đặc điểm nổi bật</h3>
-                    <p className="text-muted-foreground text-sm sm:text-base whitespace-pre-line break-words">{product.features}</p>
+                    <h3 className="font-bold text-lg mb-2">Đặc điểm nổi bật</h3>
+                    <p className="text-muted-foreground leading-relaxed whitespace-pre-line break-words">{product.features}</p>
                   </div>
                 </div>
               </Card>
@@ -338,18 +386,84 @@ const ProductDetail = () => {
 
             {/* Usage Instructions */}
             {product.usage_instructions && (
-              <Card className="p-4 sm:p-5 md:p-6 md:col-span-2">
-                <div className="flex items-start gap-2.5 sm:gap-3">
-                  <Info className="w-5 h-5 sm:w-6 sm:h-6 text-primary mt-0.5 sm:mt-1 flex-shrink-0" />
+              <Card className="p-6 hover:shadow-xl transition-shadow border-2 hover:border-primary/20 md:col-span-2">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Info className="w-6 h-6 text-primary" />
+                  </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-sm sm:text-base mb-1.5 sm:mb-2">Hướng dẫn sử dụng</h3>
-                    <p className="text-muted-foreground text-sm sm:text-base whitespace-pre-line break-words">{product.usage_instructions}</p>
+                    <h3 className="font-bold text-lg mb-2">Hướng dẫn sử dụng</h3>
+                    <p className="text-muted-foreground leading-relaxed whitespace-pre-line break-words">{product.usage_instructions}</p>
                   </div>
                 </div>
               </Card>
             )}
           </div>
         </div>
+
+        {/* You May Also Like Section */}
+        {relatedProducts.length > 0 && (
+          <div className="mt-12 sm:mt-16 md:mt-20">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl sm:text-3xl font-bold">Sản phẩm tương tự</h2>
+              <Button variant="outline" onClick={() => navigate("/marketplace")}>
+                Xem tất cả
+              </Button>
+            </div>
+            
+            <Carousel
+              opts={{
+                align: "start",
+                loop: true,
+              }}
+              className="w-full"
+            >
+              <CarouselContent className="-ml-2 md:-ml-4">
+                {relatedProducts.map((relatedProduct) => (
+                  <CarouselItem key={relatedProduct.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 lg:basis-1/3 xl:basis-1/4">
+                    <Card 
+                      className="group cursor-pointer overflow-hidden border-2 border-transparent hover:border-primary/20 transition-all duration-300 hover:shadow-xl"
+                      onClick={() => {
+                        navigate(`/product/${relatedProduct.id}`);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                    >
+                      <div className="aspect-square bg-muted/30 relative overflow-hidden">
+                        <img
+                          src={relatedProduct.image_url || "https://via.placeholder.com/300"}
+                          alt={relatedProduct.name}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        />
+                        <Badge className="absolute top-2 right-2 bg-primary/90 backdrop-blur-sm text-xs">
+                          {getCategoryLabel(relatedProduct.category)}
+                        </Badge>
+                      </div>
+                      
+                      <div className="p-4 space-y-2">
+                        <h3 className="font-bold text-sm line-clamp-2 group-hover:text-primary transition-colors">
+                          {relatedProduct.name}
+                        </h3>
+                        {relatedProduct.brand && (
+                          <p className="text-xs text-muted-foreground">{relatedProduct.brand}</p>
+                        )}
+                        <div className="flex items-center justify-between pt-2">
+                          <span className="text-lg font-bold text-primary">
+                            {relatedProduct.price.toLocaleString()}đ
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            Còn {relatedProduct.stock}
+                          </span>
+                        </div>
+                      </div>
+                    </Card>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="hidden sm:flex -left-4" />
+              <CarouselNext className="hidden sm:flex -right-4" />
+            </Carousel>
+          </div>
+        )}
       </div>
     </div>
   );
