@@ -64,7 +64,7 @@ const FeaturedProducts = () => {
           {products.map((product, index) => (
             <Card
               key={product.id}
-              className="product-card cursor-pointer group"
+              className="rounded-2xl border border-border bg-card overflow-hidden shadow-sm hover:shadow-lg hover:border-accent/50 transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 cursor-pointer group"
               onClick={() => navigate(`/product/${product.id}`)}
               style={{ animationDelay: `${index * 0.1}s` }}
             >
@@ -72,27 +72,29 @@ const FeaturedProducts = () => {
                 <img
                   src={product.image_url || "https://via.placeholder.com/300"}
                   alt={product.name}
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
-                <Badge className="absolute top-3 right-3 bg-secondary text-secondary-foreground">
+                <Badge className="absolute top-3 right-3 bg-secondary text-secondary-foreground shadow-md">
                   {getCategoryLabel(product.category)}
                 </Badge>
+                {/* Hover Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               </div>
 
-              <div className="p-4">
-                <h3 className="font-semibold text-lg mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+              <div className="p-5">
+                <h3 className="font-semibold text-lg mb-2 line-clamp-2 group-hover:text-accent transition-colors duration-300">
                   {product.name}
                 </h3>
                 <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
                   {product.description}
                 </p>
                 <div className="flex items-center justify-between">
-                  <span className="text-xl md:text-2xl font-bold text-primary">
+                  <span className="text-xl md:text-2xl font-bold text-accent">
                     {product.price.toLocaleString()}đ
                   </span>
                   <Button
                     size="icon"
-                    className="rounded-full"
+                    className="rounded-full bg-accent hover:bg-accent-hover transition-all duration-300 hover:scale-110 shadow-md hover:shadow-lg"
                     onClick={(e) => {
                       e.stopPropagation();
                       navigate(`/product/${product.id}`);
@@ -109,10 +111,10 @@ const FeaturedProducts = () => {
         <div className="text-center animate-fade-in-up">
           <Button
             size="lg"
-            className="btn-hero"
+            className="bg-accent hover:bg-accent-hover text-accent-foreground font-bold px-8 py-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
             onClick={() => navigate("/marketplace")}
           >
-            Xem tất cả sản phẩm
+            Khám phá ngay
             <ArrowRight className="w-5 h-5 ml-2" />
           </Button>
         </div>
