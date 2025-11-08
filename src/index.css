@@ -8,36 +8,36 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* 🐾 ShopPet Modern Pet-friendly Theme - Rover/WagWalking Inspired */
+    /* 🐾 ShopPet Modern Theme - Bright & Clean with Green Accent */
     
-    /* Background - Warm Cream (#FFF8F0) */
-    --background: 30 100% 97%;
+    /* Background - Bright White (#f8fafc) */
+    --background: 210 20% 98%;
     --foreground: 220 20% 15%;
     
-    /* Card - Pure White on Warm Background */
+    /* Card - Pure White on Bright Background */
     --card: 0 0% 100%;
     --card-foreground: 220 20% 15%;
     
     --popover: 0 0% 100%;
     --popover-foreground: 220 20% 15%;
     
-    /* Primary - Warm Blue (#2B6CB0) - Professional & Trustworthy */
-    --primary: 207 61% 43%;
+    /* Primary - Fresh Green (#2ecc71) - Modern & Vibrant */
+    --primary: 145 63% 49%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 207 61% 38%;
-    --primary-glow: 207 61% 60%;
-    --primary-light: 207 61% 95%;
+    --primary-hover: 145 63% 42%;
+    --primary-glow: 145 63% 65%;
+    --primary-light: 145 63% 95%;
     
     /* Secondary - Soft Orange (#F6AD55) - Friendly & Warm */
     --secondary: 25 89% 66%;
     --secondary-foreground: 220 20% 15%;
     --secondary-hover: 25 89% 60%;
     
-    /* Accent - Teal (#38B2AC) - Fresh & Modern */
-    --accent: 177 54% 47%;
+    /* Accent - Fresh Green (#2ecc71) - Same as primary for consistency */
+    --accent: 145 63% 49%;
     --accent-foreground: 0 0% 100%;
-    --accent-hover: 177 54% 42%;
-    --accent-light: 177 54% 95%;
+    --accent-hover: 145 63% 42%;
+    --accent-light: 145 63% 95%;
     
     /* Muted - Soft neutral tones */
     --muted: 210 20% 97%;
@@ -66,13 +66,13 @@ All colors MUST be HSL.
     
     --radius: 1rem;
     
-    /* 🎨 Modern Gradients - Warm & Pet-friendly */
-    --gradient-primary: linear-gradient(135deg, hsl(207 61% 43%), hsl(207 61% 55%));
+    /* 🎨 Modern Gradients - Fresh & Clean */
+    --gradient-primary: linear-gradient(135deg, hsl(145 63% 49%), hsl(145 63% 60%));
     --gradient-secondary: linear-gradient(135deg, hsl(25 89% 66%), hsl(25 89% 75%));
-    --gradient-hero: linear-gradient(135deg, hsl(207 61% 43% / 0.95), hsl(177 54% 47% / 0.85));
-    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(30 100% 97%));
-    --gradient-warm: linear-gradient(135deg, hsl(207 61% 43%), hsl(25 89% 66%));
-    --gradient-glass: linear-gradient(135deg, hsl(0 0% 100% / 0.95), hsl(30 100% 97% / 0.85));
+    --gradient-hero: linear-gradient(135deg, hsl(145 63% 49% / 0.95), hsl(145 63% 60% / 0.85));
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(210 20% 98%));
+    --gradient-warm: linear-gradient(135deg, hsl(145 63% 49%), hsl(25 89% 66%));
+    --gradient-glass: linear-gradient(135deg, hsl(0 0% 100% / 0.95), hsl(210 20% 98% / 0.85));
     
     /* ✨ Soft Shadows - Clean & Modern */
     --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -80,9 +80,9 @@ All colors MUST be HSL.
     --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.1);
     --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
     --shadow-xl: 0 12px 32px rgba(0, 0, 0, 0.15);
-    --shadow-glow: 0 0 24px rgba(43, 108, 176, 0.3);
+    --shadow-glow: 0 0 24px rgba(46, 204, 113, 0.3);
     --shadow-header: 0 1px 3px rgba(0, 0, 0, 0.05);
-    --shadow-card-hover: 0 8px 20px rgba(43, 108, 176, 0.15);
+    --shadow-card-hover: 0 8px 20px rgba(46, 204, 113, 0.15);
     
     /* 🎬 Smooth Transitions - Natural Feel */
     --transition-base: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -159,10 +159,11 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Inter', 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     font-feature-settings: 'kern' 1, 'liga' 1;
     letter-spacing: -0.01em;
     line-height: 1.6;
+    font-size: 110%; /* 10% larger font sizes */
   }
   
   html {

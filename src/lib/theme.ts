@@ -4,12 +4,12 @@
  */
 
 export const theme = {
-  // 🎨 Color Palette - Warm & Friendly
+  // 🎨 Color Palette - Fresh & Modern
   colors: {
     primary: {
-      DEFAULT: '#2B6CB0', // Warm blue
-      light: '#4299E1',
-      dark: '#2C5282',
+      DEFAULT: '#2ecc71', // Fresh green
+      light: '#58d68d',
+      dark: '#27ae60',
       foreground: '#FFFFFF',
     },
     secondary: {
@@ -19,14 +19,14 @@ export const theme = {
       foreground: '#1A202C',
     },
     background: {
-      DEFAULT: '#FFF8F0', // Warm cream
+      DEFAULT: '#f8fafc', // Bright white
       card: '#FFFFFF',
       muted: '#F7FAFC',
     },
     accent: {
-      DEFAULT: '#38B2AC', // Teal
-      light: '#4FD1C5',
-      dark: '#319795',
+      DEFAULT: '#2ecc71', // Fresh green (same as primary)
+      light: '#58d68d',
+      dark: '#27ae60',
       foreground: '#FFFFFF',
     },
     success: '#48BB78',
@@ -42,20 +42,20 @@ export const theme = {
   // 📝 Typography - Modern & Clean
   typography: {
     fontFamily: {
-      sans: ['Inter', 'Be Vietnam Pro', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
-      display: ['Inter', 'Be Vietnam Pro', 'sans-serif'],
-      body: ['Inter', 'system-ui', 'sans-serif'],
+      sans: ['Poppins', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+      display: ['Poppins', 'sans-serif'],
+      body: ['Poppins', 'system-ui', 'sans-serif'],
     },
     fontSize: {
-      xs: '0.75rem',     // 12px
-      sm: '0.875rem',    // 14px
-      base: '1rem',      // 16px
-      lg: '1.125rem',    // 18px
-      xl: '1.25rem',     // 20px
-      '2xl': '1.5rem',   // 24px
-      '3xl': '1.875rem', // 30px
-      '4xl': '2.25rem',  // 36px
-      '5xl': '3rem',     // 48px
+      xs: '0.825rem',     // 13.2px (10% larger)
+      sm: '0.9625rem',    // 15.4px (10% larger)
+      base: '1.1rem',     // 17.6px (10% larger)
+      lg: '1.2375rem',    // 19.8px (10% larger)
+      xl: '1.375rem',     // 22px (10% larger)
+      '2xl': '1.65rem',   // 26.4px (10% larger)
+      '3xl': '2.0625rem', // 33px (10% larger)
+      '4xl': '2.475rem',  // 39.6px (10% larger)
+      '5xl': '3.3rem',    // 52.8px (10% larger)
     },
     fontWeight: {
       light: 300,
