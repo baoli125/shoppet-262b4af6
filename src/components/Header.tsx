@@ -85,7 +85,7 @@ const Header = ({
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 header-glass header-shadow animate-fade-in">
+    <header className="sticky top-0 left-0 right-0 z-50 backdrop-blur-lg bg-white/70 border-b border-border/50 shadow-sm rounded-b-2xl animate-fade-in">
       <div className="container mx-auto px-3 sm:px-4">
         <div className="flex items-center justify-between h-14 sm:h-16 md:h-20">
           {/* Logo & Brand - Mobile Optimized */}
@@ -136,11 +136,11 @@ const Header = ({
                 {/* Language Switcher */}
                 <button
                   onClick={toggleLanguage}
-                  className="flex items-center gap-2 px-3 py-2 hover:bg-muted rounded-full transition-colors"
+                  className="flex items-center gap-2 px-3 py-2 hover:bg-accent/10 rounded-full transition-all duration-300 hover:scale-105 group"
                   title={language === 'vi' ? 'Switch to English' : 'Chuyển sang Tiếng Việt'}
                 >
-                  <Globe className="w-5 h-5 text-header-text" />
-                  <span className="text-sm font-medium text-header-text">{language.toUpperCase()}</span>
+                  <Globe className="w-5 h-5 text-header-text group-hover:text-accent transition-colors duration-300" />
+                  <span className="text-sm font-medium text-header-text group-hover:text-accent transition-colors duration-300">{language.toUpperCase()}</span>
                 </button>
                 
                 <Button 
@@ -161,20 +161,20 @@ const Header = ({
                 {/* Language Switcher */}
                 <button
                   onClick={toggleLanguage}
-                  className="flex items-center gap-2 px-3 py-2 hover:bg-muted rounded-full transition-colors"
+                  className="flex items-center gap-2 px-3 py-2 hover:bg-accent/10 rounded-full transition-all duration-300 hover:scale-105 group"
                   title={language === 'vi' ? 'Switch to English' : 'Chuyển sang Tiếng Việt'}
                 >
-                  <Globe className="w-5 h-5 text-header-text" />
-                  <span className="text-sm font-medium text-header-text">{language.toUpperCase()}</span>
+                  <Globe className="w-5 h-5 text-header-text group-hover:text-accent transition-colors duration-300" />
+                  <span className="text-sm font-medium text-header-text group-hover:text-accent transition-colors duration-300">{language.toUpperCase()}</span>
                 </button>
 
                 {/* Cart Icon */}
                 <button 
                   data-tour="cart-icon"
                   onClick={() => handleMenuItemClick('/cart')}
-                  className="relative p-2 hover:bg-muted rounded-full transition-colors"
+                  className="relative p-2 hover:bg-accent/10 rounded-full transition-all duration-300 hover:scale-105 group"
                 >
-                  <ShoppingCart className="w-6 h-6 text-header-text" />
+                  <ShoppingCart className="w-6 h-6 text-header-text group-hover:text-accent transition-colors duration-300" />
                   {cartCount > 0 && (
                     <Badge className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground px-1.5 py-0.5 text-xs">
                       {cartCount}
@@ -187,15 +187,15 @@ const Header = ({
                   <DropdownMenuTrigger asChild>
                     <button 
                       data-tour="user-dropdown"
-                      className="flex items-center gap-2 hover:bg-muted px-3 py-2 rounded-full transition-colors"
+                      className="flex items-center gap-2 hover:bg-accent/10 px-3 py-2 rounded-full transition-all duration-300 hover:scale-105 group"
                     >
-                      <Avatar className="w-8 h-8 border-2 border-primary">
+                      <Avatar className="w-8 h-8 border-2 border-primary group-hover:border-accent transition-colors duration-300">
                         <AvatarImage src={userAvatar} alt={userName} />
-                        <AvatarFallback className="bg-primary text-primary-foreground">
+                        <AvatarFallback className="bg-primary text-primary-foreground group-hover:bg-accent transition-colors duration-300">
                           {userName.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="font-medium text-header-text">{userName}</span>
+                      <span className="font-medium text-header-text group-hover:text-accent transition-colors duration-300">{userName}</span>
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56 bg-popover">
@@ -239,13 +239,13 @@ const Header = ({
           {/* Mobile Menu Button - Touch Optimized */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-3 hover:bg-muted rounded-lg transition-colors touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center"
+            className="md:hidden p-3 hover:bg-accent/10 rounded-lg transition-all duration-300 hover:scale-105 min-w-[44px] min-h-[44px] flex items-center justify-center group"
             aria-label={mobileMenuOpen ? "Đóng menu" : "Mở menu"}
           >
             {mobileMenuOpen ? (
-              <X className="w-6 h-6 text-header-text" />
+              <X className="w-6 h-6 text-header-text group-hover:text-accent transition-colors duration-300" />
             ) : (
-              <Menu className="w-6 h-6 text-header-text" />
+              <Menu className="w-6 h-6 text-header-text group-hover:text-accent transition-colors duration-300" />
             )}
           </button>
         </div>
