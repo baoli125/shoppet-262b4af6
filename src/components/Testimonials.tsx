@@ -1,8 +1,11 @@
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Star } from "lucide-react";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 const Testimonials = () => {
+  const { elementRef, isVisible } = useScrollAnimation();
+  
   const testimonials = [
     {
       name: "Nguyễn Minh Anh",
@@ -42,34 +45,39 @@ const Testimonials = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+        <div 
+          ref={elementRef}
+          className={`grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 transition-all duration-700 ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+          }`}
+        >
           {testimonials.map((testimonial, index) => (
             <Card
               key={index}
-              className="p-6 bg-card hover:shadow-lg transition-all duration-300 animate-fade-in-up"
-              style={{ animationDelay: `${index * 0.1}s` }}
+              className="p-4 md:p-6 bg-card hover:shadow-lg transition-all duration-300"
+              style={{ transitionDelay: `${index * 0.1}s` }}
             >
               <div className="flex items-center mb-4">
-                <Avatar className="w-12 h-12 mr-3">
+                <Avatar className="w-10 h-10 md:w-12 md:h-12 mr-3">
                   <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
                   <AvatarFallback>{testimonial.name[0]}</AvatarFallback>
                 </Avatar>
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <h4 className="font-semibold text-foreground">{testimonial.name}</h4>
-                    <span className="text-xl">{testimonial.petType}</span>
+                    <h4 className="font-semibold text-sm md:text-base text-foreground truncate">{testimonial.name}</h4>
+                    <span className="text-lg md:text-xl flex-shrink-0">{testimonial.petType}</span>
                   </div>
-                  <p className="text-sm text-muted-foreground">{testimonial.role}</p>
+                  <p className="text-xs md:text-sm text-muted-foreground truncate">{testimonial.role}</p>
                 </div>
               </div>
 
               <div className="flex mb-3">
                 {[...Array(testimonial.rating)].map((_, i) => (
-                  <Star key={i} className="w-4 h-4 fill-secondary text-secondary" />
+                  <Star key={i} className="w-3 h-3 md:w-4 md:h-4 fill-secondary text-secondary" />
                 ))}
               </div>
 
-              <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
+              <p className="text-xs md:text-base text-muted-foreground leading-relaxed line-clamp-4 md:line-clamp-none">
                 "{testimonial.content}"
               </p>
             </Card>
