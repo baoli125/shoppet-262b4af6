@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
-import heroPetCare from "@/assets/hero-pet-care.jpg";
-import heroAiAssistant from "@/assets/hero-ai-assistant.jpg";
-import heroCommunity from "@/assets/hero-community.jpg";
+import heroPetServices from "@/assets/hero-pet-services.jpg";
+import heroPetProducts from "@/assets/hero-pet-products.jpg";
+import heroCommunityPets from "@/assets/hero-community-pets.jpg";
 
 interface Slide {
   id: number;
@@ -23,7 +23,7 @@ const HeroCarousel = () => {
   const slides: Slide[] = [
     {
       id: 1,
-      image: heroPetCare,
+      image: heroPetServices,
       titleKey: "hero.slide1.title",
       subtitleKey: "hero.slide1.subtitle",
       buttonTextKey: "hero.slide1.cta",
@@ -31,7 +31,7 @@ const HeroCarousel = () => {
     },
     {
       id: 2,
-      image: heroAiAssistant,
+      image: heroPetProducts,
       titleKey: "hero.slide2.title",
       subtitleKey: "hero.slide2.subtitle",
       buttonTextKey: "hero.slide2.cta",
@@ -39,7 +39,7 @@ const HeroCarousel = () => {
     },
     {
       id: 3,
-      image: heroCommunity,
+      image: heroCommunityPets,
       titleKey: "hero.slide3.title",
       subtitleKey: "hero.slide3.subtitle",
       buttonTextKey: "hero.slide3.cta",

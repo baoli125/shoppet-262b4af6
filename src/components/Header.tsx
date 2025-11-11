@@ -92,7 +92,7 @@ const Header = ({
           <a 
             href="#home"
             data-tour="logo"
-            className="flex items-center gap-2 hover:opacity-80 transition-opacity touch-manipulation"
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity touch-manipulation flex-shrink-0"
             onClick={(e) => {
               e.preventDefault();
               handleMenuItemClick('#home');
@@ -108,8 +108,8 @@ const Header = ({
             />
           </a>
 
-          {/* Mobile & Desktop Navigation - Always visible */}
-          <nav className="flex items-center gap-3 sm:gap-4 md:gap-8">
+          {/* Desktop Navigation - Hidden on mobile */}
+          <nav className="hidden md:flex items-center gap-8 flex-1 justify-center">
             {menuItems.map((item) => (
               <a
                 key={item.label}
@@ -118,7 +118,7 @@ const Header = ({
                   e.preventDefault();
                   handleMenuItemClick(item.href);
                 }}
-                className={`text-sm sm:text-base font-medium transition-colors relative ${
+                className={`text-base font-medium transition-colors relative whitespace-nowrap ${
                   item.active 
                     ? "text-primary after:absolute after:bottom-[-8px] after:left-0 after:right-0 after:h-0.5 after:bg-primary" 
                     : "text-header-text hover:text-primary"
@@ -130,7 +130,7 @@ const Header = ({
           </nav>
 
           {/* Desktop Auth Section */}
-          <div className="hidden md:flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-4 flex-shrink-0">
             {!isLoggedIn ? (
               <>
                 {/* Language Switcher */}
