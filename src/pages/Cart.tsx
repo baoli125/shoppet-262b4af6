@@ -282,9 +282,9 @@ const Cart = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header - Mobile Optimized */}
-      <div className="border-b border-border bg-card header-shadow">
+    <div className="min-h-screen bg-background pt-14 sm:pt-16 md:pt-20">
+      {/* Cart Header - Sticky */}
+      <div className="sticky top-14 sm:top-16 md:top-20 z-40 border-b border-border bg-card/95 backdrop-blur-lg header-shadow">
         <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">

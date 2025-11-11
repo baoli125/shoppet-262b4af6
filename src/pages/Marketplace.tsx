@@ -205,9 +205,9 @@ const Marketplace = () => {
   const totalCartItems = Object.values(cartItems).reduce((sum, qty) => sum + qty, 0);
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header - Mobile Optimized */}
-      <div className="border-b border-border bg-card header-shadow">
+    <div className="min-h-screen bg-background pt-14 sm:pt-16 md:pt-20">
+      {/* Marketplace Header - Sticky */}
+      <div className="sticky top-14 sm:top-16 md:top-20 z-40 border-b border-border bg-card/95 backdrop-blur-lg header-shadow">
         <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
@@ -235,8 +235,8 @@ const Marketplace = () => {
         </div>
       </div>
 
-      {/* Filters - Mobile Stacked */}
-      <div className="border-b border-border bg-card">
+      {/* Filters - Sticky */}
+      <div className="sticky top-[88px] sm:top-[96px] md:top-[112px] z-30 border-b border-border bg-card/95 backdrop-blur-lg">
         <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2 sm:gap-3 md:gap-4">
             <div className="sm:col-span-2 md:col-span-2">

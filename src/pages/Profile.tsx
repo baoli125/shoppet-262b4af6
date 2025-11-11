@@ -161,17 +161,8 @@ const Profile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header
-        isLoggedIn={!!user}
-        userName={profile?.display_name || user?.email}
-        userAvatar={profile?.avatar_url}
-        cartCount={0}
-        onLoginClick={() => {}}
-        onLogoutClick={handleLogout}
-      />
-
-      <main className="container mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8 pt-16 sm:pt-20 md:pt-24 max-w-4xl">
+    <div className="min-h-screen bg-background pt-14 sm:pt-16 md:pt-20">
+      <main className="container mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8 max-w-4xl">
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
             <Card className="md:col-span-2 p-4 sm:p-5 md:p-6">

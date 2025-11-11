@@ -250,15 +250,6 @@ const Community = () => {
 
   return (
     <div className="min-h-screen bg-background pt-14 sm:pt-16 md:pt-20">
-      <Header
-        isLoggedIn={!!user}
-        userName={profile?.display_name || user?.email}
-        userAvatar={profile?.avatar_url}
-        cartCount={0}
-        onLoginClick={() => {}}
-        onLogoutClick={handleLogout}
-      />
-
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8 max-w-2xl">
         <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 md:mb-8 text-center">Cộng đồng Shoppet 🐾</h1>
 
