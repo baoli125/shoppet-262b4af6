@@ -29,6 +29,7 @@ interface Message {
 interface FloatingChatbotProps {
   user: User | null;
   isNewUser: boolean;
+  onLoginRequired?: () => void;
 }
 
 const FloatingChatbot = ({ user, isNewUser }: FloatingChatbotProps) => {
