@@ -172,7 +172,10 @@ const AIChat = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col pt-14 sm:pt-16 md:pt-20">
+    <div className="fixed inset-0 flex flex-col bg-background">
+      {/* Spacer for main header */}
+      <div className="h-14 sm:h-16 md:h-20 flex-shrink-0"></div>
+      
       {/* Messages */}
       <div className="flex-1 overflow-y-auto">
         <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-4xl">
@@ -258,8 +261,8 @@ const AIChat = () => {
         </div>
       </div>
 
-      {/* Input - Mobile Sticky */}
-      <div className="border-t border-border bg-card">
+      {/* Input - Fixed at bottom */}
+      <div className="flex-shrink-0 border-t border-border bg-card">
         <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4 max-w-4xl">
           {messages.length === 0 && (
             <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-2 sm:mb-3">
