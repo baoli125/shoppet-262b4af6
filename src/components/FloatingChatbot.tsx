@@ -32,9 +32,8 @@ interface FloatingChatbotProps {
   onLoginRequired?: () => void;
 }
 
-const FloatingChatbot = ({ user, isNewUser }: FloatingChatbotProps) => {
+const FloatingChatbot = ({ user, isNewUser, onLoginRequired }: FloatingChatbotProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [showLoginAlert, setShowLoginAlert] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -52,22 +51,16 @@ const FloatingChatbot = ({ user, isNewUser }: FloatingChatbotProps) => {
       setMessages([]);
       setInput("");
       setIsLoading(false);
-      setShowLoginAlert(false);
       console.log("Chatbot reset due to logout");
     }
   }, [user]);
 
   const handleChatbotClick = () => {
     if (!user) {
-      setShowLoginAlert(true);
+      onLoginRequired?.();
     } else {
       setIsOpen(!isOpen);
     }
-  };
-
-  const handleLoginRedirect = () => {
-    setShowLoginAlert(false);
-    navigate("/");
   };
 
   const quickActions = [
@@ -178,20 +171,6 @@ const FloatingChatbot = ({ user, isNewUser }: FloatingChatbotProps) => {
           <img src={pawHandIcon} alt="Tay Nhỏ" className="h-full w-full object-cover rounded-full" />
         )}
       </Button>
-
-      {/* Login Alert Dialog */}
-      <AlertDialog open={showLoginAlert} onOpenChange={setShowLoginAlert}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t("chatbot.loginRequired")}</AlertDialogTitle>
-            <AlertDialogDescription>{t("chatbot.loginRequiredDesc")}</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t("chatbot.close")}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleLoginRedirect}>{t("header.login")}</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
       {/* Chat Window - Mobile Full Screen */}
       {isOpen && (
