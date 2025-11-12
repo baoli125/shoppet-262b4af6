@@ -256,7 +256,7 @@ const Pets = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pt-16">
       {/* Pets Header - Sticky */}
       <div className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur-lg header-shadow mt-14 sm:mt-16 md:mt-20">
         <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
