@@ -241,7 +241,7 @@ const Profile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pt-14 sm:pt-16 md:pt-20">
+    <div className="min-h-screen bg-background pt-16">
       <main className="container mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8 max-w-4xl">
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">

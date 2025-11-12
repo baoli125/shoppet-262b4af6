@@ -247,7 +247,11 @@ const AppContent = () => {
         <Route path="*" element={<NotFound />} />
       </Routes>
 
-      <FloatingChatbot user={user} isNewUser={isNewUser} />
+      <FloatingChatbot 
+        user={user} 
+        isNewUser={isNewUser}
+        onLoginRequired={() => setShowAuthModal(true)}
+      />
 
       <GuidedTour 
         isActive={showGuidedTour} 
