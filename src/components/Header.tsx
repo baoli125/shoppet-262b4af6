@@ -85,7 +85,7 @@ const Header = ({
   };
 
   return (
-    <header className="sticky top-0 left-0 right-0 z-50 backdrop-blur-lg bg-white/70 border-b border-border/50 shadow-sm rounded-b-2xl animate-fade-in">
+    <header className="sticky top-0 left-0 right-0 z-50 backdrop-blur-lg bg-white/70 border-b border-border/50 shadow-sm animate-fade-in">
       <div className="container mx-auto px-3 sm:px-4">
         <div className="flex items-center justify-between h-14 sm:h-16 md:h-20">
           {/* Logo & Brand - Mobile Optimized */}

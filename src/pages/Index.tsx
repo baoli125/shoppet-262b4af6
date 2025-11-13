@@ -79,7 +79,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <main className="pt-16">
+      <main className="pt-14 sm:pt-16 md:pt-20">
         {/* Hero Section with Carousel */}
         <HeroCarousel />
 
