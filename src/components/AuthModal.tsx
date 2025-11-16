@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff } from "lucide-react";
 import { z } from "zod";
+import { Separator } from "@/components/ui/separator";
 
 const passwordSchema = z.string()
   .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
@@ -104,6 +105,28 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
       toast({
         title: "Đăng ký thất bại",
         description: error.message || "Vui lòng kiểm tra lại thông tin",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/`,
+        },
+      });
+
+      if (error) throw error;
+    } catch (error: any) {
+      toast({
+        title: "Đăng nhập thất bại",
+        description: error.message || "Không thể đăng nhập bằng Google",
         variant: "destructive",
       });
     } finally {
