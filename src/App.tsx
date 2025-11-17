@@ -18,7 +18,8 @@ import NotFound from "./pages/NotFound";
 import Header from "@/components/Header";
 import AuthModal from "@/components/AuthModal";
 import FloatingChatbot from "@/components/FloatingChatbot";
-import GuidedTour from "@/components/GuidedTour";
+import { GuidedTourProvider, useGuidedTour } from "@/contexts/GuidedTourContext";
+import { GuidedTourOverlay } from "@/components/GuidedTourOverlay";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -33,10 +34,10 @@ const AppContent = () => {
   const [isNewUser, setIsNewUser] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [showGuidedTour, setShowGuidedTour] = useState(false);
   const { toast } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
+  const { startTour } = useGuidedTour();
 
   useEffect(() => {
     // Listen for auth changes FIRST (best practice)
@@ -57,7 +58,6 @@ const AppContent = () => {
         setProfile(null);
         setCartCount(0);
         setIsNewUser(false);
-        setShowGuidedTour(false);
         setShowAuthModal(false);
       }
       
@@ -80,7 +80,7 @@ const AppContent = () => {
     // Listen for guided tour trigger from onboarding
     const handleStartGuidedTour = () => {
       console.log("Guided tour triggered by onboarding");
-      setShowGuidedTour(true);
+      startTour();
     };
     
     window.addEventListener('startGuidedTour', handleStartGuidedTour);
@@ -160,7 +160,6 @@ const AppContent = () => {
       setProfile(null);
       setCartCount(0);
       setIsNewUser(false);
-      setShowGuidedTour(false);
       setShowAuthModal(false);
       
       // Sign out from Supabase
@@ -202,8 +201,6 @@ const AppContent = () => {
   };
 
   const handleGuidedTourComplete = async () => {
-    setShowGuidedTour(false);
-    
     // Update user profile to mark as not new anymore
     if (user) {
       await supabase
@@ -253,16 +250,13 @@ const AppContent = () => {
         onLoginRequired={() => setShowAuthModal(true)}
       />
 
-      <GuidedTour 
-        isActive={showGuidedTour} 
-        onComplete={handleGuidedTourComplete}
-      />
-
       <AuthModal
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         onSuccess={handleAuthSuccess}
       />
+      
+      <GuidedTourOverlay />
     </>
   );
 };
@@ -270,13 +264,15 @@ const AppContent = () => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <LanguageProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AppContent />
-        </BrowserRouter>
-      </TooltipProvider>
+      <GuidedTourProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <AppContent />
+          </BrowserRouter>
+        </TooltipProvider>
+      </GuidedTourProvider>
     </LanguageProvider>
   </QueryClientProvider>
 );
