@@ -104,7 +104,7 @@ const Orders = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pt-14 sm:pt-16 md:pt-20">
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="border-b border-border bg-card header-shadow">
         <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
