@@ -165,9 +165,28 @@ export const GuidedTourOverlay = () => {
       <div
         className="fixed inset-0 z-[9998] bg-black/60 backdrop-blur-sm"
         style={{ pointerEvents: "auto" }}
-        onClick={(e) => {
-          // Chỉ cho phép click vào các element được phép
+        onClickCapture={(e) => {
           const target = e.target as HTMLElement;
+          
+          // Allow clicks on tour UI itself
+          if (target.closest('[data-tour-ui]')) {
+            return;
+          }
+          
+          // Check if click is on an allowed element
+          const isAllowed = step.allowedInteractions.some(selector => {
+            return target.closest(selector);
+          });
+          
+          if (!isAllowed) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        }}
+        onMouseDownCapture={(e) => {
+          const target = e.target as HTMLElement;
+          if (target.closest('[data-tour-ui]')) return;
+          
           const isAllowed = step.allowedInteractions.some(selector => {
             return target.closest(selector);
           });
@@ -223,9 +242,9 @@ export const GuidedTourOverlay = () => {
             }}
           />
           
-          {/* Highlight border */}
+          {/* Highlight border - allows pointer events through */}
           <div
-            className="fixed z-[9999] pointer-events-none"
+            className="fixed z-[9999]"
             style={{
               top: `${highlightPosition.top - 4}px`,
               left: `${highlightPosition.left - 4}px`,
@@ -235,6 +254,7 @@ export const GuidedTourOverlay = () => {
               borderRadius: "12px",
               boxShadow: "0 0 0 4px hsl(var(--primary) / 0.2), 0 0 30px hsl(var(--primary) / 0.5)",
               animation: "pulse 2s infinite",
+              pointerEvents: "none",
             }}
           >
             {/* Sparkle effects */}
@@ -246,6 +266,7 @@ export const GuidedTourOverlay = () => {
 
       {/* Tooltip Card */}
       <Card
+        data-tour-ui
         className="fixed z-[10000] w-[90vw] max-w-md p-6 shadow-2xl border-primary/50"
         style={{
           ...getTooltipPosition(),
@@ -328,7 +349,7 @@ export const GuidedTourOverlay = () => {
 
       {/* Resume Dialog */}
       <Dialog open={showResumeDialog} onOpenChange={setShowResumeDialog}>
-        <DialogContent className="z-[10001]">
+        <DialogContent data-tour-ui className="z-[10001]">
           <DialogHeader>
             <DialogTitle>Tiếp tục hướng dẫn?</DialogTitle>
             <DialogDescription>
