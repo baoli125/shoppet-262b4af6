@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { useGuidedTour } from "@/contexts/GuidedTourContext";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { X, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
 
 // Import guide images
 import chatbotGuideImage from "@/assets/chatbot-guide.png";
@@ -18,16 +20,22 @@ export const GuidedTourOverlay = () => {
     currentStep,
     totalSteps,
     isPaused,
+    pausedStep,
     getCurrentStep,
     nextStep,
     previousStep,
     endTour,
     resumeTour,
+    pauseTour,
   } = useGuidedTour();
 
+  const location = useLocation();
+  const { toast } = useToast();
   const [targetElement, setTargetElement] = useState<HTMLElement | null>(null);
   const [highlightPosition, setHighlightPosition] = useState({ top: 0, left: 0, width: 0, height: 0 });
   const [showResumeDialog, setShowResumeDialog] = useState(false);
+  const [savedRoute, setSavedRoute] = useState<string>("");
+  const [hasLeftRoute, setHasLeftRoute] = useState(false);
 
   const step = getCurrentStep();
 
@@ -54,12 +62,28 @@ export const GuidedTourOverlay = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, [isActive, step]);
 
-  // Show resume dialog when paused
+  // Track route changes to detect when user leaves and returns
   useEffect(() => {
-    if (isPaused) {
-      setShowResumeDialog(true);
+    if (isActive && !isPaused) {
+      setSavedRoute(location.pathname);
+      setHasLeftRoute(false);
     }
-  }, [isPaused]);
+  }, [isActive, isPaused, location.pathname]);
+
+  // Detect when user has left the route
+  useEffect(() => {
+    if (isActive && savedRoute && location.pathname !== savedRoute) {
+      setHasLeftRoute(true);
+    }
+  }, [isActive, savedRoute, location.pathname]);
+
+  // Show resume dialog when user returns to original route after leaving
+  useEffect(() => {
+    if (isPaused && hasLeftRoute && location.pathname === savedRoute && pausedStep !== null) {
+      setShowResumeDialog(true);
+      setHasLeftRoute(false);
+    }
+  }, [isPaused, hasLeftRoute, location.pathname, savedRoute, pausedStep]);
 
   const updateHighlightPosition = (element: HTMLElement) => {
     const rect = element.getBoundingClientRect();
@@ -171,6 +195,25 @@ export const GuidedTourOverlay = () => {
         return false;
       }
     });
+    
+    // If allowed and step requires action, pause the tour before allowing interaction
+    if (isAllowed && step.requiresAction) {
+      // Save current route before pausing
+      setSavedRoute(location.pathname);
+      
+      // Pause the tour to allow real action
+      pauseTour();
+      
+      // Show toast notification
+      toast({
+        title: "Hướng dẫn đã tạm dừng",
+        description: "Thực hiện hành động của bạn. Chúng tôi sẽ hỏi bạn có muốn tiếp tục sau khi hoàn tất.",
+        duration: 3000,
+      });
+      
+      // Allow the interaction to proceed
+      return;
+    }
     
     // Block interaction if not allowed
     if (!isAllowed) {
