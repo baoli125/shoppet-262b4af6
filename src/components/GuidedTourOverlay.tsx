@@ -154,6 +154,31 @@ export const GuidedTourOverlay = () => {
     endTour();
   };
 
+  const blockUnallowedInteraction = (e: React.SyntheticEvent) => {
+    const target = e.target as HTMLElement;
+    
+    // Always allow interactions with tour UI
+    if (target.closest('[data-tour-ui]')) {
+      return;
+    }
+    
+    // Check if the target or any of its parents match allowed selectors
+    const isAllowed = step.allowedInteractions.some(selector => {
+      try {
+        return target.closest(selector) !== null;
+      } catch (err) {
+        console.warn(`Invalid selector: ${selector}`);
+        return false;
+      }
+    });
+    
+    // Block interaction if not allowed
+    if (!isAllowed) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
+
   if (!isActive || !step) return null;
 
   const progress = ((currentStep + 1) / totalSteps) * 100;
@@ -165,37 +190,14 @@ export const GuidedTourOverlay = () => {
       <div
         className="fixed inset-0 z-[9998] bg-black/60 backdrop-blur-sm"
         style={{ pointerEvents: "auto" }}
-        onClickCapture={(e) => {
-          const target = e.target as HTMLElement;
-          
-          // Allow clicks on tour UI itself
-          if (target.closest('[data-tour-ui]')) {
-            return;
-          }
-          
-          // Check if click is on an allowed element
-          const isAllowed = step.allowedInteractions.some(selector => {
-            return target.closest(selector);
-          });
-          
-          if (!isAllowed) {
-            e.preventDefault();
-            e.stopPropagation();
-          }
-        }}
-        onMouseDownCapture={(e) => {
-          const target = e.target as HTMLElement;
-          if (target.closest('[data-tour-ui]')) return;
-          
-          const isAllowed = step.allowedInteractions.some(selector => {
-            return target.closest(selector);
-          });
-          
-          if (!isAllowed) {
-            e.preventDefault();
-            e.stopPropagation();
-          }
-        }}
+        onClickCapture={(e) => blockUnallowedInteraction(e)}
+        onMouseDownCapture={(e) => blockUnallowedInteraction(e)}
+        onMouseUpCapture={(e) => blockUnallowedInteraction(e)}
+        onTouchStartCapture={(e) => blockUnallowedInteraction(e)}
+        onTouchEndCapture={(e) => blockUnallowedInteraction(e)}
+        onPointerDownCapture={(e) => blockUnallowedInteraction(e)}
+        onPointerUpCapture={(e) => blockUnallowedInteraction(e)}
+        onContextMenuCapture={(e) => blockUnallowedInteraction(e)}
       />
 
       {/* Highlight area */}
