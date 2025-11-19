@@ -8,12 +8,6 @@ import { X, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 
-// Import guide images
-import chatbotGuideImage from "@/assets/chatbot-guide.png";
-import cartEmptyGuide from "@/assets/cart-empty-guide.png";
-import ordersEmptyGuide from "@/assets/orders-empty-guide.png";
-import petsEmptyGuide from "@/assets/pets-empty-guide.png";
-
 export const GuidedTourOverlay = () => {
   const {
     isActive,
@@ -213,23 +207,6 @@ export const GuidedTourOverlay = () => {
     return position;
   };
 
-  const getGuideImage = () => {
-    if (!step) return null;
-
-    switch (step.id) {
-      case "step-2-chatbot-features":
-        return chatbotGuideImage;
-      case "step-14-cart-overview":
-        return cartEmptyGuide;
-      case "step-16-pets-overview":
-        return petsEmptyGuide;
-      case "step-20-orders-overview":
-        return ordersEmptyGuide;
-      default:
-        return null;
-    }
-  };
-
   const handleNext = () => {
     nextStep();
   };
@@ -299,7 +276,6 @@ export const GuidedTourOverlay = () => {
   if (!isActive || !step) return null;
 
   const progress = ((currentStep + 1) / totalSteps) * 100;
-  const guideImage = getGuideImage();
 
   return (
     <>
@@ -412,17 +388,6 @@ export const GuidedTourOverlay = () => {
               <X className="w-3 h-3 md:w-4 md:h-4" />
             </Button>
           </div>
-
-          {/* Guide Image if available */}
-          {guideImage && (
-            <div className="rounded-lg overflow-hidden border border-border">
-              <img
-                src={guideImage}
-                alt="Hướng dẫn"
-                className="w-full h-auto"
-              />
-            </div>
-          )}
 
           {/* Progress */}
           <div className="space-y-1.5 md:space-y-2">
