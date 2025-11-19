@@ -36,8 +36,20 @@ export const GuidedTourOverlay = () => {
   const [showResumeDialog, setShowResumeDialog] = useState(false);
   const [savedRoute, setSavedRoute] = useState<string>("");
   const [hasLeftRoute, setHasLeftRoute] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   const step = getCurrentStep();
+
+  // Detect mobile/tablet screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   // Update target element when step changes
   useEffect(() => {
@@ -98,8 +110,15 @@ export const GuidedTourOverlay = () => {
   const getTooltipPosition = () => {
     if (!step) return { top: "50%", left: "50%", transform: "translate(-50%, -50%)" };
 
-    if (step.position === "center") {
-      return { top: "50%", left: "50%", transform: "translate(-50%, -50%)" };
+    // On mobile or center position, always show centered
+    if (isMobile || step.position === "center") {
+      return { 
+        top: "50%", 
+        left: "50%", 
+        transform: "translate(-50%, -50%)",
+        maxHeight: "80vh",
+        overflowY: "auto" as const,
+      };
     }
 
     if (!targetElement) {
@@ -108,35 +127,90 @@ export const GuidedTourOverlay = () => {
 
     const { top, left, width, height } = highlightPosition;
     const padding = 20;
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const tooltipWidth = 448; // max-w-md = 28rem = 448px
+
+    let position: { top?: string; left?: string; bottom?: string; right?: string; transform: string; maxHeight?: string; overflowY?: "auto" };
 
     switch (step.position) {
       case "top":
-        return {
-          top: `${top - padding}px`,
-          left: `${left + width / 2}px`,
-          transform: "translate(-50%, -100%)",
-        };
+        // Check if tooltip fits above
+        if (top - padding > 300) {
+          position = {
+            top: `${top - padding}px`,
+            left: `${Math.max(padding, Math.min(left + width / 2, viewportWidth - tooltipWidth / 2 - padding))}px`,
+            transform: "translate(-50%, -100%)",
+          };
+        } else {
+          // Fall back to bottom
+          position = {
+            top: `${top + height + padding}px`,
+            left: `${Math.max(padding, Math.min(left + width / 2, viewportWidth - tooltipWidth / 2 - padding))}px`,
+            transform: "translate(-50%, 0)",
+          };
+        }
+        break;
       case "bottom":
-        return {
-          top: `${top + height + padding}px`,
-          left: `${left + width / 2}px`,
-          transform: "translate(-50%, 0)",
-        };
+        // Check if tooltip fits below
+        if (viewportHeight - (top + height + padding) > 300) {
+          position = {
+            top: `${top + height + padding}px`,
+            left: `${Math.max(padding, Math.min(left + width / 2, viewportWidth - tooltipWidth / 2 - padding))}px`,
+            transform: "translate(-50%, 0)",
+          };
+        } else {
+          // Fall back to top
+          position = {
+            top: `${top - padding}px`,
+            left: `${Math.max(padding, Math.min(left + width / 2, viewportWidth - tooltipWidth / 2 - padding))}px`,
+            transform: "translate(-50%, -100%)",
+          };
+        }
+        break;
       case "left":
-        return {
-          top: `${top + height / 2}px`,
-          left: `${left - padding}px`,
-          transform: "translate(-100%, -50%)",
-        };
+        // Check if tooltip fits on left
+        if (left - padding > tooltipWidth) {
+          position = {
+            top: `${Math.max(padding, Math.min(top + height / 2, viewportHeight - 200))}px`,
+            left: `${left - padding}px`,
+            transform: "translate(-100%, -50%)",
+          };
+        } else {
+          // Fall back to right
+          position = {
+            top: `${Math.max(padding, Math.min(top + height / 2, viewportHeight - 200))}px`,
+            left: `${left + width + padding}px`,
+            transform: "translate(0, -50%)",
+          };
+        }
+        break;
       case "right":
-        return {
-          top: `${top + height / 2}px`,
-          left: `${left + width + padding}px`,
-          transform: "translate(0, -50%)",
-        };
+        // Check if tooltip fits on right
+        if (viewportWidth - (left + width + padding) > tooltipWidth) {
+          position = {
+            top: `${Math.max(padding, Math.min(top + height / 2, viewportHeight - 200))}px`,
+            left: `${left + width + padding}px`,
+            transform: "translate(0, -50%)",
+          };
+        } else {
+          // Fall back to left
+          position = {
+            top: `${Math.max(padding, Math.min(top + height / 2, viewportHeight - 200))}px`,
+            left: `${left - padding}px`,
+            transform: "translate(-100%, -50%)",
+          };
+        }
+        break;
       default:
-        return { top: "50%", left: "50%", transform: "translate(-50%, -50%)" };
+        position = { top: "50%", left: "50%", transform: "translate(-50%, -50%)" };
     }
+
+    // Ensure tooltip doesn't overflow viewport
+    position.maxHeight = "80vh";
+    position.overflowY = "auto";
+
+    return position;
   };
 
   const getGuideImage = () => {
@@ -312,20 +386,20 @@ export const GuidedTourOverlay = () => {
       {/* Tooltip Card */}
       <Card
         data-tour-ui
-        className="fixed z-[10000] w-[90vw] max-w-md p-6 shadow-2xl border-primary/50"
+        className="fixed z-[10000] w-[90vw] md:w-auto md:max-w-md p-4 md:p-6 shadow-2xl border-primary/50 bg-background"
         style={{
           ...getTooltipPosition(),
           pointerEvents: "auto",
         }}
       >
-        <div className="space-y-4">
+        <div className="space-y-3 md:space-y-4">
           {/* Header */}
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex-1">
-              <h3 className="text-lg font-bold text-foreground mb-1 whitespace-pre-line">
+          <div className="flex items-start justify-between gap-2 md:gap-3">
+            <div className="flex-1 min-w-0">
+              <h3 className="text-base md:text-lg font-bold text-foreground mb-1 break-words">
                 {step.title}
               </h3>
-              <p className="text-sm text-muted-foreground whitespace-pre-line">
+              <p className="text-xs md:text-sm text-muted-foreground break-words">
                 {step.description}
               </p>
             </div>
@@ -333,9 +407,9 @@ export const GuidedTourOverlay = () => {
               size="icon"
               variant="ghost"
               onClick={handleSkip}
-              className="shrink-0"
+              className="shrink-0 h-8 w-8 md:h-10 md:w-10"
             >
-              <X className="w-4 h-4" />
+              <X className="w-3 h-3 md:w-4 md:h-4" />
             </Button>
           </div>
 
@@ -351,12 +425,12 @@ export const GuidedTourOverlay = () => {
           )}
 
           {/* Progress */}
-          <div className="space-y-2">
-            <div className="flex justify-between text-xs text-muted-foreground">
+          <div className="space-y-1.5 md:space-y-2">
+            <div className="flex justify-between text-[10px] md:text-xs text-muted-foreground">
               <span>Bước {currentStep + 1}/{totalSteps}</span>
               <span>{Math.round(progress)}%</span>
             </div>
-            <Progress value={progress} className="h-2" />
+            <Progress value={progress} className="h-1.5 md:h-2" />
           </div>
 
           {/* Navigation */}
@@ -366,18 +440,24 @@ export const GuidedTourOverlay = () => {
               size="sm"
               onClick={handlePrevious}
               disabled={currentStep === 0}
-              className="flex-1"
+              className="flex-1 text-xs md:text-sm h-8 md:h-9"
             >
-              <ChevronLeft className="w-4 h-4 mr-1" />
-              Trước
+              <ChevronLeft className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+              <span className="hidden sm:inline">Trước</span>
+              <span className="sm:hidden">←</span>
             </Button>
             <Button
               size="sm"
               onClick={handleNext}
-              className="flex-1"
+              className="flex-1 text-xs md:text-sm h-8 md:h-9"
             >
-              {currentStep === totalSteps - 1 ? "Hoàn thành" : "Tiếp theo"}
-              {currentStep !== totalSteps - 1 && <ChevronRight className="w-4 h-4 ml-1" />}
+              <span className="hidden sm:inline">
+                {currentStep === totalSteps - 1 ? "Hoàn thành" : "Tiếp theo"}
+              </span>
+              <span className="sm:hidden">
+                {currentStep === totalSteps - 1 ? "✓" : "→"}
+              </span>
+              {currentStep !== totalSteps - 1 && <ChevronRight className="w-3 h-3 md:w-4 md:h-4 ml-1 hidden sm:inline" />}
             </Button>
           </div>
 
@@ -385,7 +465,7 @@ export const GuidedTourOverlay = () => {
             variant="ghost"
             size="sm"
             onClick={handleSkip}
-            className="w-full text-xs"
+            className="w-full text-[10px] md:text-xs h-7 md:h-8"
           >
             Bỏ qua hướng dẫn
           </Button>
@@ -394,18 +474,25 @@ export const GuidedTourOverlay = () => {
 
       {/* Resume Dialog */}
       <Dialog open={showResumeDialog} onOpenChange={setShowResumeDialog}>
-        <DialogContent data-tour-ui className="z-[10001]">
+        <DialogContent data-tour-ui className="z-[10001] w-[90vw] max-w-md bg-background">
           <DialogHeader>
-            <DialogTitle>Tiếp tục hướng dẫn?</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-base md:text-lg">Tiếp tục hướng dẫn?</DialogTitle>
+            <DialogDescription className="text-xs md:text-sm">
               Bạn đã tạm dừng hướng dẫn để thực hiện hành động. Bạn có muốn tiếp tục hướng dẫn từ bước đang dở không?
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={handleEndTour}>
+          <DialogFooter className="gap-2 sm:gap-0 flex-col sm:flex-row">
+            <Button 
+              variant="outline" 
+              onClick={handleEndTour}
+              className="w-full sm:w-auto text-xs md:text-sm h-8 md:h-9"
+            >
               Không, kết thúc
             </Button>
-            <Button onClick={handleResume}>
+            <Button 
+              onClick={handleResume}
+              className="w-full sm:w-auto text-xs md:text-sm h-8 md:h-9"
+            >
               Có, tiếp tục
             </Button>
           </DialogFooter>
