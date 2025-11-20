@@ -161,6 +161,161 @@ export type Database = {
           },
         ]
       }
+      feeding_logs: {
+        Row: {
+          actual_end_date: string | null
+          created_at: string
+          end_date: string | null
+          estimated_days: number
+          id: string
+          notes: string | null
+          pet_id: string
+          product_id: string | null
+          product_name: string
+          product_weight: string | null
+          start_date: string
+          updated_at: string
+        }
+        Insert: {
+          actual_end_date?: string | null
+          created_at?: string
+          end_date?: string | null
+          estimated_days: number
+          id?: string
+          notes?: string | null
+          pet_id: string
+          product_id?: string | null
+          product_name: string
+          product_weight?: string | null
+          start_date?: string
+          updated_at?: string
+        }
+        Update: {
+          actual_end_date?: string | null
+          created_at?: string
+          end_date?: string | null
+          estimated_days?: number
+          id?: string
+          notes?: string | null
+          pet_id?: string
+          product_id?: string | null
+          product_name?: string
+          product_weight?: string | null
+          start_date?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feeding_logs_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "pets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feeding_logs_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      medical_records: {
+        Row: {
+          attachments: string[] | null
+          clinic_name: string | null
+          created_at: string
+          date: string
+          description: string | null
+          id: string
+          next_checkup_date: string | null
+          pet_id: string
+          prescription_details: string | null
+          record_type: string
+          title: string
+          updated_at: string
+          veterinarian: string | null
+        }
+        Insert: {
+          attachments?: string[] | null
+          clinic_name?: string | null
+          created_at?: string
+          date: string
+          description?: string | null
+          id?: string
+          next_checkup_date?: string | null
+          pet_id: string
+          prescription_details?: string | null
+          record_type: string
+          title: string
+          updated_at?: string
+          veterinarian?: string | null
+        }
+        Update: {
+          attachments?: string[] | null
+          clinic_name?: string | null
+          created_at?: string
+          date?: string
+          description?: string | null
+          id?: string
+          next_checkup_date?: string | null
+          pet_id?: string
+          prescription_details?: string | null
+          record_type?: string
+          title?: string
+          updated_at?: string
+          veterinarian?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medical_records_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "pets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          action_url: string | null
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string
+          related_id: string | null
+          scheduled_for: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          action_url?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message: string
+          related_id?: string | null
+          scheduled_for?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          action_url?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          related_id?: string | null
+          scheduled_for?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           created_at: string | null
