@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, useLocation, useNavigate } from "react-ro
 import Index from "./pages/Index";
 import AIChat from "./pages/AIChat";
 import Pets from "./pages/Pets";
+import PetsDetail from "./pages/PetsDetail";
 import Marketplace from "./pages/Marketplace";
 import ProductDetail from "./pages/ProductDetail";
 import Cart from "./pages/Cart";
@@ -233,6 +234,7 @@ const AppContent = () => {
         <Route path="/" element={<Index />} />
         <Route path="/ai-chat" element={<AIChat />} />
         <Route path="/pets" element={<Pets />} />
+        <Route path="/pets/:id" element={<PetsDetail />} />
         <Route path="/marketplace" element={<Marketplace />} />
         <Route path="/product/:id" element={<ProductDetail />} />
         <Route path="/cart" element={<Cart />} />

@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { NotificationBell } from "@/components/NotificationBell";
 import shoppetLogoSmall from "@/assets/logo-small.png";
 import shoppetLogoMedium from "@/assets/logo-medium.png";
 import shoppetLogo from "@/assets/logo.png";
@@ -167,6 +168,9 @@ const Header = ({
                   <Globe className="w-5 h-5 text-header-text group-hover:text-accent transition-colors duration-300" />
                   <span className="text-sm font-medium text-header-text group-hover:text-accent transition-colors duration-300">{language.toUpperCase()}</span>
                 </button>
+
+                {/* Notification Bell */}
+                <NotificationBell />
 
                 {/* Cart Icon */}
                 <button 

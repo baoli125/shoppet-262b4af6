@@ -9,6 +9,8 @@ import { ArrowLeft, Search, ShoppingCart, Plus, Minus, ArrowUpDown } from "lucid
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { FeedingDurationBadge } from "@/components/FeedingDurationBadge";
+import { calculateFeedingDays } from "@/utils/feedingCalculator";
 
 interface Product {
   id: string;
@@ -31,6 +33,7 @@ const Marketplace = () => {
   const [sortBy, setSortBy] = useState("none");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [cartItems, setCartItems] = useState<Record<string, number>>({});
+  const [userPets, setUserPets] = useState<any[]>([]);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useLanguage();
@@ -38,6 +41,7 @@ const Marketplace = () => {
   useEffect(() => {
     fetchProducts();
     fetchCart();
+    fetchUserPets();
   }, []);
 
   useEffect(() => {
@@ -77,6 +81,20 @@ const Marketplace = () => {
         cart[item.product_id] = item.quantity;
       });
       setCartItems(cart);
+    }
+  };
+
+  const fetchUserPets = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data } = await supabase
+      .from("pets")
+      .select("*")
+      .eq("user_id", user.id);
+
+    if (data) {
+      setUserPets(data);
     }
   };
 
