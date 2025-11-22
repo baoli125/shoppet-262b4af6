@@ -8,6 +8,8 @@ import { ArrowLeft, ShoppingCart, Plus, Minus, Package, Flame, Leaf, Info, Heart
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { FeedingDurationBadge } from "@/components/FeedingDurationBadge";
+import { calculateFeedingDays } from "@/utils/feedingCalculator";
 import {
   Carousel,
   CarouselContent,
@@ -44,13 +46,29 @@ const ProductDetail = () => {
   const [cartQuantity, setCartQuantity] = useState(0);
   const [loading, setLoading] = useState(true);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [userPets, setUserPets] = useState<any[]>([]);
 
   useEffect(() => {
     if (id) {
       fetchProduct();
       fetchCartQuantity();
+      fetchUserPets();
     }
   }, [id]);
+
+  const fetchUserPets = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data } = await supabase
+      .from("pets")
+      .select("*")
+      .eq("user_id", user.id);
+
+    if (data) {
+      setUserPets(data);
+    }
+  };
 
   const fetchRelatedProducts = async (category: string, currentId: string) => {
     const { data } = await supabase
@@ -277,6 +295,24 @@ const ProductDetail = () => {
                 </div>
               </div>
             </Card>
+
+            {/* Feeding Duration Info */}
+            {product.category === 'food' && userPets.length > 0 && (
+              <Card className="p-5 bg-accent/10 border-2 border-accent/30">
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-base flex items-center gap-2">
+                    🐾 Thời gian sử dụng dự kiến
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Dựa trên hồ sơ của <span className="font-semibold text-foreground">{userPets[0].name}</span>
+                  </p>
+                  <FeedingDurationBadge 
+                    days={calculateFeedingDays(userPets[0], product)}
+                    className="text-sm"
+                  />
+                </div>
+              </Card>
+            )}
 
             {/* Quantity Selector & Actions */}
             <div className="space-y-4">
