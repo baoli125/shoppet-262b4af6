@@ -169,11 +169,17 @@ export type Database = {
           estimated_days: number
           id: string
           notes: string | null
+          owner_id: string | null
+          per_pet_allocation: Json | null
           pet_id: string
+          policy_used: string | null
           product_id: string | null
           product_name: string
           product_weight: string | null
+          quantity_packs: number | null
+          remind_at: string | null
           start_date: string
+          total_grams: number | null
           updated_at: string
         }
         Insert: {
@@ -183,11 +189,17 @@ export type Database = {
           estimated_days: number
           id?: string
           notes?: string | null
+          owner_id?: string | null
+          per_pet_allocation?: Json | null
           pet_id: string
+          policy_used?: string | null
           product_id?: string | null
           product_name: string
           product_weight?: string | null
+          quantity_packs?: number | null
+          remind_at?: string | null
           start_date?: string
+          total_grams?: number | null
           updated_at?: string
         }
         Update: {
@@ -197,11 +209,17 @@ export type Database = {
           estimated_days?: number
           id?: string
           notes?: string | null
+          owner_id?: string | null
+          per_pet_allocation?: Json | null
           pet_id?: string
+          policy_used?: string | null
           product_id?: string | null
           product_name?: string
           product_weight?: string | null
+          quantity_packs?: number | null
+          remind_at?: string | null
           start_date?: string
+          total_grams?: number | null
           updated_at?: string
         }
         Relationships: [
@@ -217,6 +235,47 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      food_reminder_logs: {
+        Row: {
+          channel: string | null
+          created_at: string | null
+          feeding_log_id: string
+          id: string
+          metadata: Json | null
+          remind_date: string
+          sent_at: string | null
+          succeeded: boolean | null
+        }
+        Insert: {
+          channel?: string | null
+          created_at?: string | null
+          feeding_log_id: string
+          id?: string
+          metadata?: Json | null
+          remind_date: string
+          sent_at?: string | null
+          succeeded?: boolean | null
+        }
+        Update: {
+          channel?: string | null
+          created_at?: string | null
+          feeding_log_id?: string
+          id?: string
+          metadata?: Json | null
+          remind_date?: string
+          sent_at?: string | null
+          succeeded?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "food_reminder_logs_feeding_log_id_fkey"
+            columns: ["feeding_log_id"]
+            isOneToOne: false
+            referencedRelation: "feeding_logs"
             referencedColumns: ["id"]
           },
         ]
@@ -440,6 +499,7 @@ export type Database = {
           birth_date: string | null
           breed: string | null
           created_at: string | null
+          daily_food_override_gr: number | null
           gender: Database["public"]["Enums"]["pet_gender"] | null
           id: string
           image_url: string | null
@@ -455,6 +515,7 @@ export type Database = {
           birth_date?: string | null
           breed?: string | null
           created_at?: string | null
+          daily_food_override_gr?: number | null
           gender?: Database["public"]["Enums"]["pet_gender"] | null
           id?: string
           image_url?: string | null
@@ -470,6 +531,7 @@ export type Database = {
           birth_date?: string | null
           breed?: string | null
           created_at?: string | null
+          daily_food_override_gr?: number | null
           gender?: Database["public"]["Enums"]["pet_gender"] | null
           id?: string
           image_url?: string | null
@@ -650,6 +712,8 @@ export type Database = {
           name: string
           nutritional_info: string | null
           pet_type: Database["public"]["Enums"]["pet_type"] | null
+          portion_gr_per_day: number | null
+          portion_gr_per_kg_per_day: number | null
           price: number
           seller_id: string
           stock: number | null
@@ -671,6 +735,8 @@ export type Database = {
           name: string
           nutritional_info?: string | null
           pet_type?: Database["public"]["Enums"]["pet_type"] | null
+          portion_gr_per_day?: number | null
+          portion_gr_per_kg_per_day?: number | null
           price: number
           seller_id: string
           stock?: number | null
@@ -692,6 +758,8 @@ export type Database = {
           name?: string
           nutritional_info?: string | null
           pet_type?: Database["public"]["Enums"]["pet_type"] | null
+          portion_gr_per_day?: number | null
+          portion_gr_per_kg_per_day?: number | null
           price?: number
           seller_id?: string
           stock?: number | null
@@ -821,6 +889,9 @@ export type Database = {
       }
       vaccines: {
         Row: {
+          attachments: string[] | null
+          batch_no: string | null
+          clinic: string | null
           created_at: string | null
           date: string
           id: string
@@ -828,9 +899,14 @@ export type Database = {
           next_date: string | null
           notes: string | null
           pet_id: string
+          valid_until: string | null
+          verified_by: string | null
           veterinarian: string | null
         }
         Insert: {
+          attachments?: string[] | null
+          batch_no?: string | null
+          clinic?: string | null
           created_at?: string | null
           date: string
           id?: string
@@ -838,9 +914,14 @@ export type Database = {
           next_date?: string | null
           notes?: string | null
           pet_id: string
+          valid_until?: string | null
+          verified_by?: string | null
           veterinarian?: string | null
         }
         Update: {
+          attachments?: string[] | null
+          batch_no?: string | null
+          clinic?: string | null
           created_at?: string | null
           date?: string
           id?: string
@@ -848,6 +929,8 @@ export type Database = {
           next_date?: string | null
           notes?: string | null
           pet_id?: string
+          valid_until?: string | null
+          verified_by?: string | null
           veterinarian?: string | null
         }
         Relationships: [

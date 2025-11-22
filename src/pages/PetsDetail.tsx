@@ -8,6 +8,7 @@ import { ArrowLeft, Edit, Calendar, Weight, Cake, Activity } from "lucide-react"
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { PetHealthSection } from "@/components/PetHealthSection";
+import { PetQRShare } from "@/components/PetQRShare";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
 
@@ -150,10 +151,13 @@ const PetsDetail = () => {
                 )}
               </div>
             </div>
-            <Button onClick={() => navigate(`/pets/edit/${pet.id}`)}>
-              <Edit className="w-4 h-4 mr-2" />
-              Chỉnh sửa
-            </Button>
+            <div className="flex gap-2">
+              <PetQRShare petId={pet.id} petName={pet.name} />
+              <Button onClick={() => navigate(`/pets/edit/${pet.id}`)}>
+                <Edit className="w-4 h-4 mr-2" />
+                Chỉnh sửa
+              </Button>
+            </div>
           </div>
         </div>
       </div>
