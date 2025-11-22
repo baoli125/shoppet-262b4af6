@@ -395,6 +395,16 @@ const Marketplace = () => {
                     </div>
                   </div>
 
+                  {/* Feeding Duration Badge */}
+                  {product.category === 'food' && userPets.length > 0 && (
+                    <div className="mt-2">
+                      <FeedingDurationBadge 
+                        days={calculateFeedingDays(userPets[0], product)}
+                        className="text-xs"
+                      />
+                    </div>
+                  )}
+
                   {/* Action Buttons */}
                   <div onClick={(e) => e.stopPropagation()}>
                     {cartItems[product.id] ? (
