@@ -7,19 +7,25 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Syringe, Stethoscope, Calendar, Trash2, Edit, FileText } from "lucide-react";
+import { Plus, Syringe, Stethoscope, Calendar, Trash2, Edit, FileText, CheckCircle, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
+import { PetQRShare } from "./PetQRShare";
 
 interface Vaccine {
   id: string;
   name: string;
   date: string;
   next_date: string | null;
+  valid_until: string | null;
+  batch_no: string | null;
+  clinic: string | null;
   veterinarian: string | null;
+  verified_by: string | null;
   notes: string | null;
+  attachments: string[] | null;
 }
 
 interface MedicalRecord {
@@ -32,6 +38,7 @@ interface MedicalRecord {
   clinic_name: string | null;
   next_checkup_date: string | null;
   prescription_details: string | null;
+  attachments: string[] | null;
 }
 
 interface PetHealthSectionProps {
@@ -52,8 +59,12 @@ export const PetHealthSection = ({ petId }: PetHealthSectionProps) => {
     name: "",
     date: "",
     next_date: "",
+    valid_until: "",
+    batch_no: "",
+    clinic: "",
     veterinarian: "",
     notes: "",
+    attachments: [] as string[],
   });
 
   // Medical record form state
@@ -207,8 +218,12 @@ export const PetHealthSection = ({ petId }: PetHealthSectionProps) => {
       name: "",
       date: "",
       next_date: "",
+      valid_until: "",
+      batch_no: "",
+      clinic: "",
       veterinarian: "",
       notes: "",
+      attachments: [],
     });
     setEditingVaccine(null);
   };
@@ -371,8 +386,12 @@ export const PetHealthSection = ({ petId }: PetHealthSectionProps) => {
                           name: vaccine.name,
                           date: vaccine.date,
                           next_date: vaccine.next_date || "",
+                          valid_until: vaccine.valid_until || "",
+                          batch_no: vaccine.batch_no || "",
+                          clinic: vaccine.clinic || "",
                           veterinarian: vaccine.veterinarian || "",
                           notes: vaccine.notes || "",
+                          attachments: vaccine.attachments || [],
                         });
                         setIsVaccineDialogOpen(true);
                       }}

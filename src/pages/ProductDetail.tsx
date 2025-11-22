@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { FeedingDurationBadge } from "@/components/FeedingDurationBadge";
 import { calculateFeedingDays } from "@/utils/feedingCalculator";
+import { MultiPetSelector } from "@/components/MultiPetSelector";
 import {
   Carousel,
   CarouselContent,
@@ -296,22 +297,13 @@ const ProductDetail = () => {
               </div>
             </Card>
 
-            {/* Feeding Duration Info */}
+            {/* Multi-Pet Feeding Calculator */}
             {product.category === 'food' && userPets.length > 0 && (
-              <Card className="p-5 bg-accent/10 border-2 border-accent/30">
-                <div className="space-y-3">
-                  <h3 className="font-semibold text-base flex items-center gap-2">
-                    🐾 Thời gian sử dụng dự kiến
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Dựa trên hồ sơ của <span className="font-semibold text-foreground">{userPets[0].name}</span>
-                  </p>
-                  <FeedingDurationBadge 
-                    days={calculateFeedingDays(userPets[0], product)}
-                    className="text-sm"
-                  />
-                </div>
-              </Card>
+              <MultiPetSelector
+                pets={userPets}
+                product={product}
+                quantity={quantity}
+              />
             )}
 
             {/* Quantity Selector & Actions */}
