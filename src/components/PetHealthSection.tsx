@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Syringe, Stethoscope, Calendar, Trash2, Edit, FileText, CheckCircle, Upload } from "lucide-react";
+import { Plus, Syringe, Stethoscope, Calendar, Trash2, Edit, FileText, CheckCircle, Upload, X, File } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
@@ -52,6 +52,9 @@ export const PetHealthSection = ({ petId }: PetHealthSectionProps) => {
   const [isMedicalDialogOpen, setIsMedicalDialogOpen] = useState(false);
   const [editingVaccine, setEditingVaccine] = useState<Vaccine | null>(null);
   const [editingMedical, setEditingMedical] = useState<MedicalRecord | null>(null);
+  const [uploadingFiles, setUploadingFiles] = useState(false);
+  const [vaccineFiles, setVaccineFiles] = useState<File[]>([]);
+  const [medicalFiles, setMedicalFiles] = useState<File[]>([]);
   const { toast } = useToast();
 
   // Vaccine form state
@@ -332,6 +335,12 @@ export const PetHealthSection = ({ petId }: PetHealthSectionProps) => {
                       onChange={(e) => setVaccineForm({ ...vaccineForm, notes: e.target.value })}
                       placeholder="Ghi chú thêm"
                     />
+                  </div>
+                  <div className="p-3 bg-muted/50 rounded-lg border border-dashed">
+                    <p className="text-sm text-muted-foreground flex items-center gap-2">
+                      <Upload className="h-4 w-4" />
+                      Tải lên ảnh/PDF chứng nhận tiêm chủng (Sắp có)
+                    </p>
                   </div>
                   <Button onClick={handleSaveVaccine} className="w-full">
                     {editingVaccine ? 'Cập nhật' : 'Thêm mới'}

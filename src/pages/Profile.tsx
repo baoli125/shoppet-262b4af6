@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
+import { NotificationSettings } from "@/components/NotificationSettings";
 
 const Profile = () => {
   const [user, setUser] = useState<any>(null);
@@ -457,6 +458,13 @@ const Profile = () => {
             </p>
           </div>
         </Card>
+        )}
+
+        {/* Notification Settings */}
+        {!isLoading && (
+          <div className="mt-4 sm:mt-6">
+            <NotificationSettings />
+          </div>
         )}
 
         {/* Badges */}

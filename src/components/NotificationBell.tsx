@@ -19,6 +19,7 @@ interface Notification {
   title: string;
   message: string;
   action_url?: string;
+  product_id?: string;
   is_read: boolean;
   created_at: string;
 }
@@ -98,6 +99,12 @@ export const NotificationBell = () => {
       navigate(notification.action_url);
       setIsOpen(false);
     }
+  };
+
+  const handleReorder = (productId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate(`/marketplace/${productId}`);
+    setIsOpen(false);
   };
 
   const getNotificationIcon = (type: string) => {
@@ -182,6 +189,16 @@ export const NotificationBell = () => {
                           locale: vi,
                         })}
                       </p>
+                      {notification.product_id && notification.type === 'food_expiring' && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="mt-2 w-full"
+                          onClick={(e) => handleReorder(notification.product_id!, e)}
+                        >
+                          🛒 Mua lại
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </button>
