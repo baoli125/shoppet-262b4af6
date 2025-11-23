@@ -343,6 +343,7 @@ export type Database = {
           id: string
           is_read: boolean
           message: string
+          product_id: string | null
           related_id: string | null
           scheduled_for: string | null
           title: string
@@ -355,6 +356,7 @@ export type Database = {
           id?: string
           is_read?: boolean
           message: string
+          product_id?: string | null
           related_id?: string | null
           scheduled_for?: string | null
           title: string
@@ -367,13 +369,22 @@ export type Database = {
           id?: string
           is_read?: boolean
           message?: string
+          product_id?: string | null
           related_id?: string | null
           scheduled_for?: string | null
           title?: string
           type?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "notifications_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       order_items: {
         Row: {
@@ -865,6 +876,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_notification_preferences: {
+        Row: {
+          created_at: string | null
+          food_reminder_days_before: number | null
+          food_reminder_enabled: boolean | null
+          id: string
+          updated_at: string | null
+          user_id: string
+          vaccine_reminder_days_before: number | null
+          vaccine_reminder_enabled: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          food_reminder_days_before?: number | null
+          food_reminder_enabled?: boolean | null
+          id?: string
+          updated_at?: string | null
+          user_id: string
+          vaccine_reminder_days_before?: number | null
+          vaccine_reminder_enabled?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          food_reminder_days_before?: number | null
+          food_reminder_enabled?: boolean | null
+          id?: string
+          updated_at?: string | null
+          user_id?: string
+          vaccine_reminder_days_before?: number | null
+          vaccine_reminder_enabled?: boolean | null
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {

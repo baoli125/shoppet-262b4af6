@@ -15,6 +15,7 @@ import Cart from "./pages/Cart";
 import Orders from "./pages/Orders";
 import Community from "./pages/Community";
 import Profile from "./pages/Profile";
+import Analytics from "./pages/Analytics";
 import SellerDashboard from "./pages/SellerDashboard";
 import NotFound from "./pages/NotFound";
 import Header from "@/components/Header";
@@ -243,6 +244,7 @@ const AppContent = () => {
         <Route path="/orders" element={<Orders />} />
         <Route path="/community" element={<Community />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/analytics" element={<Analytics />} />
         <Route path="/seller-dashboard" element={<SellerDashboard />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />

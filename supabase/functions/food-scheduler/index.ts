@@ -9,6 +9,7 @@ interface FeedingLog {
   remind_at: string;
   per_pet_allocation: any;
   product_name: string;
+  product_id: string | null;
 }
 
 interface Vaccine {
@@ -26,10 +27,20 @@ Deno.serve(async (req) => {
 
     console.log('Running food scheduler at', now);
 
+    // Get all users' notification preferences
+    const { data: allPreferences } = await supabase
+      .from('user_notification_preferences')
+      .select('user_id, food_reminder_enabled, food_reminder_days_before, vaccine_reminder_enabled, vaccine_reminder_days_before');
+
+    const preferencesMap = new Map<string, any>();
+    allPreferences?.forEach(pref => {
+      preferencesMap.set(pref.user_id, pref);
+    });
+
     // 1. Check for food reminders
     const { data: feedingLogs, error: feedingError } = await supabase
       .from('feeding_logs')
-      .select('id, owner_id, remind_at, per_pet_allocation, product_name')
+      .select('id, owner_id, remind_at, per_pet_allocation, product_name, product_id')
       .lte('remind_at', now)
       .is('actual_end_date', null);
 
@@ -40,6 +51,9 @@ Deno.serve(async (req) => {
 
       // Group by owner to avoid spam
       const byOwner = feedingLogs.reduce((acc: any, log: FeedingLog) => {
+        const prefs = preferencesMap.get(log.owner_id) || { food_reminder_enabled: true };
+        if (!prefs.food_reminder_enabled) return acc;
+        
         if (!acc[log.owner_id]) acc[log.owner_id] = [];
         acc[log.owner_id].push(log);
         return acc;
@@ -62,13 +76,14 @@ Deno.serve(async (req) => {
           ? `Thức ăn cho ${petNames} sắp hết trong vòng 5 ngày. Bạn có muốn mua thêm?`
           : `${logsList.length} loại thức ăn cho ${petNames} sắp hết. Kiểm tra và mua thêm nhé!`;
 
-        // Create notification
+        // Create notification with product_id for reorder
         await supabase.from('notifications').insert({
           user_id: ownerId,
           type: 'food_expiring',
           title: '🍖 Thức ăn sắp hết',
           message,
           action_url: '/pets',
+          product_id: logsList[0].product_id || null,
           scheduled_for: now
         });
 
@@ -94,48 +109,37 @@ Deno.serve(async (req) => {
       }
     }
 
-    // 2. Check for vaccine reminders (7 days before next_date)
-    const reminderDate = new Date();
-    reminderDate.setDate(reminderDate.getDate() + 7);
-    const reminderDateStr = reminderDate.toISOString().split('T')[0];
+    // 2. Check for vaccine reminders (based on user preferences)
+    const { data: pets } = await supabase
+      .from('pets')
+      .select('id, user_id, name');
 
-    const { data: vaccines, error: vaccineError } = await supabase
-      .from('vaccines')
-      .select('id, pet_id, name, next_date')
-      .eq('next_date', reminderDateStr);
+    if (pets) {
+      for (const pet of pets) {
+        const prefs = preferencesMap.get(pet.user_id) || { 
+          vaccine_reminder_enabled: true,
+          vaccine_reminder_days_before: 7 
+        };
 
-    if (vaccineError) {
-      console.error('Error fetching vaccines:', vaccineError);
-    } else if (vaccines && vaccines.length > 0) {
-      console.log(`Found ${vaccines.length} vaccines needing reminders`);
+        if (!prefs.vaccine_reminder_enabled) continue;
 
-      // Get pet owners
-      const petIds = [...new Set(vaccines.map((v: Vaccine) => v.pet_id))];
-      const { data: pets } = await supabase
-        .from('pets')
-        .select('id, user_id, name')
-        .in('id', petIds);
+        const reminderDate = new Date();
+        reminderDate.setDate(reminderDate.getDate() + prefs.vaccine_reminder_days_before);
+        const reminderDateStr = reminderDate.toISOString().split('T')[0];
 
-      if (pets) {
-        // Group by owner
-        const byOwner: any = {};
-        for (const vaccine of vaccines) {
-          const pet = pets.find((p: any) => p.id === vaccine.pet_id);
-          if (pet) {
-            if (!byOwner[pet.user_id]) byOwner[pet.user_id] = [];
-            byOwner[pet.user_id].push({ ...vaccine, petName: pet.name });
-          }
-        }
+        const { data: vaccines, error: vaccineError } = await supabase
+          .from('vaccines')
+          .select('id, pet_id, name, next_date')
+          .eq('pet_id', pet.id)
+          .eq('next_date', reminderDateStr);
 
-        // Send notifications
-        for (const [ownerId, vaccineList] of Object.entries(byOwner)) {
-          const list = vaccineList as any[];
-          const message = list.length === 1
-            ? `Bé ${list[0].petName} cần tiêm "${list[0].name}" vào ${list[0].next_date}`
-            : `${list.length} mũi tiêm sắp đến hạn cho thú cưng của bạn`;
+        if (vaccines && vaccines.length > 0) {
+          const message = vaccines.length === 1
+            ? `Bé ${pet.name} cần tiêm "${vaccines[0].name}" vào ${vaccines[0].next_date}`
+            : `${vaccines.length} mũi tiêm sắp đến hạn cho ${pet.name}`;
 
           await supabase.from('notifications').insert({
-            user_id: ownerId,
+            user_id: pet.user_id,
             type: 'vaccine_due',
             title: '💉 Nhắc lịch tiêm chủng',
             message,
@@ -143,7 +147,7 @@ Deno.serve(async (req) => {
             scheduled_for: now
           });
 
-          console.log(`Sent vaccine reminder to owner ${ownerId} for ${list.length} vaccines`);
+          console.log(`Sent vaccine reminder to user ${pet.user_id} for pet ${pet.name}`);
         }
       }
     }
@@ -152,7 +156,6 @@ Deno.serve(async (req) => {
       JSON.stringify({ 
         success: true, 
         food_reminders: feedingLogs?.length || 0,
-        vaccine_reminders: vaccines?.length || 0,
         timestamp: now 
       }),
       { headers: { 'Content-Type': 'application/json' } }
