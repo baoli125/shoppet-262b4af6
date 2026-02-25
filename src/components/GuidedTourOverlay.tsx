@@ -220,46 +220,57 @@ export const GuidedTourOverlay = () => {
 
   return (
     <>
-      {/* Overlay */}
-      <div
-        className="fixed inset-0 z-[9998] bg-black/60 backdrop-blur-sm"
-        style={{ pointerEvents: "auto" }}
-        onClickCapture={blockUnallowedInteraction}
-        onMouseDownCapture={blockUnallowedInteraction}
-        onTouchStartCapture={blockUnallowedInteraction}
-        onPointerDownCapture={blockUnallowedInteraction}
-      />
+      {/* Single overlay with clip-path cutout */}
+      {targetElement ? (
+        <div
+          className="fixed inset-0 z-[9998] bg-black/60 pointer-events-auto"
+          style={{
+            clipPath: `polygon(
+              0 0,
+              100% 0,
+              100% 100%,
+              0 100%,
+              0 ${hp.top - 4}px,
+              ${hp.left - 4}px ${hp.top - 4}px,
+              ${hp.left - 4}px ${hp.top + hp.height + 4}px,
+              ${hp.left + hp.width + 4}px ${hp.top + hp.height + 4}px,
+              ${hp.left + hp.width + 4}px ${hp.top - 4}px,
+              0 ${hp.top - 4}px
+            )`
+          }}
+          onClickCapture={blockUnallowedInteraction}
+          onMouseDownCapture={blockUnallowedInteraction}
+          onTouchStartCapture={blockUnallowedInteraction}
+          onPointerDownCapture={blockUnallowedInteraction}
+        />
+      ) : (
+        <div
+          className="fixed inset-0 z-[9998] bg-black/60 pointer-events-auto"
+          onClickCapture={blockUnallowedInteraction}
+          onMouseDownCapture={blockUnallowedInteraction}
+          onTouchStartCapture={blockUnallowedInteraction}
+          onPointerDownCapture={blockUnallowedInteraction}
+        />
+      )}
 
-      {/* Highlight cutout */}
+      {/* Highlight border */}
       {targetElement && (
-        <>
-          <div className="fixed z-[9999] bg-black/60 backdrop-blur-sm pointer-events-none"
-            style={{ top: 0, left: 0, right: 0, height: `${hp.top}px` }} />
-          <div className="fixed z-[9999] bg-black/60 backdrop-blur-sm pointer-events-none"
-            style={{ top: `${hp.top + hp.height}px`, left: 0, right: 0, bottom: 0 }} />
-          <div className="fixed z-[9999] bg-black/60 backdrop-blur-sm pointer-events-none"
-            style={{ top: `${hp.top}px`, left: 0, width: `${hp.left}px`, height: `${hp.height}px` }} />
-          <div className="fixed z-[9999] bg-black/60 backdrop-blur-sm pointer-events-none"
-            style={{ top: `${hp.top}px`, left: `${hp.left + hp.width}px`, right: 0, height: `${hp.height}px` }} />
-
-          {/* Border highlight */}
-          <div
-            className="fixed z-[9999] pointer-events-none"
-            style={{
-              top: `${hp.top - 4}px`,
-              left: `${hp.left - 4}px`,
-              width: `${hp.width + 8}px`,
-              height: `${hp.height + 8}px`,
-              border: "4px solid hsl(var(--primary))",
-              borderRadius: "12px",
-              boxShadow: "0 0 0 4px hsl(var(--primary) / 0.2), 0 0 30px hsl(var(--primary) / 0.5)",
-              animation: "pulse 2s infinite",
-            }}
-          >
-            <Sparkles className="absolute -top-3 -right-3 w-6 h-6 text-primary animate-bounce" />
-            <Sparkles className="absolute -bottom-3 -left-3 w-6 h-6 text-primary animate-bounce" style={{ animationDelay: "0.5s" }} />
-          </div>
-        </>
+        <div
+          className="fixed z-[9999] pointer-events-none"
+          style={{
+            top: `${hp.top - 4}px`,
+            left: `${hp.left - 4}px`,
+            width: `${hp.width + 8}px`,
+            height: `${hp.height + 8}px`,
+            border: "4px solid hsl(var(--primary))",
+            borderRadius: "12px",
+            boxShadow: "0 0 0 4px hsl(var(--primary) / 0.2), 0 0 30px hsl(var(--primary) / 0.5)",
+            animation: "pulse 2s infinite",
+          }}
+        >
+          <Sparkles className="absolute -top-3 -right-3 w-6 h-6 text-primary animate-bounce" />
+          <Sparkles className="absolute -bottom-3 -left-3 w-6 h-6 text-primary animate-bounce" style={{ animationDelay: "0.5s" }} />
+        </div>
       )}
 
       {/* Tooltip */}

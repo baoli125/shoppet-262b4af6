@@ -485,8 +485,9 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
           }
         }
 
-        // Normal highlighting for non-dropdown elements
-        element.style.zIndex = "102";
+        // Ensure target is above overlay
+        element.style.position = "relative";
+        element.style.zIndex = "200";
 
         // Force reflow
         element.offsetHeight;
@@ -698,52 +699,27 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
 
   return (
     <>
-      {/* Overlay with cutout - 4 divs creating darkness around target */}
+      {/* Single overlay with clip-path cutout */}
       {targetElement ? (
-        <>
-          {/* Top overlay */}
-          <div
-            className="fixed left-0 right-0 z-[100] bg-black/70 backdrop-blur-sm pointer-events-auto"
-            style={{
-              top: 0,
-              height: `${highlightPosition.top - 4}px`,
-            }}
-          />
-
-          {/* Bottom overlay */}
-          <div
-            className="fixed left-0 right-0 z-[100] bg-black/70 backdrop-blur-sm pointer-events-auto"
-            style={{
-              top: `${highlightPosition.top + highlightPosition.height + 4}px`,
-              bottom: 0,
-            }}
-          />
-
-          {/* Left overlay */}
-          <div
-            className="fixed z-[100] bg-black/70 backdrop-blur-sm pointer-events-auto"
-            style={{
-              top: `${highlightPosition.top - 4}px`,
-              left: 0,
-              width: `${highlightPosition.left - 4}px`,
-              height: `${highlightPosition.height + 8}px`,
-            }}
-          />
-
-          {/* Right overlay */}
-          <div
-            className="fixed z-[100] bg-black/70 backdrop-blur-sm pointer-events-auto"
-            style={{
-              top: `${highlightPosition.top - 4}px`,
-              left: `${highlightPosition.left + highlightPosition.width + 4}px`,
-              right: 0,
-              height: `${highlightPosition.height + 8}px`,
-            }}
-          />
-        </>
+        <div
+          className="fixed inset-0 z-[100] bg-black/70 pointer-events-auto"
+          style={{
+            clipPath: `polygon(
+              0 0,
+              100% 0,
+              100% 100%,
+              0 100%,
+              0 ${highlightPosition.top - 4}px,
+              ${highlightPosition.left - 4}px ${highlightPosition.top - 4}px,
+              ${highlightPosition.left - 4}px ${highlightPosition.top + highlightPosition.height + 4}px,
+              ${highlightPosition.left + highlightPosition.width + 4}px ${highlightPosition.top + highlightPosition.height + 4}px,
+              ${highlightPosition.left + highlightPosition.width + 4}px ${highlightPosition.top - 4}px,
+              0 ${highlightPosition.top - 4}px
+            )`
+          }}
+        />
       ) : (
-        // Fallback full overlay when no target
-        <div className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm pointer-events-auto" />
+        <div className="fixed inset-0 z-[100] bg-black/70 pointer-events-auto" />
       )}
 
       {/* Chatbot Image - Mobile Optimized */}
