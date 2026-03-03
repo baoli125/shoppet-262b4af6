@@ -128,6 +128,48 @@ export const GuidedTourOverlay = () => {
     };
   }, [isActive, targetElement, updatePosition]);
 
+  // Boost z-index of allowed interaction elements (dropdowns, menus) above overlay
+  useEffect(() => {
+    if (!isActive || !step) return;
+
+    const boostedElements: { el: HTMLElement; origZIndex: string; origPosition: string }[] = [];
+
+    // Boost all allowed interaction elements and their parent popover/dropdown containers
+    step.allowedInteractions.forEach(selector => {
+      try {
+        document.querySelectorAll(selector).forEach(el => {
+          const htmlEl = el as HTMLElement;
+          // Boost the element itself
+          boostedElements.push({
+            el: htmlEl,
+            origZIndex: htmlEl.style.zIndex,
+            origPosition: htmlEl.style.position,
+          });
+          htmlEl.style.zIndex = "9999";
+          htmlEl.style.position = "relative";
+
+          // Also boost parent [role="menu"] or [data-radix-popper-content-wrapper] containers
+          const popoverParent = htmlEl.closest('[data-radix-popper-content-wrapper], [role="menu"]') as HTMLElement;
+          if (popoverParent) {
+            boostedElements.push({
+              el: popoverParent,
+              origZIndex: popoverParent.style.zIndex,
+              origPosition: popoverParent.style.position,
+            });
+            popoverParent.style.zIndex = "9999";
+          }
+        });
+      } catch { /* invalid selector */ }
+    });
+
+    return () => {
+      boostedElements.forEach(({ el, origZIndex, origPosition }) => {
+        el.style.zIndex = origZIndex;
+        el.style.position = origPosition;
+      });
+    };
+  }, [isActive, step, currentStep]);
+
   // Route tracking for pause/resume
   useEffect(() => {
     if (isActive && !isPaused) {
@@ -220,10 +262,19 @@ export const GuidedTourOverlay = () => {
 
   return (
     <>
-      {/* Single overlay with clip-path cutout */}
+      {/* Click blocker - sits behind overlay to block unwanted interactions */}
+      <div
+        className="fixed inset-0 z-[9997] pointer-events-auto"
+        onClickCapture={blockUnallowedInteraction}
+        onMouseDownCapture={blockUnallowedInteraction}
+        onTouchStartCapture={blockUnallowedInteraction}
+        onPointerDownCapture={blockUnallowedInteraction}
+      />
+
+      {/* Visual overlay with clip-path cutout - pointer-events-none so boosted elements receive clicks */}
       {targetElement ? (
         <div
-          className="fixed inset-0 z-[9998] bg-black/60 pointer-events-auto"
+          className="fixed inset-0 z-[9998] bg-black/60 pointer-events-none"
           style={{
             clipPath: `polygon(
               0 0,
@@ -238,18 +289,10 @@ export const GuidedTourOverlay = () => {
               0 ${hp.top - 4}px
             )`
           }}
-          onClickCapture={blockUnallowedInteraction}
-          onMouseDownCapture={blockUnallowedInteraction}
-          onTouchStartCapture={blockUnallowedInteraction}
-          onPointerDownCapture={blockUnallowedInteraction}
         />
       ) : (
         <div
-          className="fixed inset-0 z-[9998] bg-black/60 pointer-events-auto"
-          onClickCapture={blockUnallowedInteraction}
-          onMouseDownCapture={blockUnallowedInteraction}
-          onTouchStartCapture={blockUnallowedInteraction}
-          onPointerDownCapture={blockUnallowedInteraction}
+          className="fixed inset-0 z-[9998] bg-black/60 pointer-events-none"
         />
       )}
 
