@@ -137,12 +137,16 @@ export const GuidedTourOverlay = () => {
 
     const boostElement = (el: HTMLElement) => {
       if (boostedElements.has(el)) return;
+      const computed = window.getComputedStyle(el);
       boostedElements.set(el, {
         origZIndex: el.style.zIndex,
         origPosition: el.style.position,
       });
       el.style.zIndex = "10001";
-      el.style.position = "relative";
+      // Only set position: relative if element is static (don't break fixed/absolute/sticky)
+      if (computed.position === "static") {
+        el.style.position = "relative";
+      }
     };
 
     const boostContainer = (el: HTMLElement) => {
@@ -161,6 +165,17 @@ export const GuidedTourOverlay = () => {
             const htmlEl = el as HTMLElement;
             boostElement(htmlEl);
 
+            // Boost parent stacking contexts (header, nav, etc.) so z-index is effective
+            let parent = htmlEl.parentElement;
+            while (parent && parent !== document.body) {
+              const ps = window.getComputedStyle(parent);
+              // If parent creates a stacking context with z-index, boost it
+              if (ps.position !== "static" && ps.zIndex !== "auto") {
+                boostContainer(parent);
+              }
+              parent = parent.parentElement;
+            }
+
             // Boost Radix portal containers (dropdown, popover)
             const wrapper = htmlEl.closest('[data-radix-popper-content-wrapper]') as HTMLElement;
             if (wrapper) boostContainer(wrapper);
@@ -168,7 +183,6 @@ export const GuidedTourOverlay = () => {
             const menu = htmlEl.closest('[role="menu"]') as HTMLElement;
             if (menu) boostContainer(menu);
 
-            // Also boost any parent with data-radix-menu-content
             const menuContent = htmlEl.closest('[data-radix-menu-content]') as HTMLElement;
             if (menuContent) boostContainer(menuContent);
           });
@@ -286,13 +300,27 @@ export const GuidedTourOverlay = () => {
 
   return (
     <>
-      {/* Click blocker - sits behind overlay to block unwanted interactions */}
+      {/* Click blocker - has clip-path hole so highlighted area is clickable */}
       <div
         className="fixed inset-0 z-[9997] pointer-events-auto"
         onClickCapture={blockUnallowedInteraction}
         onMouseDownCapture={blockUnallowedInteraction}
         onTouchStartCapture={blockUnallowedInteraction}
         onPointerDownCapture={blockUnallowedInteraction}
+        style={targetElement ? {
+          clipPath: `polygon(
+            0 0,
+            100% 0,
+            100% 100%,
+            0 100%,
+            0 ${hp.top - 8}px,
+            ${hp.left - 8}px ${hp.top - 8}px,
+            ${hp.left - 8}px ${hp.top + hp.height + 8}px,
+            ${hp.left + hp.width + 8}px ${hp.top + hp.height + 8}px,
+            ${hp.left + hp.width + 8}px ${hp.top - 8}px,
+            0 ${hp.top - 8}px
+          )`
+        } : undefined}
       />
 
       {/* Visual overlay with clip-path cutout - pointer-events-none so boosted elements receive clicks */}
