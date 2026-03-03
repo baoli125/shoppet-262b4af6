@@ -129,41 +129,65 @@ export const GuidedTourOverlay = () => {
   }, [isActive, targetElement, updatePosition]);
 
   // Boost z-index of allowed interaction elements (dropdowns, menus) above overlay
+  // Uses MutationObserver to catch dynamically rendered elements (e.g. dropdown menus)
   useEffect(() => {
     if (!isActive || !step) return;
 
-    const boostedElements: { el: HTMLElement; origZIndex: string; origPosition: string }[] = [];
+    const boostedElements = new Map<HTMLElement, { origZIndex: string; origPosition: string }>();
 
-    // Boost all allowed interaction elements and their parent popover/dropdown containers
-    step.allowedInteractions.forEach(selector => {
-      try {
-        document.querySelectorAll(selector).forEach(el => {
-          const htmlEl = el as HTMLElement;
-          // Boost the element itself
-          boostedElements.push({
-            el: htmlEl,
-            origZIndex: htmlEl.style.zIndex,
-            origPosition: htmlEl.style.position,
+    const boostElement = (el: HTMLElement) => {
+      if (boostedElements.has(el)) return;
+      boostedElements.set(el, {
+        origZIndex: el.style.zIndex,
+        origPosition: el.style.position,
+      });
+      el.style.zIndex = "10001";
+      el.style.position = "relative";
+    };
+
+    const boostContainer = (el: HTMLElement) => {
+      if (boostedElements.has(el)) return;
+      boostedElements.set(el, {
+        origZIndex: el.style.zIndex,
+        origPosition: el.style.position,
+      });
+      el.style.zIndex = "10001";
+    };
+
+    const scanAndBoost = () => {
+      step.allowedInteractions.forEach(selector => {
+        try {
+          document.querySelectorAll(selector).forEach(el => {
+            const htmlEl = el as HTMLElement;
+            boostElement(htmlEl);
+
+            // Boost Radix portal containers (dropdown, popover)
+            const wrapper = htmlEl.closest('[data-radix-popper-content-wrapper]') as HTMLElement;
+            if (wrapper) boostContainer(wrapper);
+
+            const menu = htmlEl.closest('[role="menu"]') as HTMLElement;
+            if (menu) boostContainer(menu);
+
+            // Also boost any parent with data-radix-menu-content
+            const menuContent = htmlEl.closest('[data-radix-menu-content]') as HTMLElement;
+            if (menuContent) boostContainer(menuContent);
           });
-          htmlEl.style.zIndex = "9999";
-          htmlEl.style.position = "relative";
+        } catch { /* invalid selector */ }
+      });
+    };
 
-          // Also boost parent [role="menu"] or [data-radix-popper-content-wrapper] containers
-          const popoverParent = htmlEl.closest('[data-radix-popper-content-wrapper], [role="menu"]') as HTMLElement;
-          if (popoverParent) {
-            boostedElements.push({
-              el: popoverParent,
-              origZIndex: popoverParent.style.zIndex,
-              origPosition: popoverParent.style.position,
-            });
-            popoverParent.style.zIndex = "9999";
-          }
-        });
-      } catch { /* invalid selector */ }
+    // Initial scan
+    scanAndBoost();
+
+    // Watch for dynamically added elements (dropdown menus opening)
+    const observer = new MutationObserver(() => {
+      scanAndBoost();
     });
+    observer.observe(document.body, { childList: true, subtree: true });
 
     return () => {
-      boostedElements.forEach(({ el, origZIndex, origPosition }) => {
+      observer.disconnect();
+      boostedElements.forEach(({ origZIndex, origPosition }, el) => {
         el.style.zIndex = origZIndex;
         el.style.position = origPosition;
       });
