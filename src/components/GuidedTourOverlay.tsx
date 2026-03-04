@@ -41,7 +41,7 @@ export const GuidedTourOverlay = () => {
     });
   }, []);
 
-  // 1. Tìm phần tử mục tiêu liên tục (Quét DOM liên tục để tìm Dropdown khi nó vừa mở)
+  // 1. Quét DOM liên tục để tìm phần tử (đặc biệt khi Dropdown vừa mở)
   useEffect(() => {
     if (!isActive || !step?.targetSelector) {
       setTargetElement(null);
@@ -78,52 +78,56 @@ export const GuidedTourOverlay = () => {
     };
   }, [isActive, targetElement, updatePosition]);
 
-  // 2. LOGIC MỚI: Bắt sự kiện Xuyên Thấu Không Thể Bị Chặn (Giải quyết lỗi kẹt Step 2, 3)
+  // 2. LOGIC MỚI BẰNG TỌA ĐỘ CHUỘT (Chống kẹt Step 100%)
   useEffect(() => {
     if (!isActive || !targetElement) return;
 
     let hasAdvanced = false;
 
-    // Kiểm tra xem vị trí người dùng click có nằm trong vùng sáng không
-    const isAllowedInteraction = (e: Event) => {
-      const tooltip = document.getElementById('tour-tooltip');
-      const target = e.target as Node;
-      if (tooltip?.contains(target)) return true; // Cho phép click vào tooltip (để bấm nút X)
-      if (targetElement?.contains(target) || targetElement === target) return true; // Cho phép click vùng sáng
-      return false;
-    };
+    const handleInteraction = (e: PointerEvent | MouseEvent) => {
+      // Lấy tọa độ click chuột của user
+      const { clientX, clientY } = e;
+      const { top, left, width, height } = highlightPosition;
+      
+      // Tính toán xem tọa độ đó có nằm trong Vùng Sáng (Circle) không
+      // Padding = 12px khớp với kích thước vòng tròn ta đã tạo ở UI
+      const pad = 12;
+      const isInsideCircle = 
+        clientX >= (left - pad) && 
+        clientX <= (left + width + pad) && 
+        clientY >= (top - pad) && 
+        clientY <= (top + height + pad);
 
-    const blockOutside = (e: Event) => {
-      if (!isAllowedInteraction(e)) {
+      const tooltip = document.getElementById('tour-tooltip');
+      const isInsideTooltip = tooltip?.contains(e.target as Node);
+
+      if (isInsideCircle) {
+        // Nếu user click đúng vào vòng sáng
+        if (!hasAdvanced && e.type === 'pointerdown') {
+          hasAdvanced = true;
+          // Cứ để cho trang web hoạt động mở Dropdown bình thường
+          // Ngầm đếm 300ms rồi sang Step tiếp theo
+          setTimeout(() => {
+            nextStep();
+          }, 300);
+        }
+      } else if (!isInsideTooltip) {
+        // Nếu user click lăng nhăng ra ngoài vòng sáng & ngoài hộp thoại
+        // Chặn luôn cú click đó, không cho trang web phản hồi
         e.stopPropagation();
         e.preventDefault();
       }
     };
 
-    // Hàm Xử lý chuyển Step khi người dùng chạm đúng mục tiêu
-    const handleAdvance = (e: Event) => {
-      const target = e.target as Node;
-      if ((targetElement.contains(target) || targetElement === target) && !hasAdvanced) {
-        hasAdvanced = true;
-        // Đợi 300ms để Dropdown/Modal của web bạn kịp bung ra, sau đó mới đi sang Step tiếp theo
-        setTimeout(() => {
-          nextStep();
-        }, 300);
-      }
-    };
-
-    // QUAN TRỌNG: Sử dụng 'pointerdown' ở chế độ Capture (true) để bắt sự kiện 
-    // TRƯỚC KHI thư viện UI của bạn kịp ngăn chặn nó (e.preventDefault)
-    document.addEventListener('pointerdown', blockOutside, true);
-    document.addEventListener('click', blockOutside, true);
-    document.addEventListener('pointerdown', handleAdvance, true);
+    // Bắt sự kiện ở tầng Window (tầng cao nhất), chặn trước khi Shadcn kịp xử lý
+    window.addEventListener('pointerdown', handleInteraction, true);
+    window.addEventListener('click', handleInteraction, true);
 
     return () => {
-      document.removeEventListener('pointerdown', blockOutside, true);
-      document.removeEventListener('click', blockOutside, true);
-      document.removeEventListener('pointerdown', handleAdvance, true);
+      window.removeEventListener('pointerdown', handleInteraction, true);
+      window.removeEventListener('click', handleInteraction, true);
     };
-  }, [isActive, targetElement, nextStep]);
+  }, [isActive, targetElement, highlightPosition, nextStep]);
 
   // 3. Tính toán vị trí hộp thoại
   const getTooltipPosition = () => {
