@@ -15,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 interface CartItem {
   id: string;
   product_id: string;
+  supplier_id: string | null;
   quantity: number;
   products: {
     id: string;
@@ -23,6 +24,13 @@ interface CartItem {
     image_url: string;
     stock: number;
   };
+  suppliers: {
+    id: string;
+    name: string;
+    logo: string;
+  } | null;
+  // Giá từ product_suppliers (nếu có)
+  supplier_price: number | null;
 }
 
 const Cart = () => {
@@ -57,6 +65,7 @@ const Cart = () => {
       .select(`
         id,
         product_id,
+        supplier_id,
         quantity,
         products (
           id,
@@ -64,6 +73,11 @@ const Cart = () => {
           price,
           image_url,
           stock
+        ),
+        suppliers (
+          id,
+          name,
+          logo
         )
       `)
       .eq("user_id", user.id);
@@ -75,9 +89,27 @@ const Cart = () => {
         variant: "destructive",
       });
     } else {
-      setCartItems(data as any || []);
+      // Lấy giá từ product_suppliers cho mỗi item
+      const enrichedItems = await Promise.all((data as any[] || []).map(async (item: any) => {
+        let supplierPrice = null;
+        if (item.supplier_id && item.product_id) {
+          const { data: psData } = await supabase
+            .from("product_suppliers")
+            .select("price")
+            .eq("product_id", item.product_id)
+            .eq("supplier_id", item.supplier_id)
+            .single();
+          if (psData) supplierPrice = psData.price;
+        }
+        return { ...item, supplier_price: supplierPrice } as CartItem;
+      }));
+      setCartItems(enrichedItems);
     }
     setIsFetching(false);
+  };
+
+  const getItemPrice = (item: CartItem) => {
+    return item.supplier_price ?? item.products.price;
   };
 
   const updateQuantity = async (itemId: string, productId: string, delta: number) => {
@@ -99,9 +131,6 @@ const Cart = () => {
       });
       return;
     }
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
 
     const { error } = await supabase
       .from("cart_items")
@@ -139,7 +168,7 @@ const Cart = () => {
 
   const calculateTotal = () => {
     return cartItems.reduce((sum, item) => {
-      return sum + (item.products.price * item.quantity);
+      return sum + (getItemPrice(item) * item.quantity);
     }, 0);
   };
 
@@ -170,7 +199,6 @@ const Cart = () => {
     setCheckoutStep((prev) => Math.max(prev - 1, 1));
   };
 
-  // Define validation schema
   const checkoutSchema = z.object({
     shipping_address: z.string()
       .trim()
@@ -192,7 +220,6 @@ const Cart = () => {
     setIsLoading(true);
 
     try {
-      // Validate input BEFORE database operation
       const validatedData = checkoutSchema.parse(checkoutForm);
 
       const { data: { user } } = await supabase.auth.getUser();
@@ -202,7 +229,6 @@ const Cart = () => {
         throw new Error("Giỏ hàng trống");
       }
 
-      // For demo, we'll use the first product's seller_id
       const { data: firstProduct } = await supabase
         .from("products")
         .select("seller_id")
@@ -211,7 +237,6 @@ const Cart = () => {
 
       const totalAmount = calculateTotal();
 
-      // Create order with validated data
       const { data: order, error: orderError } = await supabase
         .from("orders")
         .insert({
@@ -228,14 +253,13 @@ const Cart = () => {
 
       if (orderError) throw orderError;
 
-      // Create order items
       const orderItems = cartItems.map((item) => ({
         order_id: order.id,
         product_id: item.product_id,
-        product_name: item.products.name,
-        product_price: item.products.price,
+        product_name: item.suppliers ? `${item.products.name} (${item.suppliers.name})` : item.products.name,
+        product_price: getItemPrice(item),
         quantity: item.quantity,
-        subtotal: item.products.price * item.quantity,
+        subtotal: getItemPrice(item) * item.quantity,
       }));
 
       const { error: itemsError } = await supabase
@@ -244,7 +268,6 @@ const Cart = () => {
 
       if (itemsError) throw itemsError;
 
-      // Clear cart
       const { error: clearError } = await supabase
         .from("cart_items")
         .delete()
@@ -263,7 +286,6 @@ const Cart = () => {
       navigate("/orders");
     } catch (error: any) {
       if (error instanceof z.ZodError) {
-        // Handle validation errors
         toast({
           title: "Lỗi thông tin đặt hàng",
           description: error.errors[0].message,
@@ -283,7 +305,7 @@ const Cart = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Cart Header - Sticky */}
+      {/* Cart Header */}
       <div className="border-b border-border bg-card/95 backdrop-blur-lg header-shadow">
         <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between gap-2">
@@ -344,7 +366,6 @@ const Cart = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
-            {/* Cart Items */}
             <div className="lg:col-span-2 space-y-3 sm:space-y-4">
               {cartItems.map((item) => (
                 <Card key={item.id} className="p-3 sm:p-4 hover:shadow-md transition-all duration-200 animate-fade-in">
@@ -357,9 +378,15 @@ const Cart = () => {
                       />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-base sm:text-lg mb-1.5 sm:mb-2 line-clamp-2">{item.products.name}</h3>
+                      <h3 className="font-semibold text-base sm:text-lg mb-1 line-clamp-2">{item.products.name}</h3>
+                      {item.suppliers && (
+                        <p className="text-xs text-muted-foreground mb-1.5 flex items-center gap-1.5">
+                          <img src={item.suppliers.logo || ''} alt="" className="w-4 h-4 rounded-full" />
+                          {item.suppliers.name}
+                        </p>
+                      )}
                       <p className="text-primary font-bold text-lg sm:text-xl mb-2 sm:mb-3">
-                        {item.products.price.toLocaleString()}đ
+                        {getItemPrice(item).toLocaleString()}đ
                       </p>
                       <div className="flex items-center gap-2 sm:gap-3">
                         <div className="flex items-center gap-1.5 sm:gap-2 bg-muted/50 rounded-full p-1">
@@ -396,7 +423,6 @@ const Cart = () => {
               ))}
             </div>
 
-            {/* Order Summary - Sticky on desktop */}
             <div className="lg:col-span-1">
               <Card className="p-4 sm:p-5 md:p-6 lg:sticky lg:top-4 border-2 border-primary/20 shadow-lg">
                 <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 flex items-center gap-2">
@@ -478,7 +504,6 @@ const Cart = () => {
           </div>
 
           <form onSubmit={handleCheckout} className="space-y-4">
-            {/* Step 1: Phone Number */}
             {checkoutStep === 1 && (
               <div className="space-y-4 animate-fade-in">
                 <div className="space-y-2">
@@ -499,7 +524,6 @@ const Cart = () => {
               </div>
             )}
 
-            {/* Step 2: Address */}
             {checkoutStep === 2 && (
               <div className="space-y-4 animate-fade-in">
                 <div className="space-y-2">
@@ -520,7 +544,6 @@ const Cart = () => {
               </div>
             )}
 
-            {/* Step 3: Notes */}
             {checkoutStep === 3 && (
               <div className="space-y-4 animate-fade-in">
                 <div className="space-y-2">
@@ -537,7 +560,6 @@ const Cart = () => {
               </div>
             )}
 
-            {/* Step 4: Review */}
             {checkoutStep === 4 && (
               <div className="space-y-4 animate-fade-in">
                 <Card className="p-4 bg-muted/50">
@@ -562,10 +584,14 @@ const Cart = () => {
                 
                 <Card className="p-4 border-primary/20">
                   <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Số sản phẩm:</span>
-                      <span className="font-medium">{cartItems.length}</span>
-                    </div>
+                    {cartItems.map((item) => (
+                      <div key={item.id} className="flex justify-between text-sm">
+                        <span className="truncate max-w-[60%]">
+                          {item.products.name} {item.suppliers ? `(${item.suppliers.name})` : ''} x{item.quantity}
+                        </span>
+                        <span className="font-medium">{(getItemPrice(item) * item.quantity).toLocaleString()}đ</span>
+                      </div>
+                    ))}
                     <div className="flex justify-between text-sm">
                       <span>Phí vận chuyển:</span>
                       <span className="text-green-600 font-medium">Miễn phí</span>

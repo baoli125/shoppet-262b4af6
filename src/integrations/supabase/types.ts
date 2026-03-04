@@ -47,6 +47,7 @@ export type Database = {
           id: string
           product_id: string
           quantity: number
+          supplier_id: string | null
           updated_at: string | null
           user_id: string
         }
@@ -55,6 +56,7 @@ export type Database = {
           id?: string
           product_id: string
           quantity?: number
+          supplier_id?: string | null
           updated_at?: string | null
           user_id: string
         }
@@ -63,6 +65,7 @@ export type Database = {
           id?: string
           product_id?: string
           quantity?: number
+          supplier_id?: string | null
           updated_at?: string | null
           user_id?: string
         }
@@ -72,6 +75,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cart_items_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
             referencedColumns: ["id"]
           },
           {
@@ -708,6 +718,96 @@ export type Database = {
           },
         ]
       }
+      product_reviews: {
+        Row: {
+          content: string | null
+          created_at: string | null
+          id: string
+          product_id: string
+          rating: number
+          supplier_id: string
+          user_id: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string | null
+          id?: string
+          product_id: string
+          rating: number
+          supplier_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string | null
+          id?: string
+          product_id?: string
+          rating?: number
+          supplier_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_reviews_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_suppliers: {
+        Row: {
+          created_at: string | null
+          id: string
+          price: number
+          product_id: string
+          stock: number
+          supplier_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          price: number
+          product_id: string
+          stock?: number
+          supplier_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          price?: number
+          product_id?: string
+          stock?: number
+          supplier_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_suppliers_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_suppliers_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           brand: string | null
@@ -830,6 +930,33 @@ export type Database = {
           is_new_user?: boolean | null
           phone?: string | null
           points?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      suppliers: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          logo: string | null
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          logo?: string | null
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          logo?: string | null
+          name?: string
           updated_at?: string | null
         }
         Relationships: []

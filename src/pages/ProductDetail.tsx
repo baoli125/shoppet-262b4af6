@@ -36,7 +36,6 @@ interface Product {
   features: string;
 }
 
-// === INTERFACES CHO TÍNH NĂNG NHÀ CUNG CẤP ===
 interface Review {
   id: string;
   userName: string;
@@ -50,55 +49,11 @@ interface Supplier {
   name: string;
   logo: string;
   price: number;
+  stock: number;
   rating: number;
   stats: { total: number; s5: number; s4: number; s3: number; s2: number; s1: number };
   reviews: Review[];
 }
-
-// === MOCK DATA GIẢ ĐỊNH ===
-const MOCK_SUPPLIERS: Supplier[] = [
-  {
-    id: "s1", name: "PetMart VN", logo: "https://api.dicebear.com/7.x/initials/svg?seed=PM&backgroundColor=0284c7", price: 155000, rating: 4.9,
-    stats: { total: 124, s5: 110, s4: 10, s3: 4, s2: 0, s1: 0 },
-    reviews: [
-      { id: "r1", userName: "Nguyễn Văn A", rating: 5, date: "2023-10-15", content: "Giao hàng cực nhanh, date mới tinh." },
-      { id: "r2", userName: "Trần Thị B", rating: 4, date: "2023-10-10", content: "Đóng gói cẩn thận nhưng hộp hơi móp một chút." },
-      { id: "r3", userName: "Lê C", rating: 3, date: "2023-09-01", content: "Giao hàng hơi chậm so với dự kiến." }
-    ]
-  },
-  {
-    id: "s2", name: "Paws & Claws", logo: "https://api.dicebear.com/7.x/initials/svg?seed=PC&backgroundColor=16a34a", price: 150000, rating: 4.9,
-    stats: { total: 124, s5: 80, s4: 5, s3: 4, s2: 0, s1: 0 }, // Cùng rate, cùng total, giá rẻ hơn s1 -> sẽ xếp trước s1
-    reviews: [
-      { id: "r4", userName: "Lê Hoàng", rating: 5, date: "2023-09-20", content: "Shop tư vấn nhiệt tình, giá rẻ nhất thị trường." },
-      { id: "r5", userName: "Phạm D", rating: 5, date: "2023-09-15", content: "Tuyệt vời, sẽ ủng hộ tiếp." }
-    ]
-  },
-  {
-    id: "s3", name: "CityZoo SG", logo: "https://api.dicebear.com/7.x/initials/svg?seed=CZ&backgroundColor=d97706", price: 158000, rating: 4.5,
-    stats: { total: 45, s5: 30, s4: 10, s3: 5, s2: 0, s1: 0 },
-    reviews: [
-      { id: "r6", userName: "Vũ E", rating: 4, date: "2023-08-11", content: "Sản phẩm tốt." }
-    ]
-  },
-  {
-    id: "s4", name: "HappyPet", logo: "https://api.dicebear.com/7.x/initials/svg?seed=HP&backgroundColor=dc2626", price: 160000, rating: 4.7,
-    stats: { total: 200, s5: 150, s4: 40, s3: 10, s2: 0, s1: 0 },
-    reviews: []
-  },
-  {
-    id: "s5", name: "Doggo & Meow", logo: "https://api.dicebear.com/7.x/initials/svg?seed=DM&backgroundColor=7c3aed", price: 149000, rating: 4.6,
-    stats: { total: 56, s5: 40, s4: 10, s3: 6, s2: 0, s1: 0 },
-    reviews: []
-  }
-];
-
-// THUẬT TOÁN SẮP XẾP: 1. Rating giảm dần -> 2. Số lượng đánh giá giảm dần -> 3. Giá tăng dần
-const SORTED_SUPPLIERS = [...MOCK_SUPPLIERS].sort((a, b) => {
-  if (b.rating !== a.rating) return b.rating - a.rating;
-  if (b.stats.total !== a.stats.total) return b.stats.total - a.stats.total;
-  return a.price - b.price;
-});
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -114,30 +69,134 @@ const ProductDetail = () => {
   const [userPets, setUserPets] = useState<any[]>([]);
 
   // States cho tính năng Nhà Cung Cấp
-  const [suppliers] = useState<Supplier[]>(SORTED_SUPPLIERS);
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
   
-  // States cho Popup 1 (Xem chi tiết 1 nhà cung cấp)
+  // States cho Popup 1
   const [viewingSupplier, setViewingSupplier] = useState<Supplier | null>(null);
   const [activeFilter, setActiveFilter] = useState<string>('all');
   
-  // States cho Popup 2 (So sánh 2 nhà cung cấp)
+  // States cho Popup 2
   const [isCompareOpen, setIsCompareOpen] = useState(false);
-  const [compareA, setCompareA] = useState<Supplier | null>(SORTED_SUPPLIERS[0]);
-  const [compareB, setCompareB] = useState<Supplier | null>(SORTED_SUPPLIERS[1]);
+  const [compareA, setCompareA] = useState<Supplier | null>(null);
+  const [compareB, setCompareB] = useState<Supplier | null>(null);
   const [compareFilterA, setCompareFilterA] = useState<string>('all');
   const [compareFilterB, setCompareFilterB] = useState<string>('all');
 
   // Tính giá trung bình
-  const avgPrice = Math.round(suppliers.reduce((acc, curr) => acc + curr.price, 0) / suppliers.length);
+  const avgPrice = suppliers.length > 0 
+    ? Math.round(suppliers.reduce((acc, curr) => acc + curr.price, 0) / suppliers.length)
+    : product?.price || 0;
 
   useEffect(() => {
     if (id) {
       fetchProduct();
       fetchCartQuantity();
       fetchUserPets();
+      fetchSuppliers();
     }
   }, [id]);
+
+  const fetchSuppliers = async () => {
+    if (!id) return;
+
+    // Lấy product_suppliers kèm thông tin supplier
+    const { data: psData } = await supabase
+      .from("product_suppliers")
+      .select(`
+        price,
+        stock,
+        supplier_id,
+        suppliers (
+          id,
+          name,
+          logo,
+          description
+        )
+      `)
+      .eq("product_id", id);
+
+    if (!psData || psData.length === 0) {
+      setSuppliers([]);
+      return;
+    }
+
+    // Lấy tất cả reviews cho product này
+    const { data: reviewsData } = await supabase
+      .from("product_reviews")
+      .select(`
+        id,
+        supplier_id,
+        rating,
+        content,
+        created_at,
+        user_id
+      `)
+      .eq("product_id", id)
+      .order("created_at", { ascending: false });
+
+    // Lấy profile names cho reviews
+    const userIds = [...new Set((reviewsData || []).map((r: any) => r.user_id))];
+    let profileMap: Record<string, string> = {};
+    if (userIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, display_name")
+        .in("id", userIds);
+      if (profiles) {
+        profiles.forEach((p: any) => { profileMap[p.id] = p.display_name; });
+      }
+    }
+
+    // Build supplier objects
+    const supplierList: Supplier[] = psData.map((ps: any) => {
+      const s = ps.suppliers;
+      const supplierReviews = (reviewsData || []).filter((r: any) => r.supplier_id === s.id);
+      
+      const stats = { total: supplierReviews.length, s5: 0, s4: 0, s3: 0, s2: 0, s1: 0 };
+      supplierReviews.forEach((r: any) => {
+        if (r.rating === 5) stats.s5++;
+        else if (r.rating === 4) stats.s4++;
+        else if (r.rating === 3) stats.s3++;
+        else if (r.rating === 2) stats.s2++;
+        else if (r.rating === 1) stats.s1++;
+      });
+
+      const avgRating = stats.total > 0
+        ? Math.round((supplierReviews.reduce((sum: number, r: any) => sum + r.rating, 0) / stats.total) * 10) / 10
+        : 0;
+
+      const reviews: Review[] = supplierReviews.map((r: any) => ({
+        id: r.id,
+        userName: profileMap[r.user_id] || "Người dùng",
+        rating: r.rating,
+        date: new Date(r.created_at).toLocaleDateString("vi-VN"),
+        content: r.content || "",
+      }));
+
+      return {
+        id: s.id,
+        name: s.name,
+        logo: s.logo || `https://api.dicebear.com/7.x/initials/svg?seed=${s.name}`,
+        price: ps.price,
+        stock: ps.stock,
+        rating: avgRating,
+        stats,
+        reviews,
+      };
+    });
+
+    // Sắp xếp: Rating giảm dần -> Số lượng đánh giá giảm dần -> Giá tăng dần
+    supplierList.sort((a, b) => {
+      if (b.rating !== a.rating) return b.rating - a.rating;
+      if (b.stats.total !== a.stats.total) return b.stats.total - a.stats.total;
+      return a.price - b.price;
+    });
+
+    setSuppliers(supplierList);
+    if (supplierList.length >= 1) setCompareA(supplierList[0]);
+    if (supplierList.length >= 2) setCompareB(supplierList[1]);
+  };
 
   const fetchUserPets = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -166,8 +225,16 @@ const ProductDetail = () => {
   const fetchCartQuantity = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user || !id) return;
-    const { data } = await supabase.from("cart_items").select("quantity").eq("user_id", user.id).eq("product_id", id).single();
-    if (data) setCartQuantity(data.quantity);
+    // Tổng quantity từ tất cả suppliers
+    const { data } = await supabase
+      .from("cart_items")
+      .select("quantity")
+      .eq("user_id", user.id)
+      .eq("product_id", id);
+    if (data) {
+      const total = data.reduce((sum: number, item: any) => sum + item.quantity, 0);
+      setCartQuantity(total);
+    }
   };
 
   const addToCart = async () => {
@@ -178,28 +245,50 @@ const ProductDetail = () => {
     }
 
     let finalSupplier = selectedSupplier;
-    if (!finalSupplier) {
-      // Vì mảng đã được sort chuẩn nhất từ trên xuống, chỉ cần lấy ông đầu tiên
+    if (!finalSupplier && suppliers.length > 0) {
       finalSupplier = suppliers[0];
       setSelectedSupplier(finalSupplier);
       toast({
         title: "Đã chọn tự động",
-        description: `Hệ thống chọn nhà cung cấp tốt nhất: ${finalSupplier.name} (${finalSupplier.rating}⭐)`,
+        description: `Hệ thống chọn nhà cung cấp tốt nhất: ${finalSupplier.name}`,
       });
     }
 
-    const newQty = cartQuantity + quantity;
-    const { error } = await supabase.from("cart_items").upsert({
-      user_id: user.id,
-      product_id: id!,
-      quantity: newQty,
-    });
+    const supplierId = finalSupplier?.id || null;
+
+    // Kiểm tra xem đã có item với cùng product+supplier chưa
+    const { data: existingItems } = await supabase
+      .from("cart_items")
+      .select("id, quantity")
+      .eq("user_id", user.id)
+      .eq("product_id", id!)
+      .eq("supplier_id", supplierId!);
+
+    let error;
+    if (existingItems && existingItems.length > 0) {
+      // Cộng dồn số lượng
+      const newQty = existingItems[0].quantity + quantity;
+      ({ error } = await supabase
+        .from("cart_items")
+        .update({ quantity: newQty })
+        .eq("id", existingItems[0].id));
+    } else {
+      // Tạo mới
+      ({ error } = await supabase
+        .from("cart_items")
+        .insert({
+          user_id: user.id,
+          product_id: id!,
+          supplier_id: supplierId,
+          quantity: quantity,
+        }));
+    }
 
     if (error) {
       toast({ title: "Lỗi", description: "Không thể thêm sản phẩm vào giỏ hàng", variant: "destructive" });
     } else {
-      setCartQuantity(newQty);
-      toast({ title: "Đã thêm vào giỏ hàng", description: `${quantity} sản phẩm từ ${finalSupplier.name} đã được thêm.` });
+      setCartQuantity(prev => prev + quantity);
+      toast({ title: "Đã thêm vào giỏ hàng", description: `${quantity} sản phẩm từ ${finalSupplier?.name || 'cửa hàng'} đã được thêm.` });
       window.dispatchEvent(new CustomEvent('cartUpdated'));
     }
   };
@@ -214,13 +303,11 @@ const ProductDetail = () => {
     return labels[type] || type;
   };
 
-  // Hàm tiện ích: Lọc & sắp xếp đánh giá
   const getFilteredAndSortedReviews = (reviews: Review[], filterValue: string) => {
     let filtered = reviews;
     if (filterValue !== 'all') {
       filtered = reviews.filter(r => r.rating.toString() === filterValue);
     }
-    // Ưu tiên hiện đánh giá 5 sao lên đầu
     return filtered.sort((a, b) => b.rating - a.rating);
   };
 
@@ -274,7 +361,7 @@ const ProductDetail = () => {
             </div>
           </div>
 
-          {/* Cột phải: Thông tin & Tương tác mua hàng */}
+          {/* Cột phải */}
           <div className="lg:col-span-3 space-y-6">
             <div className="space-y-4">
               <div className="flex items-start gap-3 flex-wrap">
@@ -289,7 +376,9 @@ const ProductDetail = () => {
             <div className="bg-accent/5 rounded-2xl p-5 border border-accent/20 space-y-5">
               <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Giá tham khảo trung bình</p>
+                  <p className="text-sm text-muted-foreground mb-1">
+                    {suppliers.length > 0 ? "Giá tham khảo trung bình" : "Giá sản phẩm"}
+                  </p>
                   <div className="flex items-center gap-3">
                     <span className="text-4xl font-bold text-primary">
                       {selectedSupplier ? selectedSupplier.price.toLocaleString() : avgPrice.toLocaleString()}đ
@@ -300,40 +389,44 @@ const ProductDetail = () => {
                   </div>
                 </div>
                 
-                <Button variant="outline" className="gap-2 border-primary/30 hover:bg-primary/10" onClick={() => setIsCompareOpen(true)}>
-                  <Scale className="w-4 h-4 text-primary" /> So sánh nhà cung cấp
-                </Button>
+                {suppliers.length > 1 && (
+                  <Button variant="outline" className="gap-2 border-primary/30 hover:bg-primary/10" onClick={() => setIsCompareOpen(true)}>
+                    <Scale className="w-4 h-4 text-primary" /> So sánh nhà cung cấp
+                  </Button>
+                )}
               </div>
 
-              <div>
-                <p className="text-sm font-semibold mb-3 flex items-center gap-2">
-                  <Store className="w-4 h-4" /> Nhà cung cấp hiện có:
-                </p>
-                <div className="flex items-center gap-3">
-                  {suppliers.slice(0, 5).map(supplier => (
-                    <div 
-                      key={supplier.id}
-                      className="relative group cursor-pointer"
-                      onClick={() => {
-                        setViewingSupplier(supplier);
-                        setActiveFilter('all'); // Reset filter khi mở
-                      }}
-                    >
-                      <div className={`w-12 h-12 rounded-full overflow-hidden border-2 transition-all duration-200 ${selectedSupplier?.id === supplier.id ? 'border-primary ring-4 ring-primary/20 scale-110' : 'border-border hover:border-primary/50 hover:scale-105'}`}>
-                        <img src={supplier.logo} alt={supplier.name} className="w-full h-full object-cover" />
+              {suppliers.length > 0 && (
+                <div>
+                  <p className="text-sm font-semibold mb-3 flex items-center gap-2">
+                    <Store className="w-4 h-4" /> Nhà cung cấp hiện có:
+                  </p>
+                  <div className="flex items-center gap-3">
+                    {suppliers.slice(0, 5).map(supplier => (
+                      <div 
+                        key={supplier.id}
+                        className="relative group cursor-pointer"
+                        onClick={() => {
+                          setViewingSupplier(supplier);
+                          setActiveFilter('all');
+                        }}
+                      >
+                        <div className={`w-12 h-12 rounded-full overflow-hidden border-2 transition-all duration-200 ${selectedSupplier?.id === supplier.id ? 'border-primary ring-4 ring-primary/20 scale-110' : 'border-border hover:border-primary/50 hover:scale-105'}`}>
+                          <img src={supplier.logo} alt={supplier.name} className="w-full h-full object-cover" />
+                        </div>
+                        <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none transition-opacity z-10">
+                          {supplier.name}
+                        </div>
                       </div>
-                      <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none transition-opacity z-10">
-                        {supplier.name}
+                    ))}
+                    {suppliers.length > 5 && (
+                      <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center border-2 border-border text-xs font-bold text-muted-foreground cursor-pointer">
+                        +{suppliers.length - 5}
                       </div>
-                    </div>
-                  ))}
-                  {suppliers.length > 5 && (
-                    <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center border-2 border-border text-xs font-bold text-muted-foreground cursor-pointer">
-                      +{suppliers.length - 5}
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Số lượng và Add to cart */}
@@ -343,14 +436,14 @@ const ProductDetail = () => {
                 <div className="flex items-center gap-3">
                   <Button variant="outline" size="icon" onClick={() => setQuantity(Math.max(1, quantity - 1))} className="h-10 w-10 rounded-full border-2"><Minus className="w-4 h-4" /></Button>
                   <span className="w-12 text-center font-bold text-xl">{quantity}</span>
-                  <Button variant="outline" size="icon" onClick={() => setQuantity(Math.min(product.stock, quantity + 1))} className="h-10 w-10 rounded-full border-2"><Plus className="w-4 h-4" /></Button>
+                  <Button variant="outline" size="icon" onClick={() => setQuantity(Math.min(selectedSupplier?.stock || product.stock, quantity + 1))} className="h-10 w-10 rounded-full border-2"><Plus className="w-4 h-4" /></Button>
                 </div>
               </div>
 
               <div className="flex gap-3">
-                <Button className="flex-1 btn-hero text-lg py-6 h-14 font-semibold shadow-xl" onClick={addToCart} disabled={product.stock === 0}>
+                <Button className="flex-1 btn-hero text-lg py-6 h-14 font-semibold shadow-xl" onClick={addToCart} disabled={product.stock === 0 && suppliers.length === 0}>
                   <ShoppingCart className="w-5 h-5 mr-2" />
-                  {selectedSupplier ? "Thêm vào giỏ hàng" : "Chọn mua tự động"}
+                  {selectedSupplier ? "Thêm vào giỏ hàng" : suppliers.length > 0 ? "Chọn mua tự động" : "Thêm vào giỏ hàng"}
                 </Button>
                 <Button variant="outline" size="icon" className="h-14 w-14 border-2"><Heart className="w-5 h-5" /></Button>
               </div>
@@ -386,10 +479,32 @@ const ProductDetail = () => {
                 </div>
               </Card>
             )}
+            {product.usage_instructions && (
+              <Card className="p-6 border-2 hover:border-primary/20">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0"><Info className="w-6 h-6 text-primary" /></div>
+                  <div>
+                    <h3 className="font-bold text-lg mb-2">Hướng dẫn sử dụng</h3>
+                    <p className="text-muted-foreground whitespace-pre-line">{product.usage_instructions}</p>
+                  </div>
+                </div>
+              </Card>
+            )}
+            {product.features && (
+              <Card className="p-6 border-2 hover:border-primary/20">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center shrink-0"><Star className="w-6 h-6 text-accent" /></div>
+                  <div>
+                    <h3 className="font-bold text-lg mb-2">Đặc điểm nổi bật</h3>
+                    <p className="text-muted-foreground whitespace-pre-line">{product.features}</p>
+                  </div>
+                </div>
+              </Card>
+            )}
           </div>
         </div>
 
-        {/* SẢN PHẨM TƯƠNG TỰ (Đã được khôi phục) */}
+        {/* SẢN PHẨM TƯƠNG TỰ */}
         {relatedProducts.length > 0 && (
           <div className="mt-12 sm:mt-16 md:mt-20">
             <div className="flex items-center justify-between mb-6">
@@ -448,9 +563,7 @@ const ProductDetail = () => {
         )}
       </div>
 
-      {/* ======================================================= */}
-      {/* POPUP 1: ĐÁNH GIÁ NHÀ CUNG CẤP (CHUẨN SHOPEE)             */}
-      {/* ======================================================= */}
+      {/* POPUP 1: ĐÁNH GIÁ NHÀ CUNG CẤP */}
       <Dialog open={!!viewingSupplier} onOpenChange={(open) => !open && setViewingSupplier(null)}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           {viewingSupplier && (
@@ -462,6 +575,7 @@ const ProductDetail = () => {
                   <h2 className="text-2xl font-bold text-primary">{viewingSupplier.name}</h2>
                   <p className="text-sm font-medium text-muted-foreground">{product.name}</p>
                   <p className="text-3xl font-black text-destructive mt-2">{viewingSupplier.price.toLocaleString()}đ</p>
+                  <p className="text-xs text-muted-foreground">Còn {viewingSupplier.stock} sản phẩm</p>
                 </div>
               </DialogHeader>
 
@@ -480,7 +594,6 @@ const ProductDetail = () => {
                   <p className="text-xs text-muted-foreground">{viewingSupplier.stats.total} Đánh giá</p>
                 </div>
 
-                {/* BỘ LỌC ĐÃ ĐƯỢC KẾT NỐI VỚI STATE activeFilter */}
                 <div className="flex-1 flex flex-wrap gap-2 justify-center md:justify-start">
                   <Badge variant={activeFilter === 'all' ? 'default' : 'outline'} className="cursor-pointer px-4 py-2 text-sm" onClick={() => setActiveFilter('all')}>
                     Tất cả
@@ -497,7 +610,6 @@ const ProductDetail = () => {
                 </div>
               </div>
 
-              {/* LIST REVIEW ĐÃ ĐƯỢC FILTER */}
               <div className="mt-6 space-y-4">
                 {getFilteredAndSortedReviews(viewingSupplier.reviews, activeFilter).length > 0 ? (
                   getFilteredAndSortedReviews(viewingSupplier.reviews, activeFilter).map(review => (
@@ -541,9 +653,7 @@ const ProductDetail = () => {
         </DialogContent>
       </Dialog>
 
-      {/* ======================================================= */}
-      {/* POPUP 2: SO SÁNH NHÀ CUNG CẤP (ĐÃ NÂNG CẤP FILTER & REVIEW) */}
-      {/* ======================================================= */}
+      {/* POPUP 2: SO SÁNH NHÀ CUNG CẤP */}
       <Dialog open={isCompareOpen} onOpenChange={setIsCompareOpen}>
         <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -553,7 +663,7 @@ const ProductDetail = () => {
           </DialogHeader>
 
           <div className="grid grid-cols-2 gap-6 mt-4">
-            {/* ====== CỘT A ====== */}
+            {/* CỘT A */}
             <div className="space-y-4 border-r pr-6">
               <select 
                 className="w-full p-2 border rounded-md font-semibold"
@@ -577,7 +687,6 @@ const ProductDetail = () => {
                     </div>
                   </div>
 
-                  {/* Filter A */}
                   <div className="flex flex-wrap gap-1 justify-center">
                     <Badge variant={compareFilterA === 'all' ? 'default' : 'outline'} className="cursor-pointer text-[10px]" onClick={() => setCompareFilterA('all')}>Tất cả</Badge>
                     <Badge variant={compareFilterA === '5' ? 'default' : 'outline'} className="cursor-pointer text-[10px]" onClick={() => setCompareFilterA('5')}>5 Sao</Badge>
@@ -585,7 +694,6 @@ const ProductDetail = () => {
                     <Badge variant={compareFilterA === '3' ? 'default' : 'outline'} className="cursor-pointer text-[10px]" onClick={() => setCompareFilterA('3')}>3 Sao</Badge>
                   </div>
 
-                  {/* Reviews A */}
                   <div className="max-h-[300px] overflow-y-auto pr-2 space-y-3">
                     {getFilteredAndSortedReviews(compareA.reviews, compareFilterA).map(review => (
                       <div key={`compA-${review.id}`} className="bg-muted/20 p-3 rounded-lg text-sm">
@@ -612,7 +720,7 @@ const ProductDetail = () => {
               )}
             </div>
 
-            {/* ====== CỘT B ====== */}
+            {/* CỘT B */}
             <div className="space-y-4 pl-2">
               <select 
                 className="w-full p-2 border rounded-md font-semibold"
@@ -636,7 +744,6 @@ const ProductDetail = () => {
                     </div>
                   </div>
 
-                  {/* Filter B */}
                   <div className="flex flex-wrap gap-1 justify-center">
                     <Badge variant={compareFilterB === 'all' ? 'default' : 'outline'} className="cursor-pointer text-[10px]" onClick={() => setCompareFilterB('all')}>Tất cả</Badge>
                     <Badge variant={compareFilterB === '5' ? 'default' : 'outline'} className="cursor-pointer text-[10px]" onClick={() => setCompareFilterB('5')}>5 Sao</Badge>
@@ -644,7 +751,6 @@ const ProductDetail = () => {
                     <Badge variant={compareFilterB === '3' ? 'default' : 'outline'} className="cursor-pointer text-[10px]" onClick={() => setCompareFilterB('3')}>3 Sao</Badge>
                   </div>
 
-                  {/* Reviews B */}
                   <div className="max-h-[300px] overflow-y-auto pr-2 space-y-3">
                     {getFilteredAndSortedReviews(compareB.reviews, compareFilterB).map(review => (
                       <div key={`compB-${review.id}`} className="bg-muted/20 p-3 rounded-lg text-sm">

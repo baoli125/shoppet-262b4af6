@@ -22,6 +22,9 @@ interface Product {
   brand: string;
   image_url: string;
   stock: number;
+  // Giá từ product_suppliers
+  min_price: number | null;
+  avg_price: number | null;
 }
 
 const Marketplace = () => {
@@ -49,9 +52,16 @@ const Marketplace = () => {
   }, [products, searchQuery, selectedCategory, selectedPetType, sortBy, sortDirection]);
 
   const fetchProducts = async () => {
+    // Lấy sản phẩm kèm giá từ product_suppliers
     const { data, error } = await supabase
       .from("products")
-      .select("*")
+      .select(`
+        *,
+        product_suppliers (
+          price,
+          stock
+        )
+      `)
       .eq("is_active", true)
       .order("created_at", { ascending: false });
 
@@ -62,7 +72,20 @@ const Marketplace = () => {
         variant: "destructive",
       });
     } else {
-      setProducts(data || []);
+      const enriched = (data || []).map((p: any) => {
+        const supplierPrices = (p.product_suppliers || []).map((ps: any) => ps.price);
+        const minPrice = supplierPrices.length > 0 ? Math.min(...supplierPrices) : null;
+        const avgPrice = supplierPrices.length > 0 ? Math.round(supplierPrices.reduce((a: number, b: number) => a + b, 0) / supplierPrices.length) : null;
+        const totalSupplierStock = (p.product_suppliers || []).reduce((sum: number, ps: any) => sum + (ps.stock || 0), 0);
+        return {
+          ...p,
+          min_price: minPrice,
+          avg_price: avgPrice,
+          // Nếu có supplier thì dùng tổng stock từ suppliers, không thì giữ stock gốc
+          stock: supplierPrices.length > 0 ? totalSupplierStock : p.stock,
+        };
+      });
+      setProducts(enriched);
     }
   };
 
@@ -76,9 +99,10 @@ const Marketplace = () => {
       .eq("user_id", user.id);
 
     if (data) {
+      // Gộp quantity theo product_id (có thể có nhiều supplier)
       const cart: Record<string, number> = {};
-      data.forEach((item) => {
-        cart[item.product_id] = item.quantity;
+      data.forEach((item: any) => {
+        cart[item.product_id] = (cart[item.product_id] || 0) + item.quantity;
       });
       setCartItems(cart);
     }
@@ -116,13 +140,15 @@ const Marketplace = () => {
       filtered = filtered.filter((p) => p.pet_type === selectedPetType);
     }
 
-    // Apply sorting
+    // Sắp xếp theo giá supplier nếu có
     if (sortBy !== "none") {
       filtered.sort((a, b) => {
         let comparison = 0;
         
         if (sortBy === "price") {
-          comparison = a.price - b.price;
+          const priceA = a.min_price ?? a.price;
+          const priceB = b.min_price ?? b.price;
+          comparison = priceA - priceB;
         } else if (sortBy === "name") {
           comparison = a.name.localeCompare(b.name);
         }
@@ -149,64 +175,46 @@ const Marketplace = () => {
       return;
     }
 
-    const currentQty = cartItems[productId] || 0;
-    const newQty = currentQty + 1;
-
-    const { error } = await supabase
-      .from("cart_items")
-      .upsert({
-        user_id: user.id,
-        product_id: productId,
-        quantity: newQty,
-      });
-
-    if (error) {
-      toast({
-        title: t('common.error'),
-        description: t('marketplace.noProductsDesc'),
-        variant: "destructive",
-      });
-    } else {
-      setCartItems({ ...cartItems, [productId]: newQty });
-      toast({
-        title: t('marketplace.addedToCart'),
-      });
-      // Dispatch custom event to update header cart count
-      window.dispatchEvent(new CustomEvent('cartUpdated'));
-    }
+    // Chuyển hướng đến trang chi tiết để chọn nhà cung cấp
+    navigate(`/product/${productId}`);
   };
 
   const updateCartQuantity = async (productId: string, delta: number) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    const currentQty = cartItems[productId] || 0;
-    const newQty = Math.max(0, currentQty + delta);
+    // Lấy tất cả cart items cho product này
+    const { data: items } = await supabase
+      .from("cart_items")
+      .select("id, quantity, supplier_id")
+      .eq("user_id", user.id)
+      .eq("product_id", productId);
+
+    if (!items || items.length === 0) return;
+
+    // Cập nhật item đầu tiên
+    const item = items[0];
+    const newQty = Math.max(0, item.quantity + delta);
 
     if (newQty === 0) {
+      // Xóa item này
       const { error } = await supabase
         .from("cart_items")
         .delete()
-        .eq("user_id", user.id)
-        .eq("product_id", productId);
+        .eq("id", item.id);
 
       if (!error) {
-        const newCart = { ...cartItems };
-        delete newCart[productId];
-        setCartItems(newCart);
+        fetchCart();
+        window.dispatchEvent(new CustomEvent('cartUpdated'));
       }
     } else {
       const { error } = await supabase
         .from("cart_items")
-        .upsert({
-          user_id: user.id,
-          product_id: productId,
-          quantity: newQty,
-        });
+        .update({ quantity: newQty })
+        .eq("id", item.id);
 
       if (!error) {
-        setCartItems({ ...cartItems, [productId]: newQty });
-        // Dispatch custom event to update header cart count
+        fetchCart();
         window.dispatchEvent(new CustomEvent('cartUpdated'));
       }
     }
@@ -222,9 +230,25 @@ const Marketplace = () => {
 
   const totalCartItems = Object.values(cartItems).reduce((sum, qty) => sum + qty, 0);
 
+  // Hiển thị giá: ưu tiên từ product_suppliers
+  const renderPrice = (product: Product) => {
+    if (product.min_price !== null) {
+      return (
+        <span className="text-xl sm:text-2xl font-bold text-primary block">
+          Từ {product.min_price.toLocaleString()}đ
+        </span>
+      );
+    }
+    return (
+      <span className="text-xl sm:text-2xl font-bold text-primary block">
+        {product.price.toLocaleString()}đ
+      </span>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Marketplace Header - Sticky */}
+      {/* Marketplace Header */}
       <div className="border-b border-border bg-card/95 backdrop-blur-lg header-shadow">
         <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between gap-2">
@@ -253,7 +277,7 @@ const Marketplace = () => {
         </div>
       </div>
 
-      {/* Filters - Sticky */}
+      {/* Filters */}
       <div className="border-b border-border bg-card/95 backdrop-blur-lg">
         <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2 sm:gap-3 md:gap-4">
@@ -324,7 +348,7 @@ const Marketplace = () => {
         </div>
       </div>
 
-      {/* Products Grid - 4 Column Modern Layout */}
+      {/* Products Grid */}
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8">
         {filteredProducts.length === 0 ? (
           <div className="text-center py-12 sm:py-16">
@@ -343,22 +367,18 @@ const Marketplace = () => {
                 onClick={() => navigate(`/product/${product.id}`)}
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                {/* Image Section with Hover Effect */}
                 <div className="aspect-square bg-muted/30 relative overflow-hidden">
                   <img
                     src={product.image_url || "https://via.placeholder.com/300"}
                     alt={product.name}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
-                  {/* Overlay on Hover */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   
-                  {/* Category Badge */}
                   <Badge className="absolute top-3 right-3 bg-primary/90 backdrop-blur-sm text-xs sm:text-sm font-semibold shadow-lg">
                     {getCategoryLabel(product.category)}
                   </Badge>
                   
-                  {/* Pet Type Icon */}
                   {product.pet_type && (
                     <div className="absolute top-3 left-3 w-8 h-8 sm:w-10 sm:h-10 bg-background/90 backdrop-blur-sm rounded-full flex items-center justify-center text-lg sm:text-xl shadow-lg">
                       {getPetTypeLabel(product.pet_type).split(" ")[0]}
@@ -366,9 +386,7 @@ const Marketplace = () => {
                   )}
                 </div>
 
-                {/* Content Section */}
                 <div className="p-4 sm:p-5 space-y-3">
-                  {/* Title and Brand */}
                   <div className="space-y-1">
                     <h3 className="font-bold text-base sm:text-lg line-clamp-2 text-foreground group-hover:text-primary transition-colors duration-200">
                       {product.name}
@@ -378,24 +396,19 @@ const Marketplace = () => {
                     )}
                   </div>
 
-                  {/* Description */}
                   <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 leading-relaxed">
                     {product.description}
                   </p>
 
-                  {/* Price and Stock */}
                   <div className="flex items-end justify-between pt-2">
                     <div>
-                      <span className="text-xl sm:text-2xl font-bold text-primary block">
-                        {product.price.toLocaleString()}đ
-                      </span>
+                      {renderPrice(product)}
                       <span className="text-xs text-muted-foreground">
                         Còn {product.stock} sp
                       </span>
                     </div>
                   </div>
 
-                  {/* Feeding Duration Badge */}
                   {product.category === 'food' && userPets.length > 0 && (
                     <div className="mt-2">
                       <FeedingDurationBadge 
@@ -405,7 +418,6 @@ const Marketplace = () => {
                     </div>
                   )}
 
-                  {/* Action Buttons */}
                   <div onClick={(e) => e.stopPropagation()}>
                     {cartItems[product.id] ? (
                       <div className="flex items-center gap-2">
