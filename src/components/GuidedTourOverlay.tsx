@@ -24,6 +24,7 @@ export const GuidedTourOverlay = () => {
 
   const step = getCurrentStep();
 
+  // 1. Kiểm tra Mobile
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
@@ -31,8 +32,10 @@ export const GuidedTourOverlay = () => {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
+  // 2. Cập nhật vị trí Highlight
   const updatePosition = useCallback((el: HTMLElement) => {
     const rect = el.getBoundingClientRect();
+    if (rect.width === 0 && rect.height === 0) return; // Bỏ qua nếu phần tử bị ẩn
     setHighlightPosition({
       top: rect.top,
       left: rect.left,
@@ -41,7 +44,7 @@ export const GuidedTourOverlay = () => {
     });
   }, []);
 
-  // Tìm phần tử mục tiêu liên tục (Rất quan trọng cho Step 3 khi chờ Dropdown mở ra)
+  // 3. Liên tục quét tìm phần tử mục tiêu (Giúp tìm được Dropdown ngay khi nó vừa xuất hiện)
   useEffect(() => {
     if (!isActive || !step?.targetSelector) {
       setTargetElement(null);
@@ -52,76 +55,92 @@ export const GuidedTourOverlay = () => {
       const el = document.querySelector(step.targetSelector!) as HTMLElement;
       if (el) {
         setTargetElement(el);
-        updatePosition(el);
       }
     };
 
     tryFind();
     const interval = setInterval(tryFind, 200);
     return () => clearInterval(interval);
-  }, [isActive, step, currentStep, updatePosition]);
+  }, [isActive, step]);
 
+  // 4. Dùng requestAnimationFrame để vòng sáng bám sát theo Animation của web (ví dụ menu trượt xuống)
   useEffect(() => {
     if (!isActive || !targetElement) return;
 
-    const recalc = () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      rafRef.current = requestAnimationFrame(() => updatePosition(targetElement));
+    const loop = () => {
+      updatePosition(targetElement);
+      rafRef.current = requestAnimationFrame(loop);
     };
+    rafRef.current = requestAnimationFrame(loop);
 
-    window.addEventListener("resize", recalc);
-    window.addEventListener("scroll", recalc, true);
     return () => {
-      window.removeEventListener("resize", recalc);
-      window.removeEventListener("scroll", recalc, true);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
   }, [isActive, targetElement, updatePosition]);
 
-  // LOGIC MỚI: Theo dõi Click xuyên thấu và chặn click sai
+  // 5. LOGIC MỚI: Theo dõi Click/Focus xuyên thấu và xử lý chuyển Step
   useEffect(() => {
     if (!isActive || !targetElement) return;
 
-    // Kiểm tra xem vị trí click có hợp lệ không (Click vào Target thật hoặc Tooltip)
-    const isAllowedInteraction = (e: MouseEvent) => {
+    let isAdvanced = false;
+
+    // Xử lý khi người dùng tương tác đúng vào phần tử
+    const handleInteraction = (e: Event) => {
+      const target = e.target as Node;
+      // Nếu nhấn trúng phần tử đang được làm sáng
+      if (targetElement.contains(target) || targetElement === target) {
+        if (!isAdvanced) {
+          isAdvanced = true;
+          // Delay 400ms để đảm bảo Dropdown/Menu trên web bung ra xong xuôi rồi mới chuyển Step 3
+          setTimeout(() => {
+            nextStep();
+          }, 400); 
+        }
+      }
+    };
+
+    // Chặn mọi tương tác bấm nhầm ra ngoài vùng sáng
+    const blockOutside = (e: Event) => {
+      const target = e.target as Node;
       const tooltip = document.getElementById('tour-tooltip');
-      if (tooltip && tooltip.contains(e.target as Node)) return true;
-      if (targetElement.contains(e.target as Node)) return true;
-      return false;
-    };
-
-    // Chặn mọi tương tác mousedown/mouseup/click nếu click ra ngoài vùng cho phép
-    const blockOutside = (e: MouseEvent) => {
-      if (!isAllowedInteraction(e)) {
-        e.stopPropagation();
-        e.preventDefault();
+      
+      // Cho phép click vào hộp thoại hướng dẫn hoặc phần tử được highlight
+      if (tooltip?.contains(target) || targetElement.contains(target) || targetElement === target) {
+        return; 
       }
+      
+      e.stopPropagation();
+      e.preventDefault();
     };
 
-    // Lắng nghe cú Click vào đúng mục tiêu
-    const handleTargetClick = (e: MouseEvent) => {
-      if (targetElement.contains(e.target as Node)) {
-        // Đợi 150ms để React xử lý sự kiện (ví dụ: bung cái dropdown ra) 
-        // Sau đó mới Next Step để Step 3 đi tìm Dropdown
-        setTimeout(() => {
-          nextStep();
-        }, 150);
-      }
-    };
-
+    // Gắn sự kiện ở Phase Capture để bắt mọi loại tương tác (đặc biệt là pointerdown của Shadcn)
+    document.addEventListener('pointerdown', blockOutside, true);
     document.addEventListener('mousedown', blockOutside, true);
-    document.addEventListener('mouseup', blockOutside, true);
     document.addEventListener('click', blockOutside, true);
-    document.addEventListener('click', handleTargetClick, true);
+
+    document.addEventListener('pointerdown', handleInteraction, true);
+    document.addEventListener('click', handleInteraction, true);
+    
+    // Nếu đối tượng là ô nhập liệu (Input), bắt thêm sự kiện focus
+    if (targetElement.tagName === 'INPUT' || targetElement.tagName === 'TEXTAREA') {
+      targetElement.addEventListener('focus', handleInteraction);
+    }
 
     return () => {
+      document.removeEventListener('pointerdown', blockOutside, true);
       document.removeEventListener('mousedown', blockOutside, true);
-      document.removeEventListener('mouseup', blockOutside, true);
       document.removeEventListener('click', blockOutside, true);
-      document.removeEventListener('click', handleTargetClick, true);
+      
+      document.removeEventListener('pointerdown', handleInteraction, true);
+      document.removeEventListener('click', handleInteraction, true);
+      
+      if (targetElement.tagName === 'INPUT' || targetElement.tagName === 'TEXTAREA') {
+        targetElement.removeEventListener('focus', handleInteraction);
+      }
     };
   }, [isActive, targetElement, nextStep]);
 
+  // 6. Tính toán vị trí hộp thoại
   const getTooltipPosition = () => {
     const fallback = { top: "50%", left: "50%", transform: "translate(-50%, -50%)" };
     if (!step) return fallback;
@@ -166,71 +185,11 @@ export const GuidedTourOverlay = () => {
 
   return (
     <div className="fixed inset-0 z-[10000] pointer-events-none overflow-hidden">
-      {/* HIGHLIGHT LAYER & OVERLAY */}
+      {/* VÒNG TRÒN SÁNG VÀ MÀN ĐEN */}
       {targetElement && (
         <div 
-          // QUAN TRỌNG: Đã xóa onClick và đổi thành pointer-events-none 
-          // để click xuyên qua và chạm vào đúng phần tử của website
           className="fixed transition-all duration-300 pointer-events-none"
           style={{
             top: highlightPosition.top - 12, 
             left: highlightPosition.left - 12, 
-            width: highlightPosition.width + 24, 
-            height: highlightPosition.height + 24, 
-            borderRadius: step.targetSelector?.includes('input') ? '12px' : '50%',
-            border: '4px solid hsl(var(--primary))',
-            boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.75)', 
-            zIndex: 10001,
-          }}
-        >
-          <div className="absolute inset-0 rounded-full animate-ping bg-primary/20" />
-        </div>
-      )}
-
-      {/* TOOLTIP - Hộp thoại hướng dẫn */}
-      <div 
-        id="tour-tooltip" // ID này dùng để loại trừ việc chặn click
-        className="fixed transition-all duration-300 pointer-events-auto z-[10002]"
-        style={getTooltipPosition()}
-      >
-        <Card className="shadow-2xl border-2 border-blue-200 bg-blue-50/95 dark:bg-slate-800 backdrop-blur-md w-[380px] max-w-[90vw]">
-          <CardContent className="p-4 pt-5">
-            <div className="flex flex-col gap-3">
-              <div className="flex justify-between items-start">
-                <div className="space-y-1">
-                  <h3 className="font-bold text-blue-900 dark:text-blue-100 flex items-center gap-2">
-                    <Sparkles className="h-5 w-5 text-yellow-500 fill-yellow-500" />
-                    Bước {currentStep + 1}: {step.title}
-                  </h3>
-                  <Progress value={((currentStep + 1) / totalSteps) * 100} className="h-1.5 w-24 bg-blue-200" />
-                </div>
-                
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-8 w-8 -mt-1 -mr-1 hover:bg-blue-200/50" 
-                  onClick={endTour}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-              
-              <p className="text-sm text-blue-950/80 dark:text-blue-100/80 leading-relaxed font-medium">
-                {step.description}
-              </p>
-              
-              <div className="flex justify-between items-center mt-2 border-t border-blue-200/50 pt-3">
-                <span className="text-xs text-blue-900/60 dark:text-blue-100/60 font-semibold uppercase tracking-wider">
-                  {currentStep + 1} / {totalSteps}
-                </span>
-                <span className="text-xs font-semibold text-primary animate-pulse">
-                  Tương tác vùng sáng để tiếp tục
-                </span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
-};
+            width: highlightPosition.width +
