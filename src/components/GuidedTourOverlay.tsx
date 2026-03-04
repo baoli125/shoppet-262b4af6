@@ -41,7 +41,7 @@ export const GuidedTourOverlay = () => {
     });
   }, []);
 
-  // 1. Tìm phần tử mục tiêu liên tục
+  // 1. Tìm phần tử mục tiêu liên tục (Quét DOM liên tục để tìm Dropdown khi nó vừa mở)
   useEffect(() => {
     if (!isActive || !step?.targetSelector) {
       setTargetElement(null);
@@ -78,58 +78,50 @@ export const GuidedTourOverlay = () => {
     };
   }, [isActive, targetElement, updatePosition]);
 
-  // 2. LOGIC MỚI: Bắt sự kiện Tương tác Cực kỳ Chính xác
+  // 2. LOGIC MỚI: Bắt sự kiện Xuyên Thấu Không Thể Bị Chặn (Giải quyết lỗi kẹt Step 2, 3)
   useEffect(() => {
     if (!isActive || !targetElement) return;
 
-    // Hàm kiểm tra xem người dùng có đang click đúng chỗ được phép không
+    let hasAdvanced = false;
+
+    // Kiểm tra xem vị trí người dùng click có nằm trong vùng sáng không
     const isAllowedInteraction = (e: Event) => {
       const tooltip = document.getElementById('tour-tooltip');
       const target = e.target as Node;
-      if (tooltip?.contains(target)) return true;
-      if (targetElement?.contains(target)) return true;
-      if (targetElement === target) return true;
+      if (tooltip?.contains(target)) return true; // Cho phép click vào tooltip (để bấm nút X)
+      if (targetElement?.contains(target) || targetElement === target) return true; // Cho phép click vùng sáng
       return false;
     };
 
-    // Hàm chặn các cú click ra ngoài vùng hướng dẫn
-    const blockOutside = (e: MouseEvent) => {
+    const blockOutside = (e: Event) => {
       if (!isAllowedInteraction(e)) {
         e.stopPropagation();
         e.preventDefault();
       }
     };
 
-    // Hàm Xử lý khi người dùng tương tác thành công vào mục tiêu
-    const handleAdvance = () => {
-      // Đợi 250ms để React xử lý UI (như bung Dropdown menu, focus input)
-      // Sau đó mới chuyển sang Step tiếp theo
-      setTimeout(() => {
-        nextStep();
-      }, 250); 
-    };
-
-    // Lắng nghe chặn click toàn cục
-    document.addEventListener('mousedown', blockOutside, true);
-    document.addEventListener('click', blockOutside, true);
-
-    // QUAN TRỌNG: Gắn lắng nghe mousedown TRỰC TIẾP lên phần tử mục tiêu
-    // mousedown phản hồi nhanh hơn click và không bị mất dấu e.target
-    targetElement.addEventListener('mousedown', handleAdvance);
-    
-    // Hỗ trợ thêm phím Enter/Space nếu user dùng bàn phím
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        handleAdvance();
+    // Hàm Xử lý chuyển Step khi người dùng chạm đúng mục tiêu
+    const handleAdvance = (e: Event) => {
+      const target = e.target as Node;
+      if ((targetElement.contains(target) || targetElement === target) && !hasAdvanced) {
+        hasAdvanced = true;
+        // Đợi 300ms để Dropdown/Modal của web bạn kịp bung ra, sau đó mới đi sang Step tiếp theo
+        setTimeout(() => {
+          nextStep();
+        }, 300);
       }
     };
-    targetElement.addEventListener('keydown', handleKeyDown);
+
+    // QUAN TRỌNG: Sử dụng 'pointerdown' ở chế độ Capture (true) để bắt sự kiện 
+    // TRƯỚC KHI thư viện UI của bạn kịp ngăn chặn nó (e.preventDefault)
+    document.addEventListener('pointerdown', blockOutside, true);
+    document.addEventListener('click', blockOutside, true);
+    document.addEventListener('pointerdown', handleAdvance, true);
 
     return () => {
-      document.removeEventListener('mousedown', blockOutside, true);
+      document.removeEventListener('pointerdown', blockOutside, true);
       document.removeEventListener('click', blockOutside, true);
-      targetElement.removeEventListener('mousedown', handleAdvance);
-      targetElement.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('pointerdown', handleAdvance, true);
     };
   }, [isActive, targetElement, nextStep]);
 
