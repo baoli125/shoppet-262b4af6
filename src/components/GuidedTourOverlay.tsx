@@ -230,43 +230,62 @@ export const GuidedTourOverlay = () => {
   }, [isPaused, hasLeftRoute, location.pathname, savedRoute, pausedStep]);
 
   const getTooltipPosition = () => {
-    const fallback = { top: "50%", left: "50%", transform: "translate(-50%, -50%)" };
-    if (!step) return fallback;
+  const fallback = { top: "50%", left: "50%", transform: "translate(-50%, -50%)" };
+  if (!step) return fallback;
 
-    // Mobile or center or no target → center
-    if (isMobile || step.position === "center" || !targetElement) {
-      return { ...fallback, maxHeight: "80vh", overflowY: "auto" as const };
-    }
+  // Mobile hoặc không có target -> căn giữa màn hình
+  if (isMobile || step.position === "center" || !targetElement) {
+    return { ...fallback, maxHeight: "80vh", overflowY: "auto" as const };
+  }
 
-    const { top, left, width, height } = highlightPosition;
-    const pad = 16;
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    const tw = 448;
+  // Lấy vị trí từ highlightPosition (đã được tính toán từ getBoundingClientRect)
+  const { top, left, width, height } = highlightPosition;
+  const pad = 16;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const tw = 448; // Chiều rộng tối đa của tooltip
 
-    const clampX = (x: number) => `${Math.max(pad, Math.min(x, vw - tw / 2 - pad))}px`;
-
-    switch (step.position) {
-      case "top":
-        return top > 300
-          ? { top: `${top - pad}px`, left: clampX(left + width / 2), transform: "translate(-50%, -100%)" }
-          : { top: `${top + height + pad}px`, left: clampX(left + width / 2), transform: "translate(-50%, 0)" };
-      case "bottom":
-        return vh - (top + height + pad) > 300
-          ? { top: `${top + height + pad}px`, left: clampX(left + width / 2), transform: "translate(-50%, 0)" }
-          : { top: `${top - pad}px`, left: clampX(left + width / 2), transform: "translate(-50%, -100%)" };
-      case "left":
-        return left > tw + pad
-          ? { top: `${Math.max(pad, Math.min(top + height / 2, vh - 200))}px`, left: `${left - pad}px`, transform: "translate(-100%, -50%)" }
-          : { top: `${Math.max(pad, Math.min(top + height / 2, vh - 200))}px`, left: `${left + width + pad}px`, transform: "translate(0, -50%)" };
-      case "right":
-        return vw - (left + width + pad) > tw
-          ? { top: `${Math.max(pad, Math.min(top + height / 2, vh - 200))}px`, left: `${left + width + pad}px`, transform: "translate(0, -50%)" }
-          : { top: `${Math.max(pad, Math.min(top + height / 2, vh - 200))}px`, left: `${left - pad}px`, transform: "translate(-100%, -50%)" };
-      default:
-        return fallback;
-    }
+  // Hàm clampX để đảm bảo tooltip không văng ra khỏi màn hình
+  const clampX = (x: number) => {
+    const min = pad;
+    const max = vw - (isMobile ? 300 : tw) - pad; // Giới hạn dựa trên chiều rộng tooltip
+    return `${Math.max(min, Math.min(x, max))}px`;
   };
+
+  // LOGIC ĐẶC BIỆT CHO STEP 2 VÀ 3 (Dời qua trái)
+  // Giả sử Step 2 có index là 1, Step 3 có index là 2
+  let customLeft = left + width / 2;
+  if (currentStep === 1 || currentStep === 2) {
+    // Dời tâm điểm hiển thị của tooltip sang trái 100px so với vật thể
+    customLeft = left - 100; 
+  }
+
+  switch (step.position) {
+    case "top":
+      return top > 300
+        ? { top: `${top - pad}px`, left: clampX(customLeft), transform: "translate(-50%, -100%)" }
+        : { top: `${top + height + pad}px`, left: clampX(customLeft), transform: "translate(-50%, 0)" };
+    
+    case "bottom":
+      // Ưu tiên hiển thị bên dưới, nếu không đủ chỗ (cách đáy < 300px) thì đẩy lên trên
+      return vh - (top + height + pad) > 300
+        ? { top: `${top + height + pad}px`, left: clampX(customLeft), transform: "translate(-50%, 0)" }
+        : { top: `${top - pad}px`, left: clampX(customLeft), transform: "translate(-50%, -100%)" };
+
+    case "left":
+      return left > tw + pad
+        ? { top: `${Math.max(pad, Math.min(top + height / 2, vh - 200))}px`, left: `${left - pad}px`, transform: "translate(-100%, -50%)" }
+        : { top: `${Math.max(pad, Math.min(top + height / 2, vh - 200))}px`, left: `${left + width + pad}px`, transform: "translate(0, -50%)" };
+
+    case "right":
+      return vw - (left + width + pad) > tw
+        ? { top: `${Math.max(pad, Math.min(top + height / 2, vh - 200))}px`, left: `${left + width + pad}px`, transform: "translate(0, -50%)" }
+        : { top: `${Math.max(pad, Math.min(top + height / 2, vh - 200))}px`, left: `${left - pad}px`, transform: "translate(-100%, -50%)" };
+
+    default:
+      return fallback;
+  }
+};
 
   const blockUnallowedInteraction = (e: React.SyntheticEvent) => {
     const target = e.target as HTMLElement;
@@ -298,140 +317,64 @@ export const GuidedTourOverlay = () => {
   const progress = ((currentStep + 1) / totalSteps) * 100;
   const hp = highlightPosition;
 
+  // Trong phần return của GuidedTourOverlay.tsx
   return (
-    <>
-      {/* Click blocker - has clip-path hole so highlighted area is clickable */}
-      <div
-        className="fixed inset-0 z-[9997] pointer-events-auto"
-        onClickCapture={blockUnallowedInteraction}
-        onMouseDownCapture={blockUnallowedInteraction}
-        onTouchStartCapture={blockUnallowedInteraction}
-        onPointerDownCapture={blockUnallowedInteraction}
-        style={targetElement ? {
-          clipPath: `polygon(
-            0 0,
-            100% 0,
-            100% 100%,
-            0 100%,
-            0 ${hp.top - 8}px,
-            ${hp.left - 8}px ${hp.top - 8}px,
-            ${hp.left - 8}px ${hp.top + hp.height + 8}px,
-            ${hp.left + hp.width + 8}px ${hp.top + hp.height + 8}px,
-            ${hp.left + hp.width + 8}px ${hp.top - 8}px,
-            0 ${hp.top - 8}px
-          )`
-        } : undefined}
-      />
-
-      {/* Visual overlay with clip-path cutout - pointer-events-none so boosted elements receive clicks */}
-      {targetElement ? (
-        <div
-          className="fixed inset-0 z-[9998] bg-black/60 pointer-events-none"
-          style={{
-            clipPath: `polygon(
-              0 0,
-              100% 0,
-              100% 100%,
-              0 100%,
-              0 ${hp.top - 4}px,
-              ${hp.left - 4}px ${hp.top - 4}px,
-              ${hp.left - 4}px ${hp.top + hp.height + 4}px,
-              ${hp.left + hp.width + 4}px ${hp.top + hp.height + 4}px,
-              ${hp.left + hp.width + 4}px ${hp.top - 4}px,
-              0 ${hp.top - 4}px
-            )`
-          }}
-        />
-      ) : (
-        <div
-          className="fixed inset-0 z-[9998] bg-black/60 pointer-events-none"
-        />
-      )}
-
-      {/* Highlight border */}
+    <div className="fixed inset-0 z-[100] pointer-events-none overflow-hidden">
+      {/* HIGHLIGHT LAYER - Chỉ tạo khung viền quanh mục tiêu, không làm tối màn hình */}
       {targetElement && (
-        <div
-          className="fixed z-[9999] pointer-events-none"
+        <div 
+          className="fixed transition-all duration-300 pointer-events-none"
           style={{
-            top: `${hp.top - 4}px`,
-            left: `${hp.left - 4}px`,
-            width: `${hp.width + 8}px`,
-            height: `${hp.height + 8}px`,
-            border: "4px solid hsl(var(--primary))",
-            borderRadius: "12px",
-            boxShadow: "0 0 0 4px hsl(var(--primary) / 0.2), 0 0 30px hsl(var(--primary) / 0.5)",
-            animation: "pulse 2s infinite",
+            // SỬA LỖI VỊ TRÍ: Dùng trực tiếp getBoundingClientRect để luôn khớp với icon/input
+            top: targetElement.getBoundingClientRect().top - 4,
+            left: targetElement.getBoundingClientRect().left - 4,
+            width: targetElement.getBoundingClientRect().width + 8,
+            height: targetElement.getBoundingClientRect().height + 8,
+            borderRadius: steps[currentStep].selector?.includes('input') ? '8px' : '50%',
+            
+            // Thay đổi Border thay vì dùng Shadow phủ kín màn hình
+            border: '3px solid hsl(var(--primary))',
+            boxShadow: '0 0 0 4px rgba(var(--primary), 0.2), 0 0 15px rgba(0,0,0,0.3)',
+            zIndex: 101,
           }}
         >
-          <Sparkles className="absolute -top-3 -right-3 w-6 h-6 text-primary animate-bounce" />
-          <Sparkles className="absolute -bottom-3 -left-3 w-6 h-6 text-primary animate-bounce" style={{ animationDelay: "0.5s" }} />
+          {/* Hiệu ứng vòng tròn đồng tâm để gây chú ý mà không che nội dung */}
+          <div className="absolute inset-0 rounded-full animate-ping bg-primary/20" />
         </div>
       )}
 
-      {/* Tooltip */}
-      <Card
-        data-tour-ui
-        className="fixed z-[10000] w-[90vw] md:w-auto md:max-w-md p-4 md:p-6 shadow-2xl border-primary/50 bg-background"
-        style={{ ...getTooltipPosition(), pointerEvents: "auto" }}
+      {/* TOOLTIP CONTAINER - Hộp thoại hướng dẫn */}
+      <div 
+        className="fixed transition-all duration-300 pointer-events-auto" // pointer-events-auto để bấm được nút Next
+        style={getTooltipPosition()}
       >
-        <div className="space-y-3 md:space-y-4">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex-1 min-w-0">
-              <h3 className="text-base md:text-lg font-bold text-foreground mb-1">{step.title}</h3>
-              <p className="text-xs md:text-sm text-muted-foreground whitespace-pre-line">{step.description}</p>
+        <Card className="shadow-2xl border-primary/20 bg-background/95 backdrop-blur-sm">
+          <CardContent className="p-4">
+            <div className="flex flex-col gap-3">
+              <h3 className="font-bold text-primary flex items-center gap-2">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
+                  {currentStep + 1}
+                </span>
+                {steps[currentStep].title}
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {steps[currentStep].description}
+              </p>
+              
+              {/* Các nút bấm Step 3, 4 ... */}
+              <div className="flex justify-between items-center mt-2">
+                <span className="text-xs text-muted-foreground">{currentStep + 1}/{steps.length}</span>
+                <div className="flex gap-2">
+                  <Button size="sm" variant="ghost" onClick={prevStep} disabled={currentStep === 0}>Trước</Button>
+                  <Button size="sm" onClick={nextStep}>
+                    {currentStep === steps.length - 1 ? "Hoàn tất" : "Tiếp theo"}
+                  </Button>
+                </div>
+              </div>
             </div>
-            <Button size="icon" variant="ghost" onClick={endTour} className="shrink-0 h-8 w-8">
-              <X className="w-3 h-3 md:w-4 md:h-4" />
-            </Button>
-          </div>
-
-          <div className="space-y-1.5">
-            <div className="flex justify-between text-[10px] md:text-xs text-muted-foreground">
-              <span>Bước {currentStep + 1}/{totalSteps}</span>
-              <span>{Math.round(progress)}%</span>
-            </div>
-            <Progress value={progress} className="h-1.5 md:h-2" />
-          </div>
-
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={previousStep} disabled={currentStep === 0}
-              className="flex-1 text-xs md:text-sm h-8 md:h-9">
-              <ChevronLeft className="w-3 h-3 mr-1" /> Trước
-            </Button>
-            <Button size="sm" onClick={nextStep} className="flex-1 text-xs md:text-sm h-8 md:h-9">
-              {currentStep === totalSteps - 1 ? "Hoàn thành" : "Tiếp theo"}
-              {currentStep !== totalSteps - 1 && <ChevronRight className="w-3 h-3 ml-1" />}
-            </Button>
-          </div>
-
-          <Button variant="ghost" size="sm" onClick={endTour}
-            className="w-full text-[10px] md:text-xs h-7 md:h-8">
-            Bỏ qua hướng dẫn
-          </Button>
-        </div>
-      </Card>
-
-      {/* Resume Dialog */}
-      <Dialog open={showResumeDialog} onOpenChange={setShowResumeDialog}>
-        <DialogContent data-tour-ui className="z-[10001] w-[90vw] max-w-md bg-background">
-          <DialogHeader>
-            <DialogTitle>Tiếp tục hướng dẫn?</DialogTitle>
-            <DialogDescription>
-              Bạn đã tạm dừng hướng dẫn. Bạn có muốn tiếp tục từ bước đang dở không?
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="gap-2 flex-col sm:flex-row">
-            <Button variant="outline" onClick={() => { setShowResumeDialog(false); endTour(); }}
-              className="w-full sm:w-auto text-xs md:text-sm h-8 md:h-9">
-              Không, kết thúc
-            </Button>
-            <Button onClick={() => { setShowResumeDialog(false); resumeTour(); }}
-              className="w-full sm:w-auto text-xs md:text-sm h-8 md:h-9">
-              Có, tiếp tục
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 };
