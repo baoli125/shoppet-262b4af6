@@ -24,7 +24,6 @@ export const GuidedTourOverlay = () => {
 
   const step = getCurrentStep();
 
-  // 1. Kiểm tra màn hình Mobile
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
@@ -32,7 +31,6 @@ export const GuidedTourOverlay = () => {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // 2. Cập nhật vị trí Highlight (Giải quyết triệt để lỗi lệch circle)
   const updatePosition = useCallback((el: HTMLElement) => {
     const rect = el.getBoundingClientRect();
     setHighlightPosition({
@@ -43,7 +41,7 @@ export const GuidedTourOverlay = () => {
     });
   }, []);
 
-  // 3. Tìm phần tử mục tiêu
+  // Tìm phần tử mục tiêu liên tục (Rất quan trọng cho Step 3 khi chờ Dropdown mở ra)
   useEffect(() => {
     if (!isActive || !step?.targetSelector) {
       setTargetElement(null);
@@ -59,11 +57,10 @@ export const GuidedTourOverlay = () => {
     };
 
     tryFind();
-    const interval = setInterval(tryFind, 200); // Liên tục kiểm tra DOM
+    const interval = setInterval(tryFind, 200);
     return () => clearInterval(interval);
   }, [isActive, step, currentStep, updatePosition]);
 
-  // 4. Theo dõi cuộn trang để update khung liên tục
   useEffect(() => {
     if (!isActive || !targetElement) return;
 
@@ -81,7 +78,50 @@ export const GuidedTourOverlay = () => {
     };
   }, [isActive, targetElement, updatePosition]);
 
-  // 5. Tính toán vị trí Tooltip (Hộp thoại)
+  // LOGIC MỚI: Theo dõi Click xuyên thấu và chặn click sai
+  useEffect(() => {
+    if (!isActive || !targetElement) return;
+
+    // Kiểm tra xem vị trí click có hợp lệ không (Click vào Target thật hoặc Tooltip)
+    const isAllowedInteraction = (e: MouseEvent) => {
+      const tooltip = document.getElementById('tour-tooltip');
+      if (tooltip && tooltip.contains(e.target as Node)) return true;
+      if (targetElement.contains(e.target as Node)) return true;
+      return false;
+    };
+
+    // Chặn mọi tương tác mousedown/mouseup/click nếu click ra ngoài vùng cho phép
+    const blockOutside = (e: MouseEvent) => {
+      if (!isAllowedInteraction(e)) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+    };
+
+    // Lắng nghe cú Click vào đúng mục tiêu
+    const handleTargetClick = (e: MouseEvent) => {
+      if (targetElement.contains(e.target as Node)) {
+        // Đợi 150ms để React xử lý sự kiện (ví dụ: bung cái dropdown ra) 
+        // Sau đó mới Next Step để Step 3 đi tìm Dropdown
+        setTimeout(() => {
+          nextStep();
+        }, 150);
+      }
+    };
+
+    document.addEventListener('mousedown', blockOutside, true);
+    document.addEventListener('mouseup', blockOutside, true);
+    document.addEventListener('click', blockOutside, true);
+    document.addEventListener('click', handleTargetClick, true);
+
+    return () => {
+      document.removeEventListener('mousedown', blockOutside, true);
+      document.removeEventListener('mouseup', blockOutside, true);
+      document.removeEventListener('click', blockOutside, true);
+      document.removeEventListener('click', handleTargetClick, true);
+    };
+  }, [isActive, targetElement, nextStep]);
+
   const getTooltipPosition = () => {
     const fallback = { top: "50%", left: "50%", transform: "translate(-50%, -50%)" };
     if (!step) return fallback;
@@ -91,7 +131,7 @@ export const GuidedTourOverlay = () => {
     }
 
     const { top, left, width, height } = highlightPosition;
-    const pad = 24; // Khoảng cách tới vật thể
+    const pad = 24;
     const tw = 380;
     const vw = window.innerWidth;
     const vh = window.innerHeight;
@@ -99,7 +139,6 @@ export const GuidedTourOverlay = () => {
     let leftPos = left + width / 2;
     let transformX = "-50%";
 
-    // Dời qua trái ở step 2 và 3 để tránh che chatbox
     if (currentStep === 1 || currentStep === 2) {
       leftPos = left - 120;
       transformX = "0";
@@ -107,7 +146,6 @@ export const GuidedTourOverlay = () => {
 
     const clampedLeft = Math.max(pad, Math.min(leftPos, vw - tw - pad));
 
-    // Tự động đẩy lên trên nếu bị tràn xuống đáy màn hình
     let finalTop = top + height + pad;
     let transformY = "0";
 
@@ -131,33 +169,28 @@ export const GuidedTourOverlay = () => {
       {/* HIGHLIGHT LAYER & OVERLAY */}
       {targetElement && (
         <div 
-          onClick={(e) => {
-            e.stopPropagation();
-            nextStep(); // Tự động tới bước tiếp theo khi bấm vào vùng circle
-          }}
-          className="fixed transition-all duration-300 pointer-events-auto cursor-pointer"
+          // QUAN TRỌNG: Đã xóa onClick và đổi thành pointer-events-none 
+          // để click xuyên qua và chạm vào đúng phần tử của website
+          className="fixed transition-all duration-300 pointer-events-none"
           style={{
-            // TĂNG KÍCH THƯỚC CIRCLE (-12 và +24)
             top: highlightPosition.top - 12, 
             left: highlightPosition.left - 12, 
             width: highlightPosition.width + 24, 
             height: highlightPosition.height + 24, 
             borderRadius: step.targetSelector?.includes('input') ? '12px' : '50%',
-            
-            // BORDER DÀY HƠN (4px) & ÁP DỤNG LẠI OVERLAY (9999px box-shadow)
             border: '4px solid hsl(var(--primary))',
             boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.75)', 
             zIndex: 10001,
           }}
         >
-          {/* Hiệu ứng pulse gợn sóng để báo hiệu người dùng click vào đây */}
           <div className="absolute inset-0 rounded-full animate-ping bg-primary/20" />
         </div>
       )}
 
-      {/* TOOLTIP - Hộp thoại hướng dẫn (Màu xanh nổi bật) */}
+      {/* TOOLTIP - Hộp thoại hướng dẫn */}
       <div 
-        className="fixed transition-all duration-300 pointer-events-none z-[10002]"
+        id="tour-tooltip" // ID này dùng để loại trừ việc chặn click
+        className="fixed transition-all duration-300 pointer-events-auto z-[10002]"
         style={getTooltipPosition()}
       >
         <Card className="shadow-2xl border-2 border-blue-200 bg-blue-50/95 dark:bg-slate-800 backdrop-blur-md w-[380px] max-w-[90vw]">
@@ -172,11 +205,10 @@ export const GuidedTourOverlay = () => {
                   <Progress value={((currentStep + 1) / totalSteps) * 100} className="h-1.5 w-24 bg-blue-200" />
                 </div>
                 
-                {/* Chỉ giữ lại nút X để hủy */}
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  className="h-8 w-8 -mt-1 -mr-1 pointer-events-auto hover:bg-blue-200/50" 
+                  className="h-8 w-8 -mt-1 -mr-1 hover:bg-blue-200/50" 
                   onClick={endTour}
                 >
                   <X className="h-4 w-4" />
@@ -192,7 +224,7 @@ export const GuidedTourOverlay = () => {
                   {currentStep + 1} / {totalSteps}
                 </span>
                 <span className="text-xs font-semibold text-primary animate-pulse">
-                  Nhấn vào vùng sáng để tiếp tục
+                  Tương tác vùng sáng để tiếp tục
                 </span>
               </div>
             </div>
