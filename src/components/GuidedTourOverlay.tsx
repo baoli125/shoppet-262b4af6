@@ -149,26 +149,40 @@ export const GuidedTourOverlay = () => {
 
     const { top, left, width, height } = highlightPosition;
     const pad = 16;
-    const tw = 400;
+    const tw = 400; // Chiều rộng hộp thoại
     const vw = window.innerWidth;
+    const vh = window.innerHeight;
 
-    // Logic dời qua trái cho Step 2 (index 1) và Step 3 (index 2)
+    // 1. Xử lý trục ngang (X) - Dời qua trái cho Step 2, 3
     let leftPos = left + width / 2;
-    let transform = "translate(-50%, 0)";
+    let transformX = "-50%";
 
     if (currentStep === 1 || currentStep === 2) {
-      leftPos = left - 120; // Dời mạnh sang trái để né khung chat
-      transform = "translate(0, 0)";
+      leftPos = left - 120; // Dời mạnh sang trái
+      transformX = "0"; // Không căn giữa trục X nữa
     }
-
-    // Đảm bảo không văng khỏi màn hình
+    
+    // Ép không cho văng ra khỏi hai bên màn hình
     const clampedLeft = Math.max(pad, Math.min(leftPos, vw - tw - pad));
 
-    if (step.position === "top") {
-      return { top: `${top - pad}px`, left: `${clampedLeft}px`, transform: "translate(0, -100%)", position: "fixed" as const };
+    // 2. Xử lý trục dọc (Y) - Tự động chống tràn đáy
+    let finalTop = top + height + pad; // Mặc định hiển thị bên dưới vật thể
+    let transformY = "0";
+
+    // NẾU: Vị trí bên dưới vật thể sát với đáy màn hình quá (ít hơn 250px) 
+    // HOẶC step.position được chỉ định cứng là "top"
+    if (vh - finalTop < 250 || step.position === "top") {
+      finalTop = top - pad; // Đẩy hộp thoại lên PHÍA TRÊN vật thể
+      transformY = "-100%"; // Dịch ngược lên trên bằng chiều cao của chính nó
     }
-    return { top: `${top + height + pad}px`, left: `${clampedLeft}px`, transform, position: "fixed" as const };
-  };
+
+    return { 
+      top: `${finalTop}px`, 
+      left: `${clampedLeft}px`, 
+      transform: `translate(${transformX}, ${transformY})`, 
+      position: "fixed" as const 
+    };
+};
 
   if (!isActive || !step) return null;
 
@@ -195,7 +209,7 @@ export const GuidedTourOverlay = () => {
 
       {/* GUIDED TEXT BOX */}
       <div className="fixed transition-all duration-300 pointer-events-auto" style={getTooltipPosition()}>
-        <Card className="shadow-2xl border-primary/20 bg-background/95 backdrop-blur-sm w-[380px] max-w-[90vw]">
+        <Card className="shadow-2xl border-2 border-blue-200 bg-blue-50/95 dark:bg-slate-800 backdrop-blur-md w-[380px] max-w-[90vw]">
           <CardContent className="p-4 pt-6">
             <div className="flex flex-col gap-4">
               <div className="flex justify-between items-start">
