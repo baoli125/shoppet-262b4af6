@@ -18,6 +18,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useGuidedTour } from "@/contexts/GuidedTourContext";
 import type { User } from "@supabase/supabase-js";
 import pawHandIcon from "@/assets/paw-hand-icon.png";
 
@@ -40,6 +41,10 @@ const FloatingChatbot = ({ user, isNewUser, onLoginRequired }: FloatingChatbotPr
   const { toast } = useToast();
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const { isActive: isTourActive, currentStep } = useGuidedTour();
+
+  // Ẩn chatbot khi tour đang ở step 2, 3 (menu/marketplace) để không che tooltip
+  const shouldHideDuringTour = isTourActive && currentStep > 0;
 
   const quickSuggestions: string[] = [];
 
@@ -162,7 +167,7 @@ const FloatingChatbot = ({ user, isNewUser, onLoginRequired }: FloatingChatbotPr
       <Button
         data-tour="chatbot"
         onClick={handleChatbotClick}
-        className="fixed bottom-[15vh] right-3 sm:right-4 md:right-6 h-14 w-14 sm:h-16 sm:w-16 rounded-full shadow-lg hover:shadow-glow hover:scale-110 active:scale-105 transition-all duration-300 z-50 bg-gradient-to-br from-primary to-primary/80 touch-manipulation animate-bounce-subtle"
+        className={`fixed bottom-[15vh] right-3 sm:right-4 md:right-6 h-14 w-14 sm:h-16 sm:w-16 rounded-full shadow-lg hover:shadow-glow hover:scale-110 active:scale-105 transition-all duration-300 bg-gradient-to-br from-primary to-primary/80 touch-manipulation animate-bounce-subtle ${shouldHideDuringTour ? 'z-30 pointer-events-none opacity-40' : 'z-50'}`}
         size="icon"
       >
         {isOpen ? (
