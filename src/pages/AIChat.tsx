@@ -1,7 +1,7 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Send, Sparkles } from "lucide-react";
+import { Send, Sparkles, Trash2, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -15,20 +15,125 @@ const AIChat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [currentFollowUps, setCurrentFollowUps] = useState<string[]>([]);
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
-
-  const defaultSuggestions = [
-    "Chó bị tiêu chảy phải làm sao?",
-    "Thức ăn nào tốt cho mèo con?",
-    "Lịch tiêm phòng cho chó con",
-    "Cách huấn luyện chó đi vệ sinh",
-  ];
+  const loadedRef = useRef(false);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Lấy user và load lịch sử cuộc trò chuyện gần nhất
+  useEffect(() => {
+    if (loadedRef.current) return;
+    loadedRef.current = true;
+
+    const init = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      setUserId(user.id);
+
+      // Lấy cuộc trò chuyện gần nhất (tối đa 1)
+      const { data: convos } = await supabase
+        .from("chat_conversations")
+        .select("id")
+        .eq("user_id", user.id)
+        .order("updated_at", { ascending: false })
+        .limit(1);
+
+      if (convos && convos.length > 0) {
+        const convoId = convos[0].id;
+        setConversationId(convoId);
+
+        // Load tin nhắn
+        const { data: msgs } = await supabase
+          .from("chat_messages")
+          .select("role, content")
+          .eq("conversation_id", convoId)
+          .order("created_at", { ascending: true });
+
+        if (msgs && msgs.length > 0) {
+          const parsed: Message[] = msgs.map(m => {
+            let displayContent = m.content;
+            let followUps: string[] = [];
+            if (m.content.includes("---FOLLOW_UP---")) {
+              const parts = m.content.split("---FOLLOW_UP---");
+              displayContent = parts[0].trim();
+              followUps = (parts[1]?.trim() || "")
+                .split("\n")
+                .map(q => q.trim())
+                .filter(q => q.length > 0);
+            }
+            return {
+              role: m.role as "user" | "assistant",
+              content: displayContent,
+              followUpQuestions: followUps.length > 0 ? followUps : undefined,
+            };
+          });
+          setMessages(parsed);
+        }
+      }
+    };
+    init();
+  }, []);
+
+  // Lưu tin nhắn vào DB
+  const saveMessage = useCallback(async (role: string, content: string, convoId: string) => {
+    await supabase.from("chat_messages").insert({
+      conversation_id: convoId,
+      role,
+      content,
+    });
+    // Cập nhật thời gian cuộc trò chuyện
+    await supabase.from("chat_conversations").update({ updated_at: new Date().toISOString() }).eq("id", convoId);
+  }, []);
+
+  // Tạo cuộc trò chuyện mới hoặc lấy ID hiện tại
+  const getOrCreateConversation = useCallback(async (): Promise<string | null> => {
+    if (conversationId) return conversationId;
+    if (!userId) return null;
+
+    // Xóa cuộc trò chuyện cũ (chỉ giữ tối đa 1)
+    const { data: oldConvos } = await supabase
+      .from("chat_conversations")
+      .select("id")
+      .eq("user_id", userId)
+      .order("updated_at", { ascending: false });
+
+    if (oldConvos && oldConvos.length > 0) {
+      for (const c of oldConvos) {
+        await supabase.from("chat_messages").delete().eq("conversation_id", c.id);
+        await supabase.from("chat_conversations").delete().eq("id", c.id);
+      }
+    }
+
+    const { data, error } = await supabase
+      .from("chat_conversations")
+      .insert({ user_id: userId, title: "Cuộc trò chuyện" })
+      .select("id")
+      .single();
+
+    if (error || !data) return null;
+    setConversationId(data.id);
+    return data.id;
+  }, [conversationId, userId]);
+
+  // Bắt đầu cuộc trò chuyện mới
+  const handleNewConversation = async () => {
+    if (!userId || isLoading) return;
+
+    // Xóa cuộc trò chuyện cũ
+    if (conversationId) {
+      await supabase.from("chat_messages").delete().eq("conversation_id", conversationId);
+      await supabase.from("chat_conversations").delete().eq("id", conversationId);
+    }
+
+    setConversationId(null);
+    setMessages([]);
+    toast({ title: "Đã tạo cuộc trò chuyện mới 🐾" });
+  };
 
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
@@ -38,14 +143,16 @@ const AIChat = () => {
     setInput("");
     setIsLoading(true);
 
+    // Lưu tin nhắn user
+    const convoId = await getOrCreateConversation();
+
     let assistantContent = "";
     const upsertAssistant = (chunk: string) => {
       assistantContent += chunk;
-      
-      // Parse follow-up questions if present
+
       let displayContent = assistantContent;
       let followUps: string[] = [];
-      
+
       if (assistantContent.includes("---FOLLOW_UP---")) {
         const parts = assistantContent.split("---FOLLOW_UP---");
         displayContent = parts[0].trim();
@@ -57,47 +164,42 @@ const AIChat = () => {
             .filter(q => q.length > 0);
         }
       }
-      
+
       setMessages(prev => {
         const last = prev[prev.length - 1];
         if (last?.role === "assistant") {
-          return prev.map((m, i) => 
-            i === prev.length - 1 
+          return prev.map((m, i) =>
+            i === prev.length - 1
               ? { ...m, content: displayContent, followUpQuestions: followUps }
               : m
           );
         }
         return [...prev, { role: "assistant", content: displayContent, followUpQuestions: followUps }];
       });
-      
-      // Update current follow-ups for display
-      if (followUps.length > 0) {
-        setCurrentFollowUps(followUps);
-      }
     };
 
     try {
       const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat-ai`;
-      
+
+      // Gửi tất cả tin nhắn cho AI (giữ context)
+      const allMessages = [...messages, userMessage].map(m => ({
+        role: m.role,
+        content: m.content,
+      }));
+
       const resp = await fetch(CHAT_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify({ messages: [...messages, userMessage] }),
+        body: JSON.stringify({ messages: allMessages }),
       });
 
       if (!resp.ok || !resp.body) {
-        if (resp.status === 429) {
-          throw new Error("Hệ thống đang bận, vui lòng thử lại sau");
-        }
-        if (resp.status === 402) {
-          throw new Error("Dịch vụ tạm thời không khả dụng");
-        }
-        if (resp.status === 401) {
-          throw new Error("Vui lòng đăng nhập để sử dụng dịch vụ");
-        }
+        if (resp.status === 429) throw new Error("Hệ thống đang bận, vui lòng thử lại sau");
+        if (resp.status === 402) throw new Error("Dịch vụ tạm thời không khả dụng");
+        if (resp.status === 401) throw new Error("Vui lòng đăng nhập để sử dụng dịch vụ");
         throw new Error("Không thể kết nối");
       }
 
@@ -121,10 +223,7 @@ const AIChat = () => {
           if (!line.startsWith("data: ")) continue;
 
           const jsonStr = line.slice(6).trim();
-          if (jsonStr === "[DONE]") {
-            streamDone = true;
-            break;
-          }
+          if (jsonStr === "[DONE]") { streamDone = true; break; }
 
           try {
             const parsed = JSON.parse(jsonStr);
@@ -152,6 +251,12 @@ const AIChat = () => {
           } catch { /* ignore */ }
         }
       }
+
+      // Lưu cả tin nhắn user và assistant vào DB
+      if (convoId) {
+        await saveMessage("user", input, convoId);
+        await saveMessage("assistant", assistantContent, convoId);
+      }
     } catch (error: any) {
       toast({
         title: "Lỗi",
@@ -173,9 +278,27 @@ const AIChat = () => {
 
   return (
     <div className="fixed inset-0 flex flex-col bg-background">
-      {/* Spacer for main header */}
       <div className="h-14 sm:h-16 md:h-20 flex-shrink-0"></div>
-      
+
+      {/* Toolbar */}
+      <div className="flex-shrink-0 border-b border-border bg-card/50 px-3 sm:px-4">
+        <div className="container mx-auto max-w-4xl flex items-center justify-between py-2">
+          <h3 className="text-sm font-medium text-muted-foreground">
+            {conversationId && messages.length > 0 ? "Cuộc trò chuyện hiện tại" : "Trò chuyện mới"}
+          </h3>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleNewConversation}
+            disabled={isLoading || messages.length === 0}
+            className="text-xs gap-1.5"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Cuộc trò chuyện mới
+          </Button>
+        </div>
+      </div>
+
       {/* Messages */}
       <div className="flex-1 overflow-y-auto">
         <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-4xl">
@@ -188,7 +311,7 @@ const AIChat = () => {
                 Xin chào! Tôi là trợ lý AI của Shoppet
               </h2>
               <p className="text-xs text-muted-foreground max-w-2xl mx-auto mb-3 px-2">
-                Tôi có thể giúp bạn tư vấn về sức khỏe, dinh dưỡng, và chăm sóc thú cưng. 
+                Tôi có thể giúp bạn tư vấn về sức khỏe, dinh dưỡng, và chăm sóc thú cưng.
                 Hãy hỏi tôi bất cứ điều gì!
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 max-w-2xl mx-auto">
@@ -261,25 +384,9 @@ const AIChat = () => {
         </div>
       </div>
 
-      {/* Input - Fixed at bottom */}
+      {/* Input */}
       <div className="flex-shrink-0 border-t border-border bg-card">
         <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4 max-w-4xl">
-          {messages.length === 0 && (
-            <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-2 sm:mb-3">
-              {defaultSuggestions.map((suggestion, idx) => (
-                <Button
-                  key={idx}
-                  variant="secondary"
-                  size="sm"
-                  className="text-xs h-8 sm:h-9 touch-manipulation"
-                  onClick={() => setInput(suggestion)}
-                  disabled={isLoading}
-                >
-                  {suggestion}
-                </Button>
-              ))}
-            </div>
-          )}
           <div className="flex gap-2 sm:gap-3">
             <Textarea
               data-tour="ai-chat-input"
