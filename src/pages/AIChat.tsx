@@ -1,14 +1,22 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Send, Sparkles, Trash2, Plus } from "lucide-react";
+import { Send, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import ChatSidebar from "@/components/ChatSidebar";
+import { cn } from "@/lib/utils";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
   followUpQuestions?: string[];
+}
+
+interface Conversation {
+  id: string;
+  title: string | null;
+  updated_at: string | null;
 }
 
 const AIChat = () => {
@@ -17,6 +25,8 @@ const AIChat = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const loadedRef = useRef(false);
@@ -25,7 +35,50 @@ const AIChat = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Lấy user và load lịch sử cuộc trò chuyện gần nhất
+  // Load danh sách cuộc trò chuyện
+  const loadConversations = useCallback(async (uid: string) => {
+    const { data } = await supabase
+      .from("chat_conversations")
+      .select("id, title, updated_at")
+      .eq("user_id", uid)
+      .order("updated_at", { ascending: false });
+    if (data) setConversations(data);
+    return data || [];
+  }, []);
+
+  // Load tin nhắn của 1 cuộc trò chuyện
+  const loadMessages = useCallback(async (convoId: string) => {
+    const { data: msgs } = await supabase
+      .from("chat_messages")
+      .select("role, content")
+      .eq("conversation_id", convoId)
+      .order("created_at", { ascending: true });
+
+    if (msgs && msgs.length > 0) {
+      const parsed: Message[] = msgs.map((m) => {
+        let displayContent = m.content;
+        let followUps: string[] = [];
+        if (m.content.includes("---FOLLOW_UP---")) {
+          const parts = m.content.split("---FOLLOW_UP---");
+          displayContent = parts[0].trim();
+          followUps = (parts[1]?.trim() || "")
+            .split("\n")
+            .map((q) => q.trim())
+            .filter((q) => q.length > 0);
+        }
+        return {
+          role: m.role as "user" | "assistant",
+          content: displayContent,
+          followUpQuestions: followUps.length > 0 ? followUps : undefined,
+        };
+      });
+      setMessages(parsed);
+    } else {
+      setMessages([]);
+    }
+  }, []);
+
+  // Init: lấy user, load conversations, chọn conversation gần nhất
   useEffect(() => {
     if (loadedRef.current) return;
     loadedRef.current = true;
@@ -35,121 +88,112 @@ const AIChat = () => {
       if (!user) return;
       setUserId(user.id);
 
-      // Lấy cuộc trò chuyện gần nhất (tối đa 1)
-      const { data: convos } = await supabase
-        .from("chat_conversations")
-        .select("id")
-        .eq("user_id", user.id)
-        .order("updated_at", { ascending: false })
-        .limit(1);
-
-      if (convos && convos.length > 0) {
-        const convoId = convos[0].id;
-        setConversationId(convoId);
-
-        // Load tin nhắn
-        const { data: msgs } = await supabase
-          .from("chat_messages")
-          .select("role, content")
-          .eq("conversation_id", convoId)
-          .order("created_at", { ascending: true });
-
-        if (msgs && msgs.length > 0) {
-          const parsed: Message[] = msgs.map(m => {
-            let displayContent = m.content;
-            let followUps: string[] = [];
-            if (m.content.includes("---FOLLOW_UP---")) {
-              const parts = m.content.split("---FOLLOW_UP---");
-              displayContent = parts[0].trim();
-              followUps = (parts[1]?.trim() || "")
-                .split("\n")
-                .map(q => q.trim())
-                .filter(q => q.length > 0);
-            }
-            return {
-              role: m.role as "user" | "assistant",
-              content: displayContent,
-              followUpQuestions: followUps.length > 0 ? followUps : undefined,
-            };
-          });
-          setMessages(parsed);
-        }
+      const convos = await loadConversations(user.id);
+      if (convos.length > 0) {
+        setConversationId(convos[0].id);
+        await loadMessages(convos[0].id);
       }
     };
     init();
-  }, []);
+  }, [loadConversations, loadMessages]);
 
-  // Lưu tin nhắn vào DB
+  // Chuyển cuộc trò chuyện
+  const handleSelectConversation = async (id: string) => {
+    if (id === conversationId || isLoading) return;
+    setConversationId(id);
+    setMessages([]);
+    await loadMessages(id);
+    setSidebarOpen(false);
+  };
+
+  // Tạo cuộc trò chuyện mới
+  const handleNewConversation = async () => {
+    if (!userId || isLoading) return;
+
+    const { data, error } = await supabase
+      .from("chat_conversations")
+      .insert({ user_id: userId, title: "Cuộc trò chuyện mới" })
+      .select("id, title, updated_at")
+      .single();
+
+    if (error || !data) return;
+    setConversationId(data.id);
+    setMessages([]);
+    setConversations((prev) => [data, ...prev]);
+    setSidebarOpen(false);
+    toast({ title: "Đã tạo cuộc trò chuyện mới 🐾" });
+  };
+
+  // Xóa cuộc trò chuyện
+  const handleDeleteConversation = async (id: string) => {
+    if (isLoading) return;
+    await supabase.from("chat_messages").delete().eq("conversation_id", id);
+    await supabase.from("chat_conversations").delete().eq("id", id);
+
+    const updated = conversations.filter((c) => c.id !== id);
+    setConversations(updated);
+
+    if (conversationId === id) {
+      if (updated.length > 0) {
+        setConversationId(updated[0].id);
+        await loadMessages(updated[0].id);
+      } else {
+        setConversationId(null);
+        setMessages([]);
+      }
+    }
+  };
+
+  // Lưu tin nhắn
   const saveMessage = useCallback(async (role: string, content: string, convoId: string) => {
     await supabase.from("chat_messages").insert({
       conversation_id: convoId,
       role,
       content,
     });
-    // Cập nhật thời gian cuộc trò chuyện
     await supabase.from("chat_conversations").update({ updated_at: new Date().toISOString() }).eq("id", convoId);
   }, []);
 
-  // Tạo cuộc trò chuyện mới hoặc lấy ID hiện tại
+  // Tạo conversation nếu chưa có
   const getOrCreateConversation = useCallback(async (): Promise<string | null> => {
     if (conversationId) return conversationId;
     if (!userId) return null;
 
-    // Xóa cuộc trò chuyện cũ (chỉ giữ tối đa 1)
-    const { data: oldConvos } = await supabase
-      .from("chat_conversations")
-      .select("id")
-      .eq("user_id", userId)
-      .order("updated_at", { ascending: false });
-
-    if (oldConvos && oldConvos.length > 0) {
-      for (const c of oldConvos) {
-        await supabase.from("chat_messages").delete().eq("conversation_id", c.id);
-        await supabase.from("chat_conversations").delete().eq("id", c.id);
-      }
-    }
-
     const { data, error } = await supabase
       .from("chat_conversations")
-      .insert({ user_id: userId, title: "Cuộc trò chuyện" })
-      .select("id")
+      .insert({ user_id: userId, title: "Cuộc trò chuyện mới" })
+      .select("id, title, updated_at")
       .single();
 
     if (error || !data) return null;
     setConversationId(data.id);
+    setConversations((prev) => [data, ...prev]);
     return data.id;
   }, [conversationId, userId]);
 
-  // Bắt đầu cuộc trò chuyện mới
-  const handleNewConversation = async () => {
-    if (!userId || isLoading) return;
-
-    // Xóa cuộc trò chuyện cũ
-    if (conversationId) {
-      await supabase.from("chat_messages").delete().eq("conversation_id", conversationId);
-      await supabase.from("chat_conversations").delete().eq("id", conversationId);
-    }
-
-    setConversationId(null);
-    setMessages([]);
-    toast({ title: "Đã tạo cuộc trò chuyện mới 🐾" });
-  };
+  // Cập nhật title cuộc trò chuyện dựa trên tin nhắn đầu tiên
+  const updateConversationTitle = useCallback(async (convoId: string, firstMessage: string) => {
+    const title = firstMessage.length > 40 ? firstMessage.slice(0, 40) + "..." : firstMessage;
+    await supabase.from("chat_conversations").update({ title }).eq("id", convoId);
+    setConversations((prev) =>
+      prev.map((c) => (c.id === convoId ? { ...c, title } : c))
+    );
+  }, []);
 
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
 
     const userMessage: Message = { role: "user", content: input };
-    setMessages(prev => [...prev, userMessage]);
+    const isFirstMessage = messages.length === 0;
+    setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
 
-    // Lưu tin nhắn user
     const convoId = await getOrCreateConversation();
 
     let assistantContent = "";
     const upsertAssistant = (chunk: string) => {
       assistantContent += chunk;
-
       let displayContent = assistantContent;
       let followUps: string[] = [];
 
@@ -158,14 +202,11 @@ const AIChat = () => {
         displayContent = parts[0].trim();
         const followUpText = parts[1]?.trim();
         if (followUpText) {
-          followUps = followUpText
-            .split("\n")
-            .map(q => q.trim())
-            .filter(q => q.length > 0);
+          followUps = followUpText.split("\n").map((q) => q.trim()).filter((q) => q.length > 0);
         }
       }
 
-      setMessages(prev => {
+      setMessages((prev) => {
         const last = prev[prev.length - 1];
         if (last?.role === "assistant") {
           return prev.map((m, i) =>
@@ -180,9 +221,7 @@ const AIChat = () => {
 
     try {
       const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat-ai`;
-
-      // Gửi tất cả tin nhắn cho AI (giữ context)
-      const allMessages = [...messages, userMessage].map(m => ({
+      const allMessages = [...messages, userMessage].map((m) => ({
         role: m.role,
         content: m.content,
       }));
@@ -217,14 +256,11 @@ const AIChat = () => {
         while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
           let line = textBuffer.slice(0, newlineIndex);
           textBuffer = textBuffer.slice(newlineIndex + 1);
-
           if (line.endsWith("\r")) line = line.slice(0, -1);
           if (line.startsWith(":") || line.trim() === "") continue;
           if (!line.startsWith("data: ")) continue;
-
           const jsonStr = line.slice(6).trim();
           if (jsonStr === "[DONE]") { streamDone = true; break; }
-
           try {
             const parsed = JSON.parse(jsonStr);
             const content = parsed.choices?.[0]?.delta?.content as string | undefined;
@@ -252,10 +288,20 @@ const AIChat = () => {
         }
       }
 
-      // Lưu cả tin nhắn user và assistant vào DB
       if (convoId) {
         await saveMessage("user", input, convoId);
         await saveMessage("assistant", assistantContent, convoId);
+        // Cập nhật title nếu là tin nhắn đầu tiên
+        if (isFirstMessage) {
+          await updateConversationTitle(convoId, input);
+        }
+        // Cập nhật thứ tự conversations
+        setConversations((prev) => {
+          const updated = prev.map((c) =>
+            c.id === convoId ? { ...c, updated_at: new Date().toISOString() } : c
+          );
+          return updated.sort((a, b) => new Date(b.updated_at || "").getTime() - new Date(a.updated_at || "").getTime());
+        });
       }
     } catch (error: any) {
       toast({
@@ -263,7 +309,7 @@ const AIChat = () => {
         description: error.message || "Không thể kết nối với AI assistant",
         variant: "destructive",
       });
-      setMessages(prev => prev.slice(0, -1));
+      setMessages((prev) => prev.slice(0, -1));
     } finally {
       setIsLoading(false);
     }
@@ -280,24 +326,16 @@ const AIChat = () => {
     <div className="fixed inset-0 flex flex-col bg-background">
       <div className="h-14 sm:h-16 md:h-20 flex-shrink-0"></div>
 
-      {/* Toolbar */}
-      <div className="flex-shrink-0 border-b border-border bg-card/50 px-3 sm:px-4">
-        <div className="container mx-auto max-w-4xl flex items-center justify-between py-2">
-          <h3 className="text-sm font-medium text-muted-foreground">
-            {conversationId && messages.length > 0 ? "Cuộc trò chuyện hiện tại" : "Trò chuyện mới"}
-          </h3>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleNewConversation}
-            disabled={isLoading || messages.length === 0}
-            className="text-xs gap-1.5"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            Cuộc trò chuyện mới
-          </Button>
-        </div>
-      </div>
+      <ChatSidebar
+        conversations={conversations}
+        activeConversationId={conversationId}
+        onSelectConversation={handleSelectConversation}
+        onNewConversation={handleNewConversation}
+        onDeleteConversation={handleDeleteConversation}
+        isLoading={isLoading}
+        isOpen={sidebarOpen}
+        onToggle={() => setSidebarOpen((prev) => !prev)}
+      />
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto">
@@ -319,7 +357,7 @@ const AIChat = () => {
                   "Con mèo của tôi bị tiêu chảy phải làm sao?",
                   "Chó con 2 tháng tuổi nên ăn gì?",
                   "Lịch tiêm phòng cho chó như thế nào?",
-                  "Cách huấn luyện mèo đi vệ sinh đúng chỗ"
+                  "Cách huấn luyện mèo đi vệ sinh đúng chỗ",
                 ].map((q, i) => (
                   <button
                     key={i}
