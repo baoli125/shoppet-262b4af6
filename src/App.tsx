@@ -53,9 +53,21 @@ const AppContent = () => {
       
       if (currentSession?.user) {
         // Defer Supabase calls to avoid deadlock
-        setTimeout(() => {
+        setTimeout(async () => {
           fetchProfile(currentSession.user.id);
           fetchCartCount(currentSession.user.id);
+          // Check if admin and redirect
+          if (event === 'SIGNED_IN') {
+            const { data: adminRole } = await supabase
+              .from('user_roles')
+              .select('role')
+              .eq('user_id', currentSession.user.id)
+              .eq('role', 'admin')
+              .single();
+            if (adminRole) {
+              navigate('/admin');
+            }
+          }
         }, 0);
       } else {
         // Clear all state when logged out
