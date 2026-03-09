@@ -881,16 +881,25 @@ const AdminDashboard = () => {
 
 
       {/* Delete User Dialog */}
-      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+      <Dialog open={showDeleteDialog} onOpenChange={(open) => { setShowDeleteDialog(open); if (!open) setDeleteReason(""); }}>
         <DialogContent>
           <DialogHeader><DialogTitle>Xác nhận xóa tài khoản</DialogTitle></DialogHeader>
-          <div className="py-2">
+          <div className="py-2 space-y-3">
             <p className="text-sm">Bạn có chắc muốn xóa tài khoản <strong>{users.find(u => u.id === deleteUserId)?.display_name}</strong>?</p>
-            <p className="text-sm text-destructive mt-2">Hành động này không thể hoàn tác!</p>
+            <p className="text-sm text-muted-foreground">Tài khoản sẽ được đánh dấu là đã xóa. Người dùng có thể khôi phục khi đăng nhập lại.</p>
+            <div>
+              <label className="text-sm font-medium">Lý do xóa <span className="text-destructive">*</span></label>
+              <Textarea
+                placeholder="Nhập lý do xóa tài khoản..."
+                value={deleteReason}
+                onChange={(e) => setDeleteReason(e.target.value)}
+                rows={3}
+              />
+            </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>Hủy</Button>
-            <Button variant="destructive" onClick={handleDeleteUser}>Xóa</Button>
+            <Button variant="outline" onClick={() => { setShowDeleteDialog(false); setDeleteReason(""); }}>Hủy</Button>
+            <Button variant="destructive" onClick={handleDeleteUser} disabled={!deleteReason.trim()}>Xóa</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
