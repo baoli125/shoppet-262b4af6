@@ -145,6 +145,7 @@ const AdminDashboard = () => {
       });
       setPetVaccines(map);
     }
+    if (logsRes.data) setActivityLogs(logsRes.data);
   };
 
   const handleChangePassword = async () => {
