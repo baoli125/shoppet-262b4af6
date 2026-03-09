@@ -289,6 +289,8 @@ const AdminDashboard = () => {
       if (error) {
         toast({ title: "Lỗi", description: error.message, variant: "destructive" });
       } else {
+        const u = users.find(u => u.id === userId);
+        await logActivity("grant_role", "user", userId, u?.display_name || "", `Cấp quyền ${role} cho ${u?.display_name}`);
         toast({ title: "Thành công", description: `Đã cấp quyền ${role}` });
         fetchAllData();
       }
