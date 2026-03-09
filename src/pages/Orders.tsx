@@ -410,7 +410,7 @@ const OrderCard = ({ order, getStatusColor, getStatusLabel, onCancel, onReorder,
             className="gap-2 w-full sm:w-auto"
           >
             {isReordering ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-            Đặt lại đơn hàng
+            Đặt lại
           </Button>
         </div>
       )}
