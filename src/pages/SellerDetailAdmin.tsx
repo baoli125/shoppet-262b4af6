@@ -5,9 +5,26 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, User, Package, ShoppingCart, TrendingUp, Star, Phone, Mail, Calendar, CheckCircle, XCircle, Clock, Truck, Ban } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ArrowLeft, User, Package, ShoppingCart, TrendingUp, Phone, Mail, Calendar, CheckCircle, Clock, Truck, Ban, MapPin, Eye, Edit } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+
+const STATUS_CONFIG: Record<string, { label: string; icon: any; variant: "default" | "secondary" | "destructive" | "outline" }> = {
+  pending: { label: "Chờ xác nhận", icon: Clock, variant: "secondary" },
+  confirmed: { label: "Đã xác nhận", icon: CheckCircle, variant: "outline" },
+  shipping: { label: "Đang giao", icon: Truck, variant: "default" },
+  delivered: { label: "Đã giao", icon: CheckCircle, variant: "default" },
+  cancelled: { label: "Đã hủy", icon: Ban, variant: "destructive" },
+};
+
+// Trạng thái tiếp theo mà seller có thể chuyển
+const NEXT_STATUS: Record<string, string[]> = {
+  pending: ["confirmed", "cancelled"],
+  confirmed: ["shipping", "cancelled"],
+  shipping: ["delivered"],
+};
 
 const SellerDetailAdmin = () => {
   const { id } = useParams();
@@ -18,8 +35,12 @@ const SellerDetailAdmin = () => {
   const [roles, setRoles] = useState<string[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
+  const [buyers, setBuyers] = useState<Record<string, any>>({});
   const [pets, setPets] = useState<any[]>([]);
   const [myRole, setMyRole] = useState<"admin" | "manager" | null>(null);
+  const [orderDetailId, setOrderDetailId] = useState<string | null>(null);
+  const [statusUpdateOrder, setStatusUpdateOrder] = useState<any>(null);
+  const [newStatus, setNewStatus] = useState("");
 
   useEffect(() => {
     checkAccessAndFetch();
@@ -41,7 +62,6 @@ const SellerDetailAdmin = () => {
 
     if (!id) return;
 
-    // Fetch all data in parallel
     const [profileRes, rolesRes, productsRes, ordersRes, petsRes] = await Promise.all([
       supabase.from("profiles").select("*").eq("id", id).single(),
       supabase.from("user_roles").select("role").eq("user_id", id),
@@ -61,19 +81,48 @@ const SellerDetailAdmin = () => {
     setProducts(productsRes.data || []);
     setOrders(ordersRes.data || []);
     setPets(petsRes.data || []);
+
+    // Fetch buyer profiles
+    if (ordersRes.data && ordersRes.data.length > 0) {
+      const buyerIds = [...new Set(ordersRes.data.map((o: any) => o.user_id))];
+      const { data: buyerProfiles } = await supabase
+        .from("profiles")
+        .select("id, display_name, avatar_url, phone, email")
+        .in("id", buyerIds);
+      if (buyerProfiles) {
+        const map: Record<string, any> = {};
+        buyerProfiles.forEach(b => { map[b.id] = b; });
+        setBuyers(map);
+      }
+    }
+
     setLoading(false);
   };
 
+  const handleUpdateStatus = async () => {
+    if (!statusUpdateOrder || !newStatus) return;
+    const { error } = await supabase
+      .from("orders")
+      .update({ status: newStatus as any })
+      .eq("id", statusUpdateOrder.id);
+
+    if (error) {
+      toast({ title: "Lỗi", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Thành công", description: `Đã cập nhật trạng thái đơn hàng` });
+      setStatusUpdateOrder(null);
+      setNewStatus("");
+      // Refresh orders
+      const { data } = await supabase
+        .from("orders")
+        .select("*, order_items(*)")
+        .eq("seller_id", id)
+        .order("created_at", { ascending: false });
+      if (data) setOrders(data);
+    }
+  };
+
   const formatPrice = (price: number) => new Intl.NumberFormat("vi-VN").format(price) + "đ";
-
-  const statusLabels: Record<string, string> = {
-    pending: "Chờ xác nhận", confirmed: "Đã xác nhận",
-    shipping: "Đang giao", delivered: "Đã giao", cancelled: "Đã hủy",
-  };
-
-  const statusIcons: Record<string, any> = {
-    pending: Clock, confirmed: CheckCircle, shipping: Truck, delivered: CheckCircle, cancelled: Ban,
-  };
 
   const categoryLabels: Record<string, string> = {
     food: "Thức ăn", toy: "Đồ chơi", accessory: "Phụ kiện",
@@ -90,13 +139,15 @@ const SellerDetailAdmin = () => {
 
   if (!seller) return null;
 
-  // Stats
   const deliveredOrders = orders.filter(o => o.status === "delivered");
   const cancelledOrders = orders.filter(o => o.status === "cancelled");
   const pendingOrders = orders.filter(o => o.status === "pending");
   const totalRevenue = deliveredOrders.reduce((sum, o) => sum + Number(o.total_amount), 0);
   const activeProducts = products.filter(p => p.is_active);
   const totalStock = products.reduce((sum, p) => sum + (p.stock || 0), 0);
+
+  const detailOrder = orderDetailId ? orders.find(o => o.id === orderDetailId) : null;
+  const detailBuyer = detailOrder ? buyers[detailOrder.user_id] : null;
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -182,7 +233,7 @@ const SellerDetailAdmin = () => {
           </Card>
         </div>
 
-        {/* Tabs: Products & Orders */}
+        {/* Tabs */}
         <Tabs defaultValue="products">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="products">Sản phẩm ({products.length})</TabsTrigger>
@@ -262,50 +313,102 @@ const SellerDetailAdmin = () => {
                   <p>Chưa có đơn hàng nào</p>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Mã đơn</TableHead>
-                        <TableHead>Sản phẩm</TableHead>
-                        <TableHead>Tổng tiền</TableHead>
-                        <TableHead>Trạng thái</TableHead>
-                        <TableHead>Ngày tạo</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {orders.map(order => {
-                        const StatusIcon = statusIcons[order.status] || Clock;
-                        return (
-                          <TableRow key={order.id}>
-                            <TableCell className="font-mono text-xs">#{order.id.slice(0, 8)}</TableCell>
-                            <TableCell>
-                              <div className="space-y-0.5">
-                                {order.order_items?.map((item: any) => (
-                                  <div key={item.id} className="text-xs">
-                                    {item.product_name} <span className="text-muted-foreground">x{item.quantity}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            </TableCell>
-                            <TableCell className="font-medium">{formatPrice(order.total_amount)}</TableCell>
-                            <TableCell>
-                              <Badge
-                                variant={order.status === "delivered" ? "default" : order.status === "cancelled" ? "destructive" : "secondary"}
-                                className="gap-1"
-                              >
-                                <StatusIcon className="h-3 w-3" />
-                                {statusLabels[order.status] || order.status}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="text-xs text-muted-foreground">
-                              {new Date(order.created_at).toLocaleDateString("vi-VN")}
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
+                <div className="space-y-3">
+                  {orders.map(order => {
+                    const buyer = buyers[order.user_id];
+                    const config = STATUS_CONFIG[order.status] || STATUS_CONFIG.pending;
+                    const StatusIcon = config.icon;
+                    const nextStatuses = NEXT_STATUS[order.status] || [];
+                    // Chỉ hiển thị sản phẩm của seller này
+                    const sellerProducts = products.map(p => p.id);
+                    const sellerItems = (order.order_items || []).filter((item: any) =>
+                      sellerProducts.includes(item.product_id)
+                    );
+                    const itemsToShow = sellerItems.length > 0 ? sellerItems : order.order_items || [];
+                    const sellerSubtotal = itemsToShow.reduce((sum: number, item: any) => sum + Number(item.subtotal || 0), 0);
+
+                    return (
+                      <div key={order.id} className="border rounded-lg p-4 space-y-3 hover:bg-accent/30 transition-colors">
+                        {/* Header: buyer name + status */}
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h4 className="font-semibold text-sm">{buyer?.display_name || "Khách hàng"}</h4>
+                              <span className="text-xs text-muted-foreground font-mono">#{order.id.slice(0, 8)}</span>
+                            </div>
+                            <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-xs text-muted-foreground">
+                              <span className="flex items-center gap-1">
+                                <Phone className="h-3 w-3" />
+                                {order.phone_number}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <MapPin className="h-3 w-3" />
+                                {order.shipping_address}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Calendar className="h-3 w-3" />
+                                {new Date(order.created_at).toLocaleString("vi-VN")}
+                              </span>
+                            </div>
+                          </div>
+                          <Badge variant={config.variant} className="gap-1 flex-shrink-0">
+                            <StatusIcon className="h-3 w-3" />
+                            {config.label}
+                          </Badge>
+                        </div>
+
+                        {/* Items */}
+                        <div className="bg-muted/50 rounded-lg p-3 space-y-1.5">
+                          {itemsToShow.map((item: any) => (
+                            <div key={item.id} className="flex justify-between text-sm">
+                              <span>{item.product_name} <span className="text-muted-foreground">x{item.quantity}</span></span>
+                              <span className="font-medium">{formatPrice(item.subtotal)}</span>
+                            </div>
+                          ))}
+                          <div className="border-t pt-1.5 flex justify-between text-sm font-semibold">
+                            <span>Tổng</span>
+                            <span>{formatPrice(sellerSubtotal)}</span>
+                          </div>
+                        </div>
+
+                        {/* Customer notes */}
+                        {order.customer_notes && (
+                          <p className="text-xs text-muted-foreground bg-accent/50 p-2 rounded">
+                            💬 {order.customer_notes}
+                          </p>
+                        )}
+
+                        {order.cancel_reason && (
+                          <p className="text-xs text-destructive bg-destructive/5 p-2 rounded">
+                            ❌ Lý do hủy: {order.cancel_reason}
+                          </p>
+                        )}
+
+                        {/* Actions */}
+                        {nextStatuses.length > 0 && (
+                          <div className="flex gap-2 pt-1">
+                            {nextStatuses.map(ns => {
+                              const nsConfig = STATUS_CONFIG[ns];
+                              return (
+                                <Button
+                                  key={ns}
+                                  size="sm"
+                                  variant={ns === "cancelled" ? "destructive" : "default"}
+                                  onClick={() => {
+                                    setStatusUpdateOrder(order);
+                                    setNewStatus(ns);
+                                  }}
+                                  className="text-xs"
+                                >
+                                  {nsConfig.label}
+                                </Button>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </Card>
@@ -315,7 +418,6 @@ const SellerDetailAdmin = () => {
           <TabsContent value="info">
             <Card className="p-4">
               <div className="space-y-6">
-                {/* User stats */}
                 <div>
                   <h3 className="font-semibold mb-3">Thống kê chi tiết</h3>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
@@ -382,6 +484,41 @@ const SellerDetailAdmin = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Status Update Confirmation Dialog */}
+      <Dialog open={!!statusUpdateOrder} onOpenChange={(open) => { if (!open) { setStatusUpdateOrder(null); setNewStatus(""); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Cập nhật trạng thái đơn hàng</DialogTitle>
+          </DialogHeader>
+          {statusUpdateOrder && (
+            <div className="py-2 space-y-3">
+              <p className="text-sm">
+                Đơn hàng <span className="font-mono font-medium">#{statusUpdateOrder.id.slice(0, 8)}</span> của{" "}
+                <strong>{buyers[statusUpdateOrder.user_id]?.display_name || "Khách hàng"}</strong>
+              </p>
+              <div className="flex items-center gap-2 text-sm">
+                <Badge variant={STATUS_CONFIG[statusUpdateOrder.status]?.variant || "secondary"}>
+                  {STATUS_CONFIG[statusUpdateOrder.status]?.label}
+                </Badge>
+                <span>→</span>
+                <Badge variant={STATUS_CONFIG[newStatus]?.variant || "default"}>
+                  {STATUS_CONFIG[newStatus]?.label}
+                </Badge>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setStatusUpdateOrder(null); setNewStatus(""); }}>Hủy</Button>
+            <Button
+              variant={newStatus === "cancelled" ? "destructive" : "default"}
+              onClick={handleUpdateStatus}
+            >
+              Xác nhận
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
