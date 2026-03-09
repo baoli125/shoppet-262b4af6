@@ -410,7 +410,7 @@ const AdminDashboard = () => {
                         <TableCell><Badge variant="outline">{product.category}</Badge></TableCell>
                         <TableCell>{product.stock}</TableCell>
                         <TableCell>
-                          <Button size="sm" variant="destructive" onClick={() => handleDeleteProduct(product.id)}>
+                          <Button size="sm" variant="destructive" onClick={() => { setDeleteProductId(product.id); setShowDeleteProductDialog(true); }}>
                             <Trash2 className="h-3 w-3" />
                           </Button>
                         </TableCell>
