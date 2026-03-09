@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
-import { Users, ShieldCheck, Package, ShoppingCart, Search, Key, Trash2, UserCheck, UserX, Eye, LogOut, Shield, ArrowUp, ArrowDown, ArrowUpDown, Filter, Check, X, PawPrint, UserPlus, RefreshCw, RotateCcw } from "lucide-react";
+import { Users, ShieldCheck, Package, ShoppingCart, Search, Key, Trash2, UserCheck, UserX, Eye, LogOut, Shield, ArrowUp, ArrowDown, ArrowUpDown, Filter, Check, X, PawPrint, UserPlus, RefreshCw, RotateCcw, ScrollText, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -34,6 +34,8 @@ const AdminDashboard = () => {
   const [userPets, setUserPets] = useState<Record<string, any[]>>({});
   const [petMedicalRecords, setPetMedicalRecords] = useState<Record<string, any[]>>({});
   const [petVaccines, setPetVaccines] = useState<Record<string, any[]>>({});
+  const [activityLogs, setActivityLogs] = useState<any[]>([]);
+  const [logSort, setLogSort] = useState<SortState>({ key: "created_at", dir: "desc" });
   const [showPetDetail, setShowPetDetail] = useState(false);
   const [detailPets, setDetailPets] = useState<any[]>([]);
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
@@ -97,7 +99,7 @@ const AdminDashboard = () => {
   };
 
   const fetchAllData = async () => {
-    const [profilesRes, ordersRes, productsRes, rolesRes, petsRes, medicalRes, vaccinesRes] = await Promise.all([
+    const [profilesRes, ordersRes, productsRes, rolesRes, petsRes, medicalRes, vaccinesRes, logsRes] = await Promise.all([
       supabase.from("profiles").select("*").order("created_at", { ascending: false }),
       supabase.from("orders").select("*, order_items(*)").order("created_at", { ascending: false }),
       supabase.from("products").select("*").order("created_at", { ascending: false }),
@@ -105,6 +107,7 @@ const AdminDashboard = () => {
       supabase.from("pets").select("*"),
       supabase.from("medical_records").select("*").order("date", { ascending: false }),
       supabase.from("vaccines").select("*").order("date", { ascending: false }),
+      supabase.from("activity_logs").select("*").order("created_at", { ascending: false }).limit(500),
     ]);
 
     if (profilesRes.data) setUsers(profilesRes.data);
@@ -142,6 +145,21 @@ const AdminDashboard = () => {
       });
       setPetVaccines(map);
     }
+    if (logsRes.data) setActivityLogs(logsRes.data);
+  };
+
+  // Helper: ghi log hành động admin/manager
+  const logActivity = async (action: string, targetType: string, targetId: string, targetName: string, details: string) => {
+    const myProfile = users.find(u => u.id === currentUserId);
+    await supabase.from("activity_logs").insert({
+      actor_id: currentUserId,
+      actor_name: myProfile?.display_name || "Admin",
+      action,
+      target_type: targetType,
+      target_id: targetId,
+      target_name: targetName,
+      details,
+    });
   };
 
   const handleChangePassword = async () => {
@@ -165,6 +183,8 @@ const AdminDashboard = () => {
     if (error || data?.error) {
       toast({ title: "Lỗi", description: data?.error || error?.message, variant: "destructive" });
     } else {
+      const targetUser = users.find(u => u.id === passwordUserId);
+      await logActivity("change_password", "user", passwordUserId, targetUser?.display_name || "", `Đổi mật khẩu cho ${targetUser?.display_name || targetUser?.email}`);
       toast({ title: "Thành công", description: "Đã thay đổi mật khẩu" });
       setShowPasswordDialog(false);
       setNewPassword("");
@@ -196,6 +216,7 @@ const AdminDashboard = () => {
     if (error || data?.error) {
       toast({ title: "Lỗi", description: data?.error || error?.message, variant: "destructive" });
     } else {
+      await logActivity("create_user", "user", data?.user_id || "", createUserEmail, `Tạo tài khoản ${createUserEmail} với vai trò ${createUserRole}`);
       toast({ title: "Thành công", description: `Đã tạo tài khoản ${createUserEmail}` });
       setShowCreateUserDialog(false);
       setCreateUserEmail("");
@@ -236,6 +257,7 @@ const AdminDashboard = () => {
       reason: deleteReason,
       deleted_by: currentUserId,
     });
+    await logActivity("delete_user", "user", deleteUserId, targetUser?.display_name || "", `Xóa tài khoản: ${targetUser?.display_name} - Lý do: ${deleteReason}`);
 
     toast({ title: "Thành công", description: "Đã xóa tài khoản (mềm)" });
     setShowDeleteDialog(false);
@@ -257,6 +279,8 @@ const AdminDashboard = () => {
       if (error) {
         toast({ title: "Lỗi", description: error.message, variant: "destructive" });
       } else {
+        const u = users.find(u => u.id === userId);
+        await logActivity("revoke_role", "user", userId, u?.display_name || "", `Thu quyền ${role} của ${u?.display_name}`);
         toast({ title: "Thành công", description: `Đã thu quyền ${role}` });
         fetchAllData();
       }
@@ -265,6 +289,8 @@ const AdminDashboard = () => {
       if (error) {
         toast({ title: "Lỗi", description: error.message, variant: "destructive" });
       } else {
+        const u = users.find(u => u.id === userId);
+        await logActivity("grant_role", "user", userId, u?.display_name || "", `Cấp quyền ${role} cho ${u?.display_name}`);
         toast({ title: "Thành công", description: `Đã cấp quyền ${role}` });
         fetchAllData();
       }
@@ -297,6 +323,7 @@ const AdminDashboard = () => {
     if (error) {
       toast({ title: "Lỗi", description: error.message, variant: "destructive" });
     } else {
+      await logActivity("delete_product", "product", deleteProductId, product?.name || "", `Xóa sản phẩm: ${product?.name} - Lý do: ${deleteProductReason}`);
       toast({ title: "Thành công", description: "Đã xóa sản phẩm" });
       fetchAllData();
     }
@@ -330,6 +357,12 @@ const AdminDashboard = () => {
     if (error) {
       toast({ title: "Lỗi", description: error.message, variant: "destructive" });
     } else {
+      const changes: string[] = [];
+      if (selectedOrder.status !== editOrderData.status) changes.push(`Trạng thái: ${statusLabels[selectedOrder.status]} → ${statusLabels[editOrderData.status]}`);
+      if (selectedOrder.shipping_address !== editOrderData.shipping_address) changes.push("Địa chỉ giao hàng");
+      if (selectedOrder.phone_number !== editOrderData.phone_number) changes.push("Số điện thoại");
+      if (selectedOrder.customer_notes !== editOrderData.customer_notes) changes.push("Ghi chú");
+      await logActivity("edit_order", "order", selectedOrder.id, `#${selectedOrder.id.slice(0,8)}`, `Chỉnh sửa đơn hàng: ${changes.join(", ")}`);
       toast({ title: "Thành công", description: "Đã cập nhật đơn hàng" });
       setShowOrderDialog(false);
       fetchAllData();
@@ -420,6 +453,7 @@ const AdminDashboard = () => {
     if (k === "customer") return users.find((u: any) => u.id === o.user_id)?.display_name?.toLowerCase() || "";
     if (k === "total") return Number(o.total_amount);
     if (k === "status") return o.status || "";
+    if (k === "created_at") return new Date(o.created_at).getTime();
     return "";
   });
 
@@ -549,10 +583,11 @@ const AdminDashboard = () => {
         </div>
 
         <Tabs defaultValue="users">
-          <TabsList className="w-full grid grid-cols-3 mb-4">
+          <TabsList className="w-full grid grid-cols-4 mb-4">
             <TabsTrigger value="users">Người dùng</TabsTrigger>
             <TabsTrigger value="orders">Đơn hàng</TabsTrigger>
             <TabsTrigger value="products">Sản phẩm</TabsTrigger>
+            <TabsTrigger value="logs" className="gap-1"><ScrollText className="h-3.5 w-3.5" /> Logs</TabsTrigger>
           </TabsList>
 
           <TabsContent value="users">
@@ -677,6 +712,7 @@ const AdminDashboard = () => {
                                     variant="outline"
                                     onClick={async () => {
                                       await supabase.from("profiles").update({ is_deleted: false, deleted_at: null, delete_reason: null, deleted_by: null }).eq("id", user.id);
+                                      await logActivity("restore_user", "user", user.id, user.display_name || "", `Khôi phục tài khoản: ${user.display_name}`);
                                       toast({ title: "Thành công", description: "Đã khôi phục tài khoản" });
                                       fetchAllData();
                                     }}
@@ -736,6 +772,9 @@ const AdminDashboard = () => {
                           labelMap={statusLabels}
                         />
                       </TableHead>
+                      <TableHead className="cursor-pointer select-none" onClick={() => toggleSort(setOrderSort, "created_at")}>
+                        <span className="flex items-center"><Clock className="h-3 w-3 mr-1" />Thời gian <SortIcon sortState={orderSort} colKey="created_at" /></span>
+                      </TableHead>
                       <TableHead>Hành động</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -761,6 +800,9 @@ const AdminDashboard = () => {
                             >
                               {statusLabels[order.status] || order.status}
                             </Badge>
+                          </TableCell>
+                          <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                            {new Date(order.created_at).toLocaleString("vi-VN")}
                           </TableCell>
                           <TableCell>
                             <Button size="sm" variant="outline" onClick={() => handleEditOrder(order)}>
@@ -824,6 +866,80 @@ const AdminDashboard = () => {
                         </TableCell>
                       </TableRow>
                     ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="logs">
+            <Card className="p-4">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-semibold flex items-center gap-2"><ScrollText className="h-4 w-4" /> Nhật ký hoạt động</h3>
+                <Button size="sm" variant="outline" onClick={fetchAllData}><RefreshCw className="h-3 w-3 mr-1" /> Làm mới</Button>
+              </div>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="cursor-pointer select-none" onClick={() => toggleSort(setLogSort, "created_at")}>
+                        <span className="flex items-center">Thời gian <SortIcon sortState={logSort} colKey="created_at" /></span>
+                      </TableHead>
+                      <TableHead>Người thực hiện</TableHead>
+                      <TableHead>Hành động</TableHead>
+                      <TableHead>Đối tượng</TableHead>
+                      <TableHead>Chi tiết</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {sortData(activityLogs, logSort, (l, k) => {
+                      if (k === "created_at") return new Date(l.created_at).getTime();
+                      return "";
+                    }).map((log: any) => {
+                      const actionLabels: Record<string, string> = {
+                        create_account: "Tạo tài khoản",
+                        create_product: "Thêm sản phẩm",
+                        create_user: "Tạo tài khoản (admin)",
+                        delete_user: "Xóa tài khoản",
+                        restore_user: "Khôi phục tài khoản",
+                        change_password: "Đổi mật khẩu",
+                        grant_role: "Cấp quyền",
+                        revoke_role: "Thu quyền",
+                        edit_order: "Sửa đơn hàng",
+                        delete_product: "Xóa sản phẩm",
+                        update_order_status: "Cập nhật đơn hàng",
+                      };
+                      const targetTypeLabels: Record<string, string> = {
+                        user: "Người dùng",
+                        product: "Sản phẩm",
+                        order: "Đơn hàng",
+                      };
+                      return (
+                        <TableRow key={log.id}>
+                          <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                            {new Date(log.created_at).toLocaleString("vi-VN")}
+                          </TableCell>
+                          <TableCell className="text-sm">{log.actor_name || "System"}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="text-xs">{actionLabels[log.action] || log.action}</Badge>
+                          </TableCell>
+                          <TableCell className="text-xs">
+                            <span className="text-muted-foreground">{targetTypeLabels[log.target_type] || log.target_type}</span>
+                            {log.target_name && <span className="ml-1 font-medium">{log.target_name}</span>}
+                          </TableCell>
+                          <TableCell className="text-xs text-muted-foreground max-w-[300px] truncate" title={log.details}>
+                            {log.details}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                    {activityLogs.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                          Chưa có hoạt động nào được ghi lại
+                        </TableCell>
+                      </TableRow>
+                    )}
                   </TableBody>
                 </Table>
               </div>
