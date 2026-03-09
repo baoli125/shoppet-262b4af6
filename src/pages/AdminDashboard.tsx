@@ -576,8 +576,14 @@ const AdminDashboard = () => {
                       <TableHead className="cursor-pointer select-none" onClick={() => toggleSort(setProductSort, "price")}>
                         <span className="flex items-center">Giá <SortIcon sortState={productSort} colKey="price" /></span>
                       </TableHead>
-                      <TableHead className="cursor-pointer select-none" onClick={() => toggleSort(setProductSort, "category")}>
-                        <span className="flex items-center">Danh mục <SortIcon sortState={productSort} colKey="category" /></span>
+                      <TableHead>
+                        <FilterDropdown
+                          label="Danh mục"
+                          options={["food", "toy", "accessory", "medicine", "grooming", "other"]}
+                          selected={categoryFilter}
+                          onToggle={(v) => toggleFilter(setCategoryFilter, v)}
+                          labelMap={categoryLabels}
+                        />
                       </TableHead>
                       <TableHead className="cursor-pointer select-none" onClick={() => toggleSort(setProductSort, "stock")}>
                         <span className="flex items-center">Tồn kho <SortIcon sortState={productSort} colKey="stock" /></span>
