@@ -444,7 +444,7 @@ const StatCard = ({ icon: Icon, label, value, color, onClick }: any) => (
 );
 
 // ─── Orders Section ────────────────────────────────────
-const OrdersSection = ({ orders, onUpdateStatus, onViewDetail }: any) => {
+const OrdersSection = ({ orders, buyers, onUpdateStatus, onViewDetail }: any) => {
   const [activeTab, setActiveTab] = useState("all");
   const tabs = [
     { key: "all", label: "Tất cả" },
