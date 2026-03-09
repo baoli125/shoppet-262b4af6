@@ -15,6 +15,7 @@ interface ChatSidebarProps {
   onSelectConversation: (id: string) => void;
   onNewConversation: () => void;
   onDeleteConversation: (id: string) => void;
+  onRenameConversation: (id: string, newTitle: string) => void;
   isLoading: boolean;
   isOpen: boolean;
   onToggle: () => void;
@@ -26,10 +27,36 @@ const ChatSidebar = ({
   onSelectConversation,
   onNewConversation,
   onDeleteConversation,
+  onRenameConversation,
   isLoading,
   isOpen,
   onToggle,
 }: ChatSidebarProps) => {
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+
+  const handleEditStart = (e: React.MouseEvent, id: string, currentTitle: string | null) => {
+    e.stopPropagation();
+    setEditingId(id);
+    setEditTitle(currentTitle || "Cuộc trò chuyện");
+  };
+
+  const handleEditSave = (e?: React.MouseEvent | React.KeyboardEvent) => {
+    if (e) e.stopPropagation();
+    if (editingId && editTitle.trim()) {
+      onRenameConversation(editingId, editTitle.trim());
+    }
+    setEditingId(null);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleEditSave(e);
+    } else if (e.key === "Escape") {
+      setEditingId(null);
+      e.stopPropagation();
+    }
+  };
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return "";
     const date = new Date(dateStr);
