@@ -14,8 +14,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Package, Clock, Truck, CheckCircle, XCircle, Ban, Loader2 } from "lucide-react";
+import { ArrowLeft, Package, Clock, Truck, CheckCircle, XCircle, Ban, Loader2, MoreVertical } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -294,10 +300,19 @@ const OrderCard = ({ order, getStatusColor, getStatusLabel, onCancel }: OrderCar
           {order.total_amount.toLocaleString()}đ
         </p>
         {onCancel && (
-          <Button variant="outline" size="sm" onClick={onCancel} className="text-destructive border-destructive/30 hover:bg-destructive/10">
-            <Ban className="h-3.5 w-3.5 mr-1" />
-            Hủy đơn
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={onCancel} className="text-destructive focus:text-destructive">
+                <Ban className="h-4 w-4 mr-2" />
+                Hủy đơn hàng
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
       </div>
     </div>
