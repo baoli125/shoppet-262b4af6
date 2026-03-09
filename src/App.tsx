@@ -266,6 +266,7 @@ const AppContent = () => {
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/seller-dashboard" element={<SellerDashboard />} />
         <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin/seller/:id" element={<SellerDetailAdmin />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
