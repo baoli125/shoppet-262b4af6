@@ -114,9 +114,16 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleToggleRole = async (userId: string, role: "seller" | "manager") => {
+  const confirmToggleRole = (userId: string, role: "seller" | "manager") => {
     const hasRole = userRoles[userId]?.includes(role);
-    if (hasRole) {
+    setRoleAction({ userId, role, action: hasRole ? "revoke" : "grant" });
+    setShowRoleDialog(true);
+  };
+
+  const handleToggleRole = async () => {
+    if (!roleAction) return;
+    const { userId, role, action } = roleAction;
+    if (action === "revoke") {
       const { error } = await supabase.from("user_roles").delete().eq("user_id", userId).eq("role", role);
       if (error) {
         toast({ title: "Lỗi", description: error.message, variant: "destructive" });
@@ -133,6 +140,8 @@ const AdminDashboard = () => {
         fetchAllData();
       }
     }
+    setShowRoleDialog(false);
+    setRoleAction(null);
   };
 
   const handleDeleteProduct = async (productId: string) => {
