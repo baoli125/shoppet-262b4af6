@@ -56,15 +56,14 @@ const AppContent = () => {
         setTimeout(async () => {
           fetchProfile(currentSession.user.id);
           fetchCartCount(currentSession.user.id);
-          // Check if admin and redirect
+          // Check if admin/manager and redirect
           if (event === 'SIGNED_IN') {
-            const { data: adminRole } = await supabase
+            const { data: roles } = await supabase
               .from('user_roles')
               .select('role')
               .eq('user_id', currentSession.user.id)
-              .eq('role', 'admin')
-              .single();
-            if (adminRole) {
+              .in('role', ['admin', 'manager']);
+            if (roles && roles.length > 0) {
               navigate('/admin');
             }
           }

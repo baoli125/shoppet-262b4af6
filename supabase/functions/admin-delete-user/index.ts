@@ -33,48 +33,52 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { data: roleCheck } = await supabase
+    // Only admin can delete users
+    const { data: adminCheck } = await supabase
       .from('user_roles')
       .select('role')
       .eq('user_id', user.id)
-      .in('role', ['admin', 'manager']);
+      .eq('role', 'admin')
+      .single();
 
-    if (!roleCheck || roleCheck.length === 0) {
-      return new Response(JSON.stringify({ error: 'Admin/Manager access required' }), {
+    if (!adminCheck) {
+      return new Response(JSON.stringify({ error: 'Admin access required' }), {
         status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
-    const callerIsAdmin = roleCheck.some((r: any) => r.role === 'admin');
-
-    const { target_user_id, new_password } = await req.json();
-    if (!target_user_id || !new_password || new_password.length < 6) {
-      return new Response(JSON.stringify({ error: 'Invalid input (password min 6 chars)' }), {
+    const { target_user_id } = await req.json();
+    if (!target_user_id) {
+      return new Response(JSON.stringify({ error: 'Missing target_user_id' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
-    // Manager cannot change admin's password
-    if (!callerIsAdmin) {
-      const { data: targetRoles } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', target_user_id)
-        .eq('role', 'admin')
-        .single();
-      if (targetRoles) {
-        return new Response(JSON.stringify({ error: 'Cannot change admin password' }), {
-          status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        });
-      }
+    // Prevent deleting self
+    if (target_user_id === user.id) {
+      return new Response(JSON.stringify({ error: 'Cannot delete your own account' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Prevent deleting other admins
+    const { data: targetAdminCheck } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', target_user_id)
+      .eq('role', 'admin')
+      .single();
+
+    if (targetAdminCheck) {
+      return new Response(JSON.stringify({ error: 'Cannot delete admin accounts' }), {
+        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
     }
 
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
-    const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(target_user_id, {
-      password: new_password,
-    });
+    const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(target_user_id);
 
-    if (updateError) throw updateError;
+    if (deleteError) throw deleteError;
 
     return new Response(
       JSON.stringify({ success: true }),
