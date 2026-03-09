@@ -199,10 +199,60 @@ const AdminDashboard = () => {
     navigate("/");
   };
 
+  const toggleSort = (setter: React.Dispatch<React.SetStateAction<SortState>>, key: string) => {
+    setter(prev => {
+      if (prev.key !== key) return { key, dir: "asc" };
+      if (prev.dir === "asc") return { key, dir: "desc" };
+      if (prev.dir === "desc") return { key: "", dir: null };
+      return { key, dir: "asc" };
+    });
+  };
+
+  const SortIcon = ({ sortState, colKey }: { sortState: SortState; colKey: string }) => {
+    if (sortState.key !== colKey || !sortState.dir) return <ArrowUpDown className="h-3 w-3 ml-1 opacity-40" />;
+    return sortState.dir === "asc" ? <ArrowUp className="h-3 w-3 ml-1 text-primary" /> : <ArrowDown className="h-3 w-3 ml-1 text-primary" />;
+  };
+
+  const sortData = <T,>(data: T[], sort: SortState, getVal: (item: T, key: string) => any): T[] => {
+    if (!sort.key || !sort.dir) return data;
+    return [...data].sort((a, b) => {
+      const va = getVal(a, sort.key);
+      const vb = getVal(b, sort.key);
+      if (va == null && vb == null) return 0;
+      if (va == null) return 1;
+      if (vb == null) return -1;
+      const cmp = typeof va === "string" ? va.localeCompare(vb, "vi") : va - vb;
+      return sort.dir === "asc" ? cmp : -cmp;
+    });
+  };
+
   const filteredUsers = users.filter(u =>
     u.display_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     u.email?.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const sortedUsers = sortData(filteredUsers, userSort, (u, k) => {
+    if (k === "name") return u.display_name?.toLowerCase() || "";
+    if (k === "email") return u.email?.toLowerCase() || "";
+    if (k === "role") return (userRoles[u.id] || []).join(",");
+    return "";
+  });
+
+  const sortedOrders = sortData(orders, orderSort, (o, k) => {
+    if (k === "id") return o.id;
+    if (k === "customer") return users.find((u: any) => u.id === o.user_id)?.display_name?.toLowerCase() || "";
+    if (k === "total") return Number(o.total_amount);
+    if (k === "status") return o.status || "";
+    return "";
+  });
+
+  const sortedProducts = sortData(products, productSort, (p, k) => {
+    if (k === "name") return p.name?.toLowerCase() || "";
+    if (k === "price") return Number(p.price);
+    if (k === "category") return p.category || "";
+    if (k === "stock") return Number(p.stock || 0);
+    return "";
+  });
 
   const statusLabels: Record<string, string> = {
     pending: "Chờ xác nhận", confirmed: "Đã xác nhận",
