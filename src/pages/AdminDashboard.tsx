@@ -447,7 +447,15 @@ const AdminDashboard = () => {
                       const isSelf = user.id === currentUserId;
                       return (
                         <TableRow key={user.id}>
-                          <TableCell className="font-medium">{user.display_name}</TableCell>
+                          <TableCell className="font-medium">
+                            {!isAdmin ? (
+                              <button className="text-left hover:text-primary hover:underline transition-colors" onClick={() => { setDetailUser(user); setShowUserDetail(true); }}>
+                                {user.display_name}
+                              </button>
+                            ) : (
+                              <span className="text-muted-foreground">{user.display_name}</span>
+                            )}
+                          </TableCell>
                           <TableCell className="text-muted-foreground text-xs">{user.email}</TableCell>
                           <TableCell>
                             <div className="flex gap-1 flex-wrap">
