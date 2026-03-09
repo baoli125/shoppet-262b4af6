@@ -513,6 +513,9 @@ const AdminDashboard = () => {
               <div className="flex items-center gap-2 mb-4">
                 <Search className="h-4 w-4 text-muted-foreground" />
                 <Input placeholder="Tìm kiếm người dùng..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="flex-1" />
+                <Button size="sm" onClick={() => setShowCreateUserDialog(true)}>
+                  <UserPlus className="h-4 w-4 mr-1" /> Tạo
+                </Button>
               </div>
               <div className="overflow-x-auto">
                  <Table>
