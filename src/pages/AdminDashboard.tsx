@@ -34,6 +34,12 @@ const AdminDashboard = () => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showRoleDialog, setShowRoleDialog] = useState(false);
   const [showDeleteProductDialog, setShowDeleteProductDialog] = useState(false);
+  const [showUserDetail, setShowUserDetail] = useState(false);
+  const [showOrderDetail, setShowOrderDetail] = useState(false);
+  const [showProductDetail, setShowProductDetail] = useState(false);
+  const [detailUser, setDetailUser] = useState<any>(null);
+  const [detailOrder, setDetailOrder] = useState<any>(null);
+  const [detailProduct, setDetailProduct] = useState<any>(null);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [newPassword, setNewPassword] = useState("");
   const [passwordUserId, setPasswordUserId] = useState("");
@@ -361,6 +367,13 @@ const AdminDashboard = () => {
   if (loading) return <div className="flex items-center justify-center min-h-screen">Đang tải...</div>;
   if (!myRole) return null;
 
+  const InfoRow = ({ label, value, mono, full }: { label: string; value: string; mono?: boolean; full?: boolean }) => (
+    <div className={full ? "col-span-2" : ""}>
+      <div className="text-muted-foreground text-xs">{label}</div>
+      <div className={`text-sm font-medium break-all ${mono ? "font-mono text-xs" : ""}`}>{value}</div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-muted/30">
       <div className="bg-card border-b px-4 py-3 flex items-center justify-between sticky top-0 z-50">
@@ -441,7 +454,15 @@ const AdminDashboard = () => {
                       const isSelf = user.id === currentUserId;
                       return (
                         <TableRow key={user.id}>
-                          <TableCell className="font-medium">{user.display_name}</TableCell>
+                          <TableCell className="font-medium">
+                            {!isAdmin ? (
+                              <button className="text-left hover:text-primary hover:underline transition-colors" onClick={() => { setDetailUser(user); setShowUserDetail(true); }}>
+                                {user.display_name}
+                              </button>
+                            ) : (
+                              <span className="text-muted-foreground">{user.display_name}</span>
+                            )}
+                          </TableCell>
                           <TableCell className="text-muted-foreground text-xs">{user.email}</TableCell>
                           <TableCell>
                             <div className="flex gap-1 flex-wrap">
@@ -543,7 +564,11 @@ const AdminDashboard = () => {
                       const buyer = users.find(u => u.id === order.user_id);
                       return (
                         <TableRow key={order.id}>
-                          <TableCell className="font-mono text-xs">{order.id.slice(0, 8)}...</TableCell>
+                          <TableCell className="font-mono text-xs">
+                            <button className="hover:text-primary hover:underline transition-colors" onClick={() => { setDetailOrder(order); setShowOrderDetail(true); }}>
+                              {order.id.slice(0, 8)}...
+                            </button>
+                          </TableCell>
                           <TableCell>{buyer?.display_name || "N/A"}</TableCell>
                           <TableCell className="font-semibold">{formatPrice(order.total_amount)}</TableCell>
                           <TableCell>
@@ -598,7 +623,9 @@ const AdminDashboard = () => {
                         <TableCell>
                           <div className="flex items-center gap-2">
                             {product.image_url && <img src={product.image_url} alt="" className="h-8 w-8 rounded object-cover" />}
-                            <span className="font-medium line-clamp-1">{product.name}</span>
+                            <button className="font-medium line-clamp-1 text-left hover:text-primary hover:underline transition-colors" onClick={() => { setDetailProduct(product); setShowProductDetail(true); }}>
+                              {product.name}
+                            </button>
                           </div>
                         </TableCell>
                         <TableCell>{formatPrice(product.price)}</TableCell>
@@ -738,6 +765,140 @@ const AdminDashboard = () => {
           <DialogFooter>
             <Button variant="outline" onClick={() => { setShowDeleteProductDialog(false); setDeleteProductId(""); }}>Hủy</Button>
             <Button variant="destructive" onClick={handleDeleteProduct}>Xóa</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* User Detail Dialog */}
+      <Dialog open={showUserDetail} onOpenChange={setShowUserDetail}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>Chi tiết người dùng</DialogTitle></DialogHeader>
+          {detailUser && (
+            <div className="space-y-3 py-2">
+              <div className="flex items-center gap-3">
+                {detailUser.avatar_url && <img src={detailUser.avatar_url} alt="" className="h-14 w-14 rounded-full object-cover border" />}
+                <div>
+                  <div className="font-semibold text-lg">{detailUser.display_name}</div>
+                  <div className="text-sm text-muted-foreground">{detailUser.email}</div>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <InfoRow label="ID" value={detailUser.id} mono />
+                <InfoRow label="Số điện thoại" value={detailUser.phone || "Chưa cập nhật"} />
+                <InfoRow label="Điểm" value={detailUser.points?.toString() || "0"} />
+                <InfoRow label="Vai trò" value={(userRoles[detailUser.id] ? sortRoles(userRoles[detailUser.id]) : ["user"]).join(", ")} />
+                <InfoRow label="Đã onboarding" value={detailUser.has_completed_onboarding ? "Có" : "Chưa"} />
+                <InfoRow label="Người dùng mới" value={detailUser.is_new_user ? "Có" : "Không"} />
+                <InfoRow label="Ngày tạo" value={new Date(detailUser.created_at).toLocaleDateString("vi-VN")} />
+                <InfoRow label="Cập nhật" value={new Date(detailUser.updated_at).toLocaleDateString("vi-VN")} />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowUserDetail(false)}>Đóng</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Order Detail Dialog */}
+      <Dialog open={showOrderDetail} onOpenChange={setShowOrderDetail}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>Chi tiết đơn hàng</DialogTitle></DialogHeader>
+          {detailOrder && (() => {
+            const buyer = users.find(u => u.id === detailOrder.user_id);
+            const seller = users.find(u => u.id === detailOrder.seller_id);
+            return (
+              <div className="space-y-3 py-2">
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <InfoRow label="Mã đơn" value={detailOrder.id} mono />
+                  <InfoRow label="Trạng thái" value={statusLabels[detailOrder.status] || detailOrder.status} />
+                  <InfoRow label="Khách hàng" value={buyer?.display_name || "N/A"} />
+                  <InfoRow label="Nhà bán" value={seller?.display_name || "N/A"} />
+                  <InfoRow label="Tổng tiền" value={formatPrice(detailOrder.total_amount)} />
+                  <InfoRow label="Số điện thoại" value={detailOrder.phone_number} />
+                  <InfoRow label="Địa chỉ" value={detailOrder.shipping_address} full />
+                  {detailOrder.customer_notes && <InfoRow label="Ghi chú" value={detailOrder.customer_notes} full />}
+                  {detailOrder.cancel_reason && <InfoRow label="Lý do hủy" value={detailOrder.cancel_reason} full />}
+                  <InfoRow label="Ngày tạo" value={new Date(detailOrder.created_at).toLocaleDateString("vi-VN")} />
+                  <InfoRow label="Cập nhật" value={new Date(detailOrder.updated_at).toLocaleDateString("vi-VN")} />
+                </div>
+                {detailOrder.order_items?.length > 0 && (
+                  <div>
+                    <div className="text-sm font-medium mb-1">Sản phẩm ({detailOrder.order_items.length})</div>
+                    <div className="space-y-1">
+                      {detailOrder.order_items.map((item: any) => (
+                        <div key={item.id} className="flex justify-between text-sm bg-muted/50 rounded p-2">
+                          <span>{item.product_name} x{item.quantity}</span>
+                          <span className="font-medium">{formatPrice(item.subtotal)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowOrderDetail(false)}>Đóng</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Product Detail Dialog */}
+      <Dialog open={showProductDetail} onOpenChange={setShowProductDetail}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>Chi tiết sản phẩm</DialogTitle></DialogHeader>
+          {detailProduct && (
+            <div className="space-y-3 py-2">
+              {detailProduct.image_url && (
+                <img src={detailProduct.image_url} alt="" className="w-full h-48 object-cover rounded-lg" />
+              )}
+              <div className="font-semibold text-lg">{detailProduct.name}</div>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <InfoRow label="ID" value={detailProduct.id} mono />
+                <InfoRow label="Giá" value={formatPrice(detailProduct.price)} />
+                <InfoRow label="Danh mục" value={categoryLabels[detailProduct.category] || detailProduct.category} />
+                <InfoRow label="Tồn kho" value={detailProduct.stock?.toString() || "0"} />
+                <InfoRow label="Thương hiệu" value={detailProduct.brand || "N/A"} />
+                <InfoRow label="Trọng lượng" value={detailProduct.weight || "N/A"} />
+                <InfoRow label="Loại thú cưng" value={detailProduct.pet_type || "N/A"} />
+                <InfoRow label="Trạng thái" value={detailProduct.is_active ? "Đang bán" : "Ngưng bán"} />
+                {detailProduct.calories && <InfoRow label="Calories" value={detailProduct.calories.toString()} />}
+                {detailProduct.portion_gr_per_day && <InfoRow label="Khẩu phần/ngày" value={`${detailProduct.portion_gr_per_day}g`} />}
+                {detailProduct.portion_gr_per_kg_per_day && <InfoRow label="Khẩu phần/kg/ngày" value={`${detailProduct.portion_gr_per_kg_per_day}g`} />}
+              </div>
+              {detailProduct.description && (
+                <div>
+                  <div className="text-sm font-medium mb-1">Mô tả</div>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">{detailProduct.description}</p>
+                </div>
+              )}
+              {detailProduct.ingredients && (
+                <div>
+                  <div className="text-sm font-medium mb-1">Thành phần</div>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">{detailProduct.ingredients}</p>
+                </div>
+              )}
+              {detailProduct.features && (
+                <div>
+                  <div className="text-sm font-medium mb-1">Đặc điểm</div>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">{detailProduct.features}</p>
+                </div>
+              )}
+              {detailProduct.usage_instructions && (
+                <div>
+                  <div className="text-sm font-medium mb-1">Hướng dẫn sử dụng</div>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">{detailProduct.usage_instructions}</p>
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <InfoRow label="Ngày tạo" value={new Date(detailProduct.created_at).toLocaleDateString("vi-VN")} />
+                <InfoRow label="Cập nhật" value={new Date(detailProduct.updated_at).toLocaleDateString("vi-VN")} />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowProductDetail(false)}>Đóng</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
