@@ -422,8 +422,14 @@ const AdminDashboard = () => {
                       <TableHead className="cursor-pointer select-none" onClick={() => toggleSort(setUserSort, "email")}>
                         <span className="flex items-center">Email <SortIcon sortState={userSort} colKey="email" /></span>
                       </TableHead>
-                      <TableHead className="cursor-pointer select-none" onClick={() => toggleSort(setUserSort, "role")}>
-                        <span className="flex items-center">Vai trò <SortIcon sortState={userSort} colKey="role" /></span>
+                      <TableHead>
+                        <FilterDropdown
+                          label="Vai trò"
+                          options={["admin", "manager", "seller", "user"]}
+                          selected={roleFilter}
+                          onToggle={(v) => toggleFilter(setRoleFilter, v)}
+                          labelMap={roleLabels}
+                        />
                       </TableHead>
                       <TableHead>Hành động</TableHead>
                     </TableRow>
@@ -438,11 +444,12 @@ const AdminDashboard = () => {
                           <TableCell className="text-muted-foreground text-xs">{user.email}</TableCell>
                           <TableCell>
                             <div className="flex gap-1 flex-wrap">
-                              {userRoles[user.id]?.map(role => (
+                              {(userRoles[user.id] ? sortRoles(userRoles[user.id]) : []).map(role => (
                                 <Badge key={role} variant={role === "admin" ? "default" : role === "manager" ? "default" : role === "seller" ? "secondary" : "outline"}>
                                   {role}
                                 </Badge>
-                              )) || <Badge variant="outline">user</Badge>}
+                              ))}
+                              {(!userRoles[user.id] || userRoles[user.id].length === 0) && <Badge variant="outline">user</Badge>}
                             </div>
                           </TableCell>
                           <TableCell>
