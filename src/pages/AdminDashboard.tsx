@@ -460,15 +460,23 @@ const AdminDashboard = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Sản phẩm</TableHead>
-                      <TableHead>Giá</TableHead>
-                      <TableHead>Danh mục</TableHead>
-                      <TableHead>Tồn kho</TableHead>
+                      <TableHead className="cursor-pointer select-none" onClick={() => toggleSort(setProductSort, "name")}>
+                        <span className="flex items-center">Sản phẩm <SortIcon sortState={productSort} colKey="name" /></span>
+                      </TableHead>
+                      <TableHead className="cursor-pointer select-none" onClick={() => toggleSort(setProductSort, "price")}>
+                        <span className="flex items-center">Giá <SortIcon sortState={productSort} colKey="price" /></span>
+                      </TableHead>
+                      <TableHead className="cursor-pointer select-none" onClick={() => toggleSort(setProductSort, "category")}>
+                        <span className="flex items-center">Danh mục <SortIcon sortState={productSort} colKey="category" /></span>
+                      </TableHead>
+                      <TableHead className="cursor-pointer select-none" onClick={() => toggleSort(setProductSort, "stock")}>
+                        <span className="flex items-center">Tồn kho <SortIcon sortState={productSort} colKey="stock" /></span>
+                      </TableHead>
                       <TableHead>Hành động</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {products.map((product) => (
+                    {sortedProducts.map((product) => (
                       <TableRow key={product.id}>
                         <TableCell>
                           <div className="flex items-center gap-2">
