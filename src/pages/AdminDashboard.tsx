@@ -57,6 +57,8 @@ const AdminDashboard = () => {
   const [createUserRole, setCreateUserRole] = useState("user");
   const [createUserLoading, setCreateUserLoading] = useState(false);
   const [deleteUserId, setDeleteUserId] = useState("");
+  const [deleteReason, setDeleteReason] = useState("");
+  const [deleteProductReason, setDeleteProductReason] = useState("");
   const [roleAction, setRoleAction] = useState<{ userId: string; role: "seller" | "manager"; action: "grant" | "revoke" } | null>(null);
   const [deleteProductId, setDeleteProductId] = useState("");
   const [myRole, setMyRole] = useState<"admin" | "manager" | null>(null);
