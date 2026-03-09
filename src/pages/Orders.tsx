@@ -27,6 +27,7 @@ import { useToast } from "@/hooks/use-toast";
 
 interface Order {
   id: string;
+  seller_id: string;
   total_amount: number;
   status: string;
   shipping_address: string;
@@ -34,6 +35,7 @@ interface Order {
   customer_notes: string;
   created_at: string;
   order_items: {
+    product_id: string | null;
     product_name: string;
     product_price: number;
     quantity: number;
