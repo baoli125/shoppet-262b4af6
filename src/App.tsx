@@ -18,6 +18,7 @@ import Profile from "./pages/Profile";
 import Analytics from "./pages/Analytics";
 import SellerDashboard from "./pages/SellerDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
+import SellerDetailAdmin from "./pages/SellerDetailAdmin";
 import NotFound from "./pages/NotFound";
 import Header from "@/components/Header";
 import AuthModal from "@/components/AuthModal";
@@ -265,6 +266,7 @@ const AppContent = () => {
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/seller-dashboard" element={<SellerDashboard />} />
         <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin/seller/:id" element={<SellerDetailAdmin />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
