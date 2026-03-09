@@ -271,7 +271,12 @@ const AdminDashboard = () => {
     if (roleFilter.length > 0) {
       const roles = userRoles[u.id] || [];
       const effectiveRoles = roles.length > 0 ? roles : ["user"];
-      return roleFilter.every(r => effectiveRoles.includes(r));
+      if (!roleFilter.every(r => effectiveRoles.includes(r))) return false;
+    }
+    if (petFilter.length > 0) {
+      const hasPets = (userPets[u.id]?.length || 0) > 0;
+      const petStatus = hasPets ? "yes" : "no";
+      if (!petFilter.includes(petStatus)) return false;
     }
     return true;
   });
