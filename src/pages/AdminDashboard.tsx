@@ -979,18 +979,27 @@ const AdminDashboard = () => {
       </Dialog>
 
       {/* Delete Product Confirmation Dialog */}
-      <Dialog open={showDeleteProductDialog} onOpenChange={setShowDeleteProductDialog}>
+      <Dialog open={showDeleteProductDialog} onOpenChange={(open) => { setShowDeleteProductDialog(open); if (!open) { setDeleteProductId(""); setDeleteProductReason(""); } }}>
         <DialogContent>
           <DialogHeader><DialogTitle>Xác nhận xóa sản phẩm</DialogTitle></DialogHeader>
-          <div className="py-2">
+          <div className="py-2 space-y-3">
             <p className="text-sm">
               Bạn có chắc muốn xóa sản phẩm <strong>{products.find(p => p.id === deleteProductId)?.name}</strong>?
             </p>
-            <p className="text-sm text-destructive mt-2">Hành động này không thể hoàn tác!</p>
+            <p className="text-sm text-destructive">Hành động này không thể hoàn tác!</p>
+            <div>
+              <label className="text-sm font-medium">Lý do xóa <span className="text-destructive">*</span></label>
+              <Textarea
+                placeholder="Nhập lý do xóa sản phẩm..."
+                value={deleteProductReason}
+                onChange={(e) => setDeleteProductReason(e.target.value)}
+                rows={3}
+              />
+            </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setShowDeleteProductDialog(false); setDeleteProductId(""); }}>Hủy</Button>
-            <Button variant="destructive" onClick={handleDeleteProduct}>Xóa</Button>
+            <Button variant="outline" onClick={() => { setShowDeleteProductDialog(false); setDeleteProductId(""); setDeleteProductReason(""); }}>Hủy</Button>
+            <Button variant="destructive" onClick={handleDeleteProduct} disabled={!deleteProductReason.trim()}>Xóa</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
