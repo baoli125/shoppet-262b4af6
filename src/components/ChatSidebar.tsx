@@ -1,6 +1,16 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-  import { Plus, MessageSquare, Trash2, ChevronLeft, ChevronRight, X, Pencil, Check } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Plus, MessageSquare, Trash2, ChevronLeft, ChevronRight, X, Pencil, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Conversation {
@@ -34,6 +44,7 @@ const ChatSidebar = ({
 }: ChatSidebarProps) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const handleEditStart = (e: React.MouseEvent, id: string, currentTitle: string | null) => {
     e.stopPropagation();
@@ -57,6 +68,19 @@ const ChatSidebar = ({
       e.stopPropagation();
     }
   };
+
+  const handleDeleteClick = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    setDeletingId(id);
+  };
+
+  const handleConfirmDelete = () => {
+    if (deletingId) {
+      onDeleteConversation(deletingId);
+      setDeletingId(null);
+    }
+  };
+
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return "";
     const date = new Date(dateStr);
@@ -169,10 +193,7 @@ const ChatSidebar = ({
                     variant="ghost"
                     size="icon"
                     className="h-6 w-6 flex-shrink-0"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDeleteConversation(convo.id);
-                    }}
+                    onClick={(e) => handleDeleteClick(e, convo.id)}
                   >
                     <Trash2 className="w-3 h-3 text-destructive" />
                   </Button>
@@ -194,6 +215,28 @@ const ChatSidebar = ({
       >
         {isOpen ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
       </button>
+
+      {/* Delete confirmation dialog */}
+      <AlertDialog open={!!deletingId} onOpenChange={(open) => { if (!open) setDeletingId(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xác nhận xóa cuộc trò chuyện</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bạn có chắc chắn muốn xóa cuộc trò chuyện này? Tất cả tin nhắn trong cuộc trò chuyện sẽ bị xóa vĩnh viễn.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              <Trash2 className="h-4 w-4 mr-1" />
+              Xóa
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };
