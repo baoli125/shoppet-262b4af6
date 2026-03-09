@@ -2,3 +2,12 @@ project_id = "onqxzhywlbyafuromwqi"
 
 [functions.chat-ai]
 verify_jwt = true
+
+[functions.setup-admin]
+verify_jwt = false
+
+[functions.admin-change-password]
+verify_jwt = false
+
+[functions.create-seller-account]
+verify_jwt = false
