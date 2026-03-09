@@ -669,16 +669,31 @@ const AdminDashboard = () => {
                                   <Shield className="h-3 w-3" />
                                 </Button>
                               )}
-                              {/* Xóa tài khoản - chỉ admin, không xóa admin khác */}
+                              {/* Xóa / Khôi phục tài khoản - chỉ admin, không xóa admin khác */}
                               {canDeleteUser && !isAdmin && !isSelf && (
-                                <Button
-                                  size="sm"
-                                  variant="destructive"
-                                  onClick={() => { setDeleteUserId(user.id); setShowDeleteDialog(true); }}
-                                  title="Xóa tài khoản"
-                                >
-                                  <Trash2 className="h-3 w-3" />
-                                </Button>
+                                user.is_deleted ? (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={async () => {
+                                      await supabase.from("profiles").update({ is_deleted: false, deleted_at: null, delete_reason: null, deleted_by: null }).eq("id", user.id);
+                                      toast({ title: "Thành công", description: "Đã khôi phục tài khoản" });
+                                      fetchAllData();
+                                    }}
+                                    title="Khôi phục tài khoản"
+                                  >
+                                    <RotateCcw className="h-3 w-3" />
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    onClick={() => { setDeleteUserId(user.id); setShowDeleteDialog(true); }}
+                                    title="Xóa tài khoản"
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                )
                               )}
                             </div>
                           </TableCell>
