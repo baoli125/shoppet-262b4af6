@@ -357,6 +357,12 @@ const AdminDashboard = () => {
     if (error) {
       toast({ title: "Lỗi", description: error.message, variant: "destructive" });
     } else {
+      const changes: string[] = [];
+      if (selectedOrder.status !== editOrderData.status) changes.push(`Trạng thái: ${statusLabels[selectedOrder.status]} → ${statusLabels[editOrderData.status]}`);
+      if (selectedOrder.shipping_address !== editOrderData.shipping_address) changes.push("Địa chỉ giao hàng");
+      if (selectedOrder.phone_number !== editOrderData.phone_number) changes.push("Số điện thoại");
+      if (selectedOrder.customer_notes !== editOrderData.customer_notes) changes.push("Ghi chú");
+      await logActivity("edit_order", "order", selectedOrder.id, `#${selectedOrder.id.slice(0,8)}`, `Chỉnh sửa đơn hàng: ${changes.join(", ")}`);
       toast({ title: "Thành công", description: "Đã cập nhật đơn hàng" });
       setShowOrderDialog(false);
       fetchAllData();
