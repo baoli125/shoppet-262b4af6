@@ -65,10 +65,12 @@ const AppContent = () => {
             const { data: roles } = await supabase
               .from('user_roles')
               .select('role')
-              .eq('user_id', currentSession.user.id)
-              .in('role', ['admin', 'manager']);
-            if (roles && roles.length > 0) {
+              .eq('user_id', currentSession.user.id);
+            const roleList = roles?.map(r => r.role) || [];
+            if (roleList.includes('admin') || roleList.includes('manager')) {
               navigate('/admin');
+            } else if (roleList.includes('seller')) {
+              navigate('/seller');
             }
           }
         }, 0);
