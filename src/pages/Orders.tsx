@@ -328,9 +328,11 @@ interface OrderCardProps {
   getStatusColor: (status: string) => string;
   getStatusLabel: (status: string) => string;
   onCancel?: () => void;
+  onReorder?: () => void;
+  isReordering?: boolean;
 }
 
-const OrderCard = ({ order, getStatusColor, getStatusLabel, onCancel }: OrderCardProps) => (
+const OrderCard = ({ order, getStatusColor, getStatusLabel, onCancel, onReorder, isReordering }: OrderCardProps) => (
   <Card className="p-4 sm:p-6">
     <div className="flex flex-col sm:flex-row items-start justify-between mb-4 gap-3 sm:gap-4">
       <div className="w-full sm:w-auto">
