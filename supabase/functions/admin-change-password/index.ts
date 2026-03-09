@@ -33,18 +33,19 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { data: adminCheck } = await supabase
+    const { data: roleCheck } = await supabase
       .from('user_roles')
       .select('role')
       .eq('user_id', user.id)
-      .eq('role', 'admin')
-      .single();
+      .in('role', ['admin', 'manager']);
 
-    if (!adminCheck) {
-      return new Response(JSON.stringify({ error: 'Admin access required' }), {
+    if (!roleCheck || roleCheck.length === 0) {
+      return new Response(JSON.stringify({ error: 'Admin/Manager access required' }), {
         status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
+
+    const callerIsAdmin = roleCheck.some((r: any) => r.role === 'admin');
 
     const { target_user_id, new_password } = await req.json();
     if (!target_user_id || !new_password || new_password.length < 6) {
