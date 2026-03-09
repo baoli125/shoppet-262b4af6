@@ -489,6 +489,7 @@ const Cart = () => {
         if (!open) {
           setCheckoutStep(1);
           setStepErrors({});
+          setInfoChoice(null);
         }
       }}>
         <DialogContent className="w-[95vw] max-w-2xl mx-auto max-h-[90vh] overflow-y-auto">
