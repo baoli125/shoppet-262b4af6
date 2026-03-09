@@ -45,6 +45,8 @@ const Cart = () => {
     customer_notes: "",
   });
   const [stepErrors, setStepErrors] = useState<Record<number, string>>({});
+  const [lastOrderInfo, setLastOrderInfo] = useState<{ phone_number: string; shipping_address: string } | null>(null);
+  const [infoChoice, setInfoChoice] = useState<"last" | "new" | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
