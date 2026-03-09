@@ -20,10 +20,14 @@ const AdminDashboard = () => {
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [showOrderDialog, setShowOrderDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showRoleDialog, setShowRoleDialog] = useState(false);
+  const [showDeleteProductDialog, setShowDeleteProductDialog] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [newPassword, setNewPassword] = useState("");
   const [passwordUserId, setPasswordUserId] = useState("");
   const [deleteUserId, setDeleteUserId] = useState("");
+  const [roleAction, setRoleAction] = useState<{ userId: string; role: "seller" | "manager"; action: "grant" | "revoke" } | null>(null);
+  const [deleteProductId, setDeleteProductId] = useState("");
   const [myRole, setMyRole] = useState<"admin" | "manager" | null>(null);
   const [currentUserId, setCurrentUserId] = useState("");
   const [loading, setLoading] = useState(true);
