@@ -496,8 +496,8 @@ const OrdersSection = ({ orders, buyers, onUpdateStatus, onViewDetail }: any) =>
                   <TableCell className="font-mono text-xs">#{order.id.slice(0, 8)}</TableCell>
                   <TableCell>
                     <div>
-                      <p className="text-sm font-medium">{order.profiles?.display_name || "N/A"}</p>
-                      <p className="text-xs text-muted-foreground">{order.profiles?.email}</p>
+                      <p className="text-sm font-medium">{buyers[order.user_id]?.display_name || "N/A"}</p>
+                      <p className="text-xs text-muted-foreground">{buyers[order.user_id]?.email}</p>
                     </div>
                   </TableCell>
                   <TableCell className="font-semibold">{formatPrice(order.total_amount)}</TableCell>
