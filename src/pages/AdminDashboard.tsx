@@ -36,6 +36,10 @@ const AdminDashboard = () => {
   const [petVaccines, setPetVaccines] = useState<Record<string, any[]>>({});
   const [activityLogs, setActivityLogs] = useState<any[]>([]);
   const [logSort, setLogSort] = useState<SortState>({ key: "created_at", dir: "desc" });
+  const [logTab, setLogTab] = useState<"admin" | "user">("admin");
+  const [logActorFilter, setLogActorFilter] = useState<string[]>([]);
+  const [logActionFilter, setLogActionFilter] = useState<string[]>([]);
+  const [logTargetFilter, setLogTargetFilter] = useState<string[]>([]);
   const [showPetDetail, setShowPetDetail] = useState(false);
   const [detailPets, setDetailPets] = useState<any[]>([]);
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
