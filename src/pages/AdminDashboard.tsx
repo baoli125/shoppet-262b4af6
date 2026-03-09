@@ -882,71 +882,141 @@ const AdminDashboard = () => {
                 <h3 className="text-sm font-semibold flex items-center gap-2"><ScrollText className="h-4 w-4" /> Nhật ký hoạt động</h3>
                 <Button size="sm" variant="outline" onClick={fetchAllData}><RefreshCw className="h-3 w-3 mr-1" /> Làm mới</Button>
               </div>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="cursor-pointer select-none" onClick={() => toggleSort(setLogSort, "created_at")}>
-                        <span className="flex items-center">Thời gian <SortIcon sortState={logSort} colKey="created_at" /></span>
-                      </TableHead>
-                      <TableHead>Người thực hiện</TableHead>
-                      <TableHead>Hành động</TableHead>
-                      <TableHead>Đối tượng</TableHead>
-                      <TableHead>Chi tiết</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {sortData(activityLogs, logSort, (l, k) => {
-                      if (k === "created_at") return new Date(l.created_at).getTime();
-                      return "";
-                    }).map((log: any) => {
-                      const actionLabels: Record<string, string> = {
-                        create_account: "Tạo tài khoản",
-                        create_product: "Thêm sản phẩm",
-                        create_user: "Tạo tài khoản (admin)",
-                        delete_user: "Xóa tài khoản",
-                        restore_user: "Khôi phục tài khoản",
-                        change_password: "Đổi mật khẩu",
-                        grant_role: "Cấp quyền",
-                        revoke_role: "Thu quyền",
-                        edit_order: "Sửa đơn hàng",
-                        delete_product: "Xóa sản phẩm",
-                        update_order_status: "Cập nhật đơn hàng",
-                      };
-                      const targetTypeLabels: Record<string, string> = {
-                        user: "Người dùng",
-                        product: "Sản phẩm",
-                        order: "Đơn hàng",
-                      };
-                      return (
-                        <TableRow key={log.id}>
-                          <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                            {new Date(log.created_at).toLocaleString("vi-VN")}
-                          </TableCell>
-                          <TableCell className="text-sm">{log.actor_name || "System"}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className="text-xs">{actionLabels[log.action] || log.action}</Badge>
-                          </TableCell>
-                          <TableCell className="text-xs">
-                            <span className="text-muted-foreground">{targetTypeLabels[log.target_type] || log.target_type}</span>
-                            {log.target_name && <span className="ml-1 font-medium">{log.target_name}</span>}
-                          </TableCell>
-                          <TableCell className="text-xs text-muted-foreground max-w-[300px] truncate" title={log.details}>
-                            {log.details}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                    {activityLogs.length === 0 && (
-                      <TableRow>
-                        <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                          Chưa có hoạt động nào được ghi lại
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
+
+              {/* Sub-tabs: Admin/Manager vs User */}
+              <div className="flex gap-2 mb-4">
+                <Button size="sm" variant={logTab === "admin" ? "default" : "outline"} onClick={() => { setLogTab("admin"); setLogActorFilter([]); setLogActionFilter([]); setLogTargetFilter([]); }}>
+                  Admin / Manager
+                </Button>
+                <Button size="sm" variant={logTab === "user" ? "default" : "outline"} onClick={() => { setLogTab("user"); setLogActorFilter([]); setLogActionFilter([]); setLogTargetFilter([]); }}>
+                  Người dùng
+                </Button>
               </div>
+
+              {(() => {
+                const adminActions = ["create_user", "delete_user", "restore_user", "change_password", "grant_role", "revoke_role", "edit_order", "delete_product", "update_order_status"];
+                const userActions = ["create_account", "create_product"];
+
+                const actionLabels: Record<string, string> = {
+                  create_account: "Tạo tài khoản",
+                  create_product: "Thêm sản phẩm",
+                  create_user: "Tạo tài khoản (admin)",
+                  delete_user: "Xóa tài khoản",
+                  restore_user: "Khôi phục tài khoản",
+                  change_password: "Đổi mật khẩu",
+                  grant_role: "Cấp quyền",
+                  revoke_role: "Thu quyền",
+                  edit_order: "Sửa đơn hàng",
+                  delete_product: "Xóa sản phẩm",
+                  update_order_status: "Cập nhật đơn hàng",
+                };
+                const targetTypeLabels: Record<string, string> = {
+                  user: "Người dùng",
+                  product: "Sản phẩm",
+                  order: "Đơn hàng",
+                };
+
+                const relevantActions = logTab === "admin" ? adminActions : userActions;
+                const tabLogs = activityLogs.filter(l => relevantActions.includes(l.action));
+
+                // Build filter options from data
+                const uniqueActors = Array.from(new Set(tabLogs.map(l => l.actor_name || "System"))).sort((a, b) => a.localeCompare(b, "vi"));
+                const uniqueActions = Array.from(new Set(tabLogs.map(l => l.action)));
+                const uniqueTargets = Array.from(new Set(tabLogs.map(l => l.target_type))).sort();
+
+                // Apply filters
+                const filteredLogs = tabLogs.filter(l => {
+                  if (logActorFilter.length > 0 && !logActorFilter.includes(l.actor_name || "System")) return false;
+                  if (logActionFilter.length > 0 && !logActionFilter.includes(l.action)) return false;
+                  if (logTargetFilter.length > 0 && !logTargetFilter.includes(l.target_type)) return false;
+                  return true;
+                });
+
+                const sortedLogs = sortData(filteredLogs, logSort, (l, k) => {
+                  if (k === "created_at") return new Date(l.created_at).getTime();
+                  if (k === "actor") return (l.actor_name || "System").toLowerCase();
+                  if (k === "target") return (l.target_type || "").toLowerCase();
+                  return "";
+                });
+
+                return (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="cursor-pointer select-none" onClick={() => toggleSort(setLogSort, "created_at")}>
+                            <span className="flex items-center">Thời gian <SortIcon sortState={logSort} colKey="created_at" /></span>
+                          </TableHead>
+                          <TableHead>
+                            <div className="flex items-center gap-1">
+                              <span className="cursor-pointer select-none" onClick={() => toggleSort(setLogSort, "actor")}>
+                                <span className="flex items-center">Người thực hiện <SortIcon sortState={logSort} colKey="actor" /></span>
+                              </span>
+                              <FilterDropdown
+                                label=""
+                                options={uniqueActors}
+                                selected={logActorFilter}
+                                onToggle={(v) => toggleFilter(setLogActorFilter, v)}
+                              />
+                            </div>
+                          </TableHead>
+                          <TableHead>
+                            <FilterDropdown
+                              label="Hành động"
+                              options={uniqueActions}
+                              selected={logActionFilter}
+                              onToggle={(v) => toggleFilter(setLogActionFilter, v)}
+                              labelMap={actionLabels}
+                            />
+                          </TableHead>
+                          <TableHead>
+                            <div className="flex items-center gap-1">
+                              <span className="cursor-pointer select-none" onClick={() => toggleSort(setLogSort, "target")}>
+                                <span className="flex items-center">Đối tượng <SortIcon sortState={logSort} colKey="target" /></span>
+                              </span>
+                              <FilterDropdown
+                                label=""
+                                options={uniqueTargets}
+                                selected={logTargetFilter}
+                                onToggle={(v) => toggleFilter(setLogTargetFilter, v)}
+                                labelMap={targetTypeLabels}
+                              />
+                            </div>
+                          </TableHead>
+                          <TableHead>Chi tiết</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {sortedLogs.map((log: any) => (
+                          <TableRow key={log.id}>
+                            <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                              {new Date(log.created_at).toLocaleString("vi-VN")}
+                            </TableCell>
+                            <TableCell className="text-sm">{log.actor_name || "System"}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className="text-xs">{actionLabels[log.action] || log.action}</Badge>
+                            </TableCell>
+                            <TableCell className="text-xs">
+                              <span className="text-muted-foreground">{targetTypeLabels[log.target_type] || log.target_type}</span>
+                              {log.target_name && <span className="ml-1 font-medium">{log.target_name}</span>}
+                            </TableCell>
+                            <TableCell className="text-xs text-muted-foreground max-w-[300px] truncate" title={log.details}>
+                              {log.details}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                        {sortedLogs.length === 0 && (
+                          <TableRow>
+                            <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                              {logTab === "admin" ? "Chưa có hoạt động admin/manager nào" : "Chưa có hoạt động người dùng nào"}
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                );
+              })()}
             </Card>
           </TabsContent>
         </Tabs>
