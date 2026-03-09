@@ -421,7 +421,7 @@ const DashboardSection = ({ stats, orders, products, onNavigate, buyers }: any) 
                 <span className="font-mono text-xs text-muted-foreground">#{order.id.slice(0, 8)}</span>
                 <Badge className={`${STATUS_CONFIG[order.status]?.color} text-white text-[10px] px-1.5`}>{STATUS_CONFIG[order.status]?.label}</Badge>
               </div>
-              <p className="text-sm font-medium mt-0.5 truncate">{order.profiles?.display_name || "N/A"}</p>
+              <p className="text-sm font-medium mt-0.5 truncate">{buyers[order.user_id]?.display_name || "N/A"}</p>
             </div>
             <div className="text-right flex-shrink-0 ml-3">
               <p className="font-semibold text-sm">{formatPrice(order.total_amount)}</p>
