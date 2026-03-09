@@ -323,6 +323,7 @@ const AdminDashboard = () => {
     if (error) {
       toast({ title: "Lỗi", description: error.message, variant: "destructive" });
     } else {
+      await logActivity("delete_product", "product", deleteProductId, product?.name || "", `Xóa sản phẩm: ${product?.name} - Lý do: ${deleteProductReason}`);
       toast({ title: "Thành công", description: "Đã xóa sản phẩm" });
       fetchAllData();
     }
