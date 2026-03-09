@@ -148,6 +148,20 @@ const AdminDashboard = () => {
     if (logsRes.data) setActivityLogs(logsRes.data);
   };
 
+  // Helper: ghi log hành động admin/manager
+  const logActivity = async (action: string, targetType: string, targetId: string, targetName: string, details: string) => {
+    const myProfile = users.find(u => u.id === currentUserId);
+    await supabase.from("activity_logs").insert({
+      actor_id: currentUserId,
+      actor_name: myProfile?.display_name || "Admin",
+      action,
+      target_type: targetType,
+      target_id: targetId,
+      target_name: targetName,
+      details,
+    });
+  };
+
   const handleChangePassword = async () => {
     if (!newPassword || newPassword.length < 6) {
       toast({ title: "Lỗi", description: "Mật khẩu phải có ít nhất 6 ký tự", variant: "destructive" });
