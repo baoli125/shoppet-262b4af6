@@ -412,15 +412,23 @@ const AdminDashboard = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Mã đơn</TableHead>
-                      <TableHead>Khách hàng</TableHead>
-                      <TableHead>Tổng tiền</TableHead>
-                      <TableHead>Trạng thái</TableHead>
+                      <TableHead className="cursor-pointer select-none" onClick={() => toggleSort(setOrderSort, "id")}>
+                        <span className="flex items-center">Mã đơn <SortIcon sortState={orderSort} colKey="id" /></span>
+                      </TableHead>
+                      <TableHead className="cursor-pointer select-none" onClick={() => toggleSort(setOrderSort, "customer")}>
+                        <span className="flex items-center">Khách hàng <SortIcon sortState={orderSort} colKey="customer" /></span>
+                      </TableHead>
+                      <TableHead className="cursor-pointer select-none" onClick={() => toggleSort(setOrderSort, "total")}>
+                        <span className="flex items-center">Tổng tiền <SortIcon sortState={orderSort} colKey="total" /></span>
+                      </TableHead>
+                      <TableHead className="cursor-pointer select-none" onClick={() => toggleSort(setOrderSort, "status")}>
+                        <span className="flex items-center">Trạng thái <SortIcon sortState={orderSort} colKey="status" /></span>
+                      </TableHead>
                       <TableHead>Hành động</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {orders.map((order) => {
+                    {sortedOrders.map((order) => {
                       const buyer = users.find(u => u.id === order.user_id);
                       return (
                         <TableRow key={order.id}>
