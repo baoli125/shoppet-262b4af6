@@ -710,6 +710,7 @@ const AdminDashboard = () => {
                                     variant="outline"
                                     onClick={async () => {
                                       await supabase.from("profiles").update({ is_deleted: false, deleted_at: null, delete_reason: null, deleted_by: null }).eq("id", user.id);
+                                      await logActivity("restore_user", "user", user.id, user.display_name || "", `Khôi phục tài khoản: ${user.display_name}`);
                                       toast({ title: "Thành công", description: "Đã khôi phục tài khoản" });
                                       fetchAllData();
                                     }}
