@@ -109,6 +109,16 @@ const Pets = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!formData.gender) {
+      toast({
+        title: "Lỗi",
+        description: "Vui lòng chọn giới tính cho thú cưng",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
