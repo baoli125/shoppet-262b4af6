@@ -557,7 +557,11 @@ const AdminDashboard = () => {
                       const buyer = users.find(u => u.id === order.user_id);
                       return (
                         <TableRow key={order.id}>
-                          <TableCell className="font-mono text-xs">{order.id.slice(0, 8)}...</TableCell>
+                          <TableCell className="font-mono text-xs">
+                            <button className="hover:text-primary hover:underline transition-colors" onClick={() => { setDetailOrder(order); setShowOrderDetail(true); }}>
+                              {order.id.slice(0, 8)}...
+                            </button>
+                          </TableCell>
                           <TableCell>{buyer?.display_name || "N/A"}</TableCell>
                           <TableCell className="font-semibold">{formatPrice(order.total_amount)}</TableCell>
                           <TableCell>
