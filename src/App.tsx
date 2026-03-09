@@ -27,6 +27,8 @@ import { GuidedTourOverlay } from "@/components/GuidedTourOverlay";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import DeletionNoticePopup from "@/components/DeletionNoticePopup";
+import DeletedAccountPopup from "@/components/DeletedAccountPopup";
 import type { User, Session } from "@supabase/supabase-js";
 
 const queryClient = new QueryClient();
