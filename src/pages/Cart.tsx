@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ArrowLeft, Plus, Minus, Trash2, ShoppingBag, ChevronRight, ChevronLeft, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,12 +30,12 @@ interface CartItem {
     name: string;
     logo: string;
   } | null;
-  // Giá từ product_suppliers (nếu có)
   supplier_price: number | null;
 }
 
 const Cart = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
@@ -91,7 +92,6 @@ const Cart = () => {
         variant: "destructive",
       });
     } else {
-      // Lấy giá từ product_suppliers cho mỗi item
       const enrichedItems = await Promise.all((data as any[] || []).map(async (item: any) => {
         let supplierPrice = null;
         if (item.supplier_id && item.product_id) {
@@ -106,6 +106,8 @@ const Cart = () => {
         return { ...item, supplier_price: supplierPrice } as CartItem;
       }));
       setCartItems(enrichedItems);
+      // Select all items by default
+      setSelectedIds(new Set(enrichedItems.map((item) => item.id)));
     }
     setIsFetching(false);
   };
@@ -113,6 +115,28 @@ const Cart = () => {
   const getItemPrice = (item: CartItem) => {
     return item.supplier_price ?? item.products.price;
   };
+
+  const toggleSelectItem = (itemId: string) => {
+    setSelectedIds((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(itemId)) {
+        newSet.delete(itemId);
+      } else {
+        newSet.add(itemId);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === cartItems.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(cartItems.map((item) => item.id)));
+    }
+  };
+
+  const selectedItems = cartItems.filter((item) => selectedIds.has(item.id));
 
   const updateQuantity = async (itemId: string, productId: string, delta: number) => {
     const item = cartItems.find((i) => i.id === itemId);
@@ -164,12 +188,17 @@ const Cart = () => {
       });
     } else {
       toast({ title: "Đã xóa khỏi giỏ hàng" });
+      setSelectedIds((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(itemId);
+        return newSet;
+      });
       fetchCart();
     }
   };
 
   const calculateTotal = () => {
-    return cartItems.reduce((sum, item) => {
+    return selectedItems.reduce((sum, item) => {
       return sum + (getItemPrice(item) * item.quantity);
     }, 0);
   };
@@ -227,14 +256,14 @@ const Cart = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Chưa đăng nhập");
 
-      if (cartItems.length === 0) {
-        throw new Error("Giỏ hàng trống");
+      if (selectedItems.length === 0) {
+        throw new Error("Chưa chọn sản phẩm nào");
       }
 
       const { data: firstProduct } = await supabase
         .from("products")
         .select("seller_id")
-        .eq("id", cartItems[0].product_id)
+        .eq("id", selectedItems[0].product_id)
         .single();
 
       const totalAmount = calculateTotal();
@@ -255,7 +284,7 @@ const Cart = () => {
 
       if (orderError) throw orderError;
 
-      const orderItems = cartItems.map((item) => ({
+      const orderItems = selectedItems.map((item) => ({
         order_id: order.id,
         product_id: item.product_id,
         product_name: item.suppliers ? `${item.products.name} (${item.suppliers.name})` : item.products.name,
@@ -270,10 +299,12 @@ const Cart = () => {
 
       if (itemsError) throw itemsError;
 
+      // Only delete selected items from cart
+      const selectedItemIds = selectedItems.map((item) => item.id);
       const { error: clearError } = await supabase
         .from("cart_items")
         .delete()
-        .eq("user_id", user.id);
+        .in("id", selectedItemIds);
 
       if (clearError) throw clearError;
 
@@ -369,9 +400,43 @@ const Cart = () => {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
             <div className="lg:col-span-2 space-y-3 sm:space-y-4">
+              {/* Select All */}
+              <Card className="p-3 sm:p-4">
+                <div className="flex items-center gap-3">
+                  <Checkbox
+                    id="select-all"
+                    checked={selectedIds.size === cartItems.length && cartItems.length > 0}
+                    onCheckedChange={toggleSelectAll}
+                    className="h-5 w-5"
+                  />
+                  <label htmlFor="select-all" className="text-sm font-medium cursor-pointer select-none">
+                    Chọn tất cả ({cartItems.length} sản phẩm)
+                  </label>
+                  {selectedIds.size > 0 && selectedIds.size < cartItems.length && (
+                    <span className="text-xs text-muted-foreground">
+                      Đã chọn {selectedIds.size} sản phẩm
+                    </span>
+                  )}
+                </div>
+              </Card>
+
               {cartItems.map((item) => (
-                <Card key={item.id} className="p-3 sm:p-4 hover:shadow-md transition-all duration-200 animate-fade-in">
+                <Card 
+                  key={item.id} 
+                  className={`p-3 sm:p-4 hover:shadow-md transition-all duration-200 animate-fade-in ${
+                    selectedIds.has(item.id) ? "border-primary/50 bg-primary/5" : ""
+                  }`}
+                >
                   <div className="flex gap-3 sm:gap-4">
+                    {/* Checkbox */}
+                    <div className="flex items-start pt-1">
+                      <Checkbox
+                        checked={selectedIds.has(item.id)}
+                        onCheckedChange={() => toggleSelectItem(item.id)}
+                        className="h-5 w-5"
+                      />
+                    </div>
+
                     <div className="relative flex-shrink-0 rounded overflow-hidden group">
                       <img
                         src={item.products.image_url || "https://via.placeholder.com/100"}
@@ -431,27 +496,40 @@ const Cart = () => {
                   <ShoppingBag className="w-5 h-5 text-primary" />
                   Tổng đơn hàng
                 </h2>
-                <div className="space-y-2.5 sm:space-y-3 mb-4 sm:mb-6">
-                  <div className="flex justify-between text-sm sm:text-base">
-                    <span className="text-muted-foreground">Tạm tính</span>
-                    <span className="font-medium">{calculateTotal().toLocaleString()}đ</span>
+
+                {selectedIds.size === 0 ? (
+                  <div className="text-center py-4 text-muted-foreground text-sm">
+                    Vui lòng chọn sản phẩm để thanh toán
                   </div>
-                  <div className="flex justify-between text-sm sm:text-base">
-                    <span className="text-muted-foreground">Phí vận chuyển</span>
-                    <span className="text-green-600 font-medium">Miễn phí</span>
-                  </div>
-                  <div className="border-t pt-2.5 sm:pt-3 bg-primary/5 -mx-4 sm:-mx-5 md:-mx-6 px-4 sm:px-5 md:px-6 py-3">
-                    <div className="flex justify-between text-base sm:text-lg font-bold">
-                      <span>Tổng cộng</span>
-                      <span className="text-primary text-xl sm:text-2xl">{calculateTotal().toLocaleString()}đ</span>
+                ) : (
+                  <>
+                    <div className="text-xs text-muted-foreground mb-3">
+                      Đã chọn {selectedIds.size}/{cartItems.length} sản phẩm
                     </div>
-                  </div>
-                </div>
+                    <div className="space-y-2.5 sm:space-y-3 mb-4 sm:mb-6">
+                      <div className="flex justify-between text-sm sm:text-base">
+                        <span className="text-muted-foreground">Tạm tính</span>
+                        <span className="font-medium">{calculateTotal().toLocaleString()}đ</span>
+                      </div>
+                      <div className="flex justify-between text-sm sm:text-base">
+                        <span className="text-muted-foreground">Phí vận chuyển</span>
+                        <span className="text-green-600 font-medium">Miễn phí</span>
+                      </div>
+                      <div className="border-t pt-2.5 sm:pt-3 bg-primary/5 -mx-4 sm:-mx-5 md:-mx-6 px-4 sm:px-5 md:px-6 py-3">
+                        <div className="flex justify-between text-base sm:text-lg font-bold">
+                          <span>Tổng cộng</span>
+                          <span className="text-primary text-xl sm:text-2xl">{calculateTotal().toLocaleString()}đ</span>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+
                 <Button
                   className="w-full btn-hero h-11 sm:h-12 text-base touch-manipulation shadow-md hover:shadow-lg transition-shadow"
                   size="lg"
+                  disabled={selectedIds.size === 0}
                   onClick={async () => {
-                    // Fetch last order info
                     const { data: { user } } = await supabase.auth.getUser();
                     if (user) {
                       const { data: lastOrder } = await supabase
@@ -475,7 +553,7 @@ const Cart = () => {
                   }}
                 >
                   <ShoppingBag className="w-5 h-5 mr-2" />
-                  Tiến hành đặt hàng
+                  Tiến hành đặt hàng ({selectedIds.size})
                 </Button>
               </Card>
             </div>
@@ -525,7 +603,7 @@ const Cart = () => {
             </div>
           </div>
 
-          {/* Info Choice - show when there's a previous order and no choice made yet */}
+          {/* Info Choice */}
           {lastOrderInfo && infoChoice === null && checkoutStep === 1 && (
             <div className="space-y-4 animate-fade-in mb-4">
               <p className="text-sm text-muted-foreground">Bạn đã có thông tin từ đơn hàng trước. Bạn muốn sử dụng lại hay nhập mới?</p>
@@ -652,7 +730,7 @@ const Cart = () => {
                 
                 <Card className="p-4 border-primary/20">
                   <div className="space-y-2">
-                    {cartItems.map((item) => (
+                    {selectedItems.map((item) => (
                       <div key={item.id} className="flex justify-between text-sm">
                         <span className="truncate max-w-[60%]">
                           {item.products.name} {item.suppliers ? `(${item.suppliers.name})` : ''} x{item.quantity}
