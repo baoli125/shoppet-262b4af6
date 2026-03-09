@@ -206,16 +206,41 @@ const AdminDashboard = () => {
   };
 
   const handleDeleteUser = async () => {
-    const { data, error } = await supabase.functions.invoke("admin-delete-user", {
-      body: { target_user_id: deleteUserId },
-    });
-    if (error || data?.error) {
-      toast({ title: "Lỗi", description: data?.error || error?.message, variant: "destructive" });
-    } else {
-      toast({ title: "Thành công", description: "Đã xóa tài khoản" });
-      setShowDeleteDialog(false);
-      fetchAllData();
+    if (!deleteReason.trim()) {
+      toast({ title: "Lỗi", description: "Vui lòng nhập lý do xóa", variant: "destructive" });
+      return;
     }
+    // Soft delete: mark profile as deleted
+    const { error: profileError } = await supabase
+      .from("profiles")
+      .update({
+        is_deleted: true,
+        deleted_at: new Date().toISOString(),
+        delete_reason: deleteReason,
+        deleted_by: currentUserId,
+      })
+      .eq("id", deleteUserId);
+
+    if (profileError) {
+      toast({ title: "Lỗi", description: profileError.message, variant: "destructive" });
+      return;
+    }
+
+    // Log deletion
+    const targetUser = users.find(u => u.id === deleteUserId);
+    await supabase.from("deletion_logs").insert({
+      target_type: "account",
+      target_id: deleteUserId,
+      target_name: targetUser?.display_name || targetUser?.email || "",
+      user_id: deleteUserId,
+      reason: deleteReason,
+      deleted_by: currentUserId,
+    });
+
+    toast({ title: "Thành công", description: "Đã xóa tài khoản (mềm)" });
+    setShowDeleteDialog(false);
+    setDeleteReason("");
+    fetchAllData();
   };
 
   const confirmToggleRole = (userId: string, role: "seller" | "manager") => {
