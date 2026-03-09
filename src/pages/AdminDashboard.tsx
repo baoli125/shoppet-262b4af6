@@ -34,6 +34,12 @@ const AdminDashboard = () => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showRoleDialog, setShowRoleDialog] = useState(false);
   const [showDeleteProductDialog, setShowDeleteProductDialog] = useState(false);
+  const [showUserDetail, setShowUserDetail] = useState(false);
+  const [showOrderDetail, setShowOrderDetail] = useState(false);
+  const [showProductDetail, setShowProductDetail] = useState(false);
+  const [detailUser, setDetailUser] = useState<any>(null);
+  const [detailOrder, setDetailOrder] = useState<any>(null);
+  const [detailProduct, setDetailProduct] = useState<any>(null);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [newPassword, setNewPassword] = useState("");
   const [passwordUserId, setPasswordUserId] = useState("");
