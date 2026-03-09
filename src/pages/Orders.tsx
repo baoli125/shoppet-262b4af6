@@ -384,8 +384,8 @@ const OrderCard = ({ order, getStatusColor, getStatusLabel, onCancel, onReorder,
       ))}
     </div>
 
-    <div className="border-t mt-4 pt-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+    <div className="border-t mt-4 pt-4 flex flex-col sm:flex-row justify-between items-start gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm flex-1 w-full">
         <div>
           <p className="font-semibold mb-1">Địa chỉ giao hàng:</p>
           <p className="text-muted-foreground">{order.shipping_address}</p>
@@ -401,20 +401,20 @@ const OrderCard = ({ order, getStatusColor, getStatusLabel, onCancel, onReorder,
           </div>
         )}
       </div>
-    </div>
 
-    {onReorder && (
-      <div className="border-t mt-4 pt-4 flex justify-end">
-        <Button
-          onClick={onReorder}
-          disabled={isReordering}
-          className="gap-2"
-        >
-          {isReordering ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-          Đặt lại đơn hàng
-        </Button>
-      </div>
-    )}
+      {onReorder && (
+        <div className="w-full sm:w-auto mt-2 sm:mt-0 self-end sm:self-start">
+          <Button
+            onClick={onReorder}
+            disabled={isReordering}
+            className="gap-2 w-full sm:w-auto"
+          >
+            {isReordering ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+            Đặt lại đơn hàng
+          </Button>
+        </div>
+      )}
+    </div>
   </Card>
 );
 
