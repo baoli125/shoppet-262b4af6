@@ -453,6 +453,7 @@ const AdminDashboard = () => {
     if (k === "customer") return users.find((u: any) => u.id === o.user_id)?.display_name?.toLowerCase() || "";
     if (k === "total") return Number(o.total_amount);
     if (k === "status") return o.status || "";
+    if (k === "created_at") return new Date(o.created_at).getTime();
     return "";
   });
 
