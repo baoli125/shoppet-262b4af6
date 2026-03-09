@@ -275,6 +275,24 @@ const AdminDashboard = () => {
 
   const handleDeleteProduct = async () => {
     if (!deleteProductId) return;
+    if (!deleteProductReason.trim()) {
+      toast({ title: "Lỗi", description: "Vui lòng nhập lý do xóa", variant: "destructive" });
+      return;
+    }
+
+    const product = products.find(p => p.id === deleteProductId);
+    // Log deletion for the product seller
+    if (product?.seller_id) {
+      await supabase.from("deletion_logs").insert({
+        target_type: "product",
+        target_id: deleteProductId,
+        target_name: product?.name || "",
+        user_id: product.seller_id,
+        reason: deleteProductReason,
+        deleted_by: currentUserId,
+      });
+    }
+
     const { error } = await supabase.from("products").delete().eq("id", deleteProductId);
     if (error) {
       toast({ title: "Lỗi", description: error.message, variant: "destructive" });
@@ -284,6 +302,7 @@ const AdminDashboard = () => {
     }
     setShowDeleteProductDialog(false);
     setDeleteProductId("");
+    setDeleteProductReason("");
   };
 
   const handleEditOrder = (order: any) => {
