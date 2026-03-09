@@ -25,6 +25,10 @@ const AdminDashboard = () => {
   const [userSort, setUserSort] = useState<SortState>({ key: "", dir: null });
   const [orderSort, setOrderSort] = useState<SortState>({ key: "", dir: null });
   const [productSort, setProductSort] = useState<SortState>({ key: "", dir: null });
+  const [roleFilter, setRoleFilter] = useState<string[]>([]);
+  const [statusFilter, setStatusFilter] = useState<string[]>([]);
+  const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
+  const [customerFilter, setCustomerFilter] = useState<string[]>([]);
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [showOrderDialog, setShowOrderDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
