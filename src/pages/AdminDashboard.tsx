@@ -805,6 +805,14 @@ const AdminDashboard = () => {
                               <Eye className="h-3 w-3 mr-1" /> Sửa
                             </Button>
                           </TableCell>
+                          <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                            {new Date(order.created_at).toLocaleString("vi-VN")}
+                          </TableCell>
+                          <TableCell>
+                            <Button size="sm" variant="outline" onClick={() => handleEditOrder(order)}>
+                              <Eye className="h-3 w-3 mr-1" /> Sửa
+                            </Button>
+                          </TableCell>
                         </TableRow>
                       );
                     })}
