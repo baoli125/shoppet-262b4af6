@@ -825,7 +825,7 @@ const AdminDashboard = () => {
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <InfoRow label="ID" value={detailUser.id} mono />
+                {myRole === "admin" && <InfoRow label="ID" value={detailUser.id} mono />}
                 <InfoRow label="Số điện thoại" value={detailUser.phone || "Chưa cập nhật"} />
                 <InfoRow label="Điểm" value={detailUser.points?.toString() || "0"} />
                 <InfoRow label="Vai trò" value={(userRoles[detailUser.id] ? sortRoles(userRoles[detailUser.id]) : ["user"]).join(", ")} />
