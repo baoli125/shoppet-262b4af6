@@ -257,6 +257,8 @@ const AdminDashboard = () => {
       reason: deleteReason,
       deleted_by: currentUserId,
     });
+    const targetUser = users.find(u => u.id === deleteUserId);
+    await logActivity("delete_user", "user", deleteUserId, targetUser?.display_name || "", `Xóa tài khoản: ${targetUser?.display_name} - Lý do: ${deleteReason}`);
 
     toast({ title: "Thành công", description: "Đã xóa tài khoản (mềm)" });
     setShowDeleteDialog(false);
