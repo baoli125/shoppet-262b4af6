@@ -38,7 +38,7 @@ const Pets = () => {
     nickname: "",
     type: "dog",
     breed: "",
-    gender: "unknown",
+    gender: "",
     birth_date: "",
     weight: "",
     notes: "",
@@ -109,6 +109,16 @@ const Pets = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!formData.gender) {
+      toast({
+        title: "Lỗi",
+        description: "Vui lòng chọn giới tính cho thú cưng",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -165,7 +175,16 @@ const Pets = () => {
           if (updateError) throw updateError;
         }
 
-        toast({ title: "Thêm thú cưng thành công! 🐾" });
+        toast({ 
+          title: "Thêm thú cưng thành công! 🐾",
+          description: "Bạn có thể thêm vaccine và hồ sơ y tế ngay bây giờ",
+        });
+        
+        // Navigate to detail page to add vaccines/health records
+        resetForm();
+        setIsDialogOpen(false);
+        navigate(`/pets/${newPet.id}`);
+        return;
       }
 
       resetForm();
@@ -222,8 +241,8 @@ const Pets = () => {
       nickname: "",
       type: "dog",
       breed: "",
-      gender: "unknown",
-      birth_date: "",
+    gender: "",
+    birth_date: "",
       weight: "",
       notes: "",
     });
@@ -362,15 +381,14 @@ const Pets = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="gender">Giới tính</Label>
+                      <Label htmlFor="gender">Giới tính *</Label>
                       <Select value={formData.gender} onValueChange={(value) => setFormData({ ...formData, gender: value })}>
-                        <SelectTrigger>
-                          <SelectValue />
+                        <SelectTrigger className={!formData.gender ? "text-muted-foreground" : ""}>
+                          <SelectValue placeholder="Chọn giới tính" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="male">Đực</SelectItem>
                           <SelectItem value="female">Cái</SelectItem>
-                          <SelectItem value="unknown">Chưa rõ</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -440,7 +458,10 @@ const Pets = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {pets.map((pet) => (
               <Card key={pet.id} className="p-6 hover:shadow-lg transition-shadow">
-                <div className="flex items-start justify-between mb-4">
+                <div 
+                  className="flex items-start justify-between mb-4 cursor-pointer"
+                  onClick={() => navigate(`/pets/${pet.id}`)}
+                >
                   <div className="flex items-center gap-3">
                     <Avatar className="w-16 h-16">
                       <AvatarImage src={pet.image_url || undefined} />
@@ -455,17 +476,9 @@ const Pets = () => {
                       )}
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Button variant="ghost" size="icon" onClick={() => handleEdit(pet)}>
-                      <Edit className="w-4 h-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(pet.id)}>
-                      <Trash2 className="w-4 h-4 text-destructive" />
-                    </Button>
-                  </div>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-2 cursor-pointer" onClick={() => navigate(`/pets/${pet.id}`)}>
                   {pet.breed && (
                     <p className="text-sm">
                       <span className="font-semibold">Giống:</span> {pet.breed}
@@ -486,6 +499,18 @@ const Pets = () => {
                   {pet.notes && (
                     <p className="text-sm text-muted-foreground mt-3">{pet.notes}</p>
                   )}
+                </div>
+
+                <div className="flex gap-2 mt-4 pt-3 border-t border-border">
+                  <Button variant="outline" size="sm" className="flex-1" onClick={() => navigate(`/pets/${pet.id}`)}>
+                    Xem chi tiết
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleEdit(pet); }}>
+                    <Edit className="w-4 h-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleDelete(pet.id); }}>
+                    <Trash2 className="w-4 h-4 text-destructive" />
+                  </Button>
                 </div>
               </Card>
             ))}
