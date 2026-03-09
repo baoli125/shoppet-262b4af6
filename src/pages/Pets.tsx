@@ -175,7 +175,16 @@ const Pets = () => {
           if (updateError) throw updateError;
         }
 
-        toast({ title: "Thêm thú cưng thành công! 🐾" });
+        toast({ 
+          title: "Thêm thú cưng thành công! 🐾",
+          description: "Bạn có thể thêm vaccine và hồ sơ y tế ngay bây giờ",
+        });
+        
+        // Navigate to detail page to add vaccines/health records
+        resetForm();
+        setIsDialogOpen(false);
+        navigate(`/pets/${newPet.id}`);
+        return;
       }
 
       resetForm();
