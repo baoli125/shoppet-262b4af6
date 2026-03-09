@@ -54,6 +54,21 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Manager cannot change admin's password
+    if (!callerIsAdmin) {
+      const { data: targetRoles } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', target_user_id)
+        .eq('role', 'admin')
+        .single();
+      if (targetRoles) {
+        return new Response(JSON.stringify({ error: 'Cannot change admin password' }), {
+          status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+    }
+
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
     const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(target_user_id, {
       password: new_password,
