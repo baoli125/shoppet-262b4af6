@@ -941,11 +941,22 @@ export const PetHealthSection = ({ petId }: PetHealthSectionProps) => {
                   className="flex items-start justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
                 >
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
                       <Badge variant={getRecordTypeColor(record.record_type) as any}>
                         {getRecordTypeLabel(record.record_type)}
                       </Badge>
                       <h4 className="font-medium">{record.title}</h4>
+                      {record.attachments && record.attachments.length > 0 ? (
+                        <Badge variant="secondary" className="text-xs gap-1 text-green-600 border-green-200 bg-green-50">
+                          <CheckCircle className="h-3 w-3" />
+                          Có file
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary" className="text-xs gap-1 text-destructive border-destructive/20 bg-destructive/5">
+                          <X className="h-3 w-3" />
+                          Chưa có file
+                        </Badge>
+                      )}
                     </div>
                     <p className="text-sm text-muted-foreground mb-1">
                       {new Date(record.date).toLocaleDateString('vi-VN')}
