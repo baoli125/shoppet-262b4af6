@@ -40,6 +40,7 @@ const AppContent = () => {
   const [isNewUser, setIsNewUser] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [deletedAccountInfo, setDeletedAccountInfo] = useState<{ reason: string; userId: string } | null>(null);
   const { toast } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
