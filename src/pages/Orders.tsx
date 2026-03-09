@@ -57,6 +57,7 @@ const Orders = () => {
   const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
   const [cancelReason, setCancelReason] = useState("");
   const [isCancelling, setIsCancelling] = useState(false);
+  const [isReordering, setIsReordering] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
