@@ -10,7 +10,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Users, ShieldCheck, Package, ShoppingCart, Search, Key, Trash2, UserCheck, UserX, Eye, LogOut, Shield, ArrowUp, ArrowDown, ArrowUpDown, Filter, Check, X, PawPrint, UserPlus, RefreshCw } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Users, ShieldCheck, Package, ShoppingCart, Search, Key, Trash2, UserCheck, UserX, Eye, LogOut, Shield, ArrowUp, ArrowDown, ArrowUpDown, Filter, Check, X, PawPrint, UserPlus, RefreshCw, RotateCcw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -56,6 +57,8 @@ const AdminDashboard = () => {
   const [createUserRole, setCreateUserRole] = useState("user");
   const [createUserLoading, setCreateUserLoading] = useState(false);
   const [deleteUserId, setDeleteUserId] = useState("");
+  const [deleteReason, setDeleteReason] = useState("");
+  const [deleteProductReason, setDeleteProductReason] = useState("");
   const [roleAction, setRoleAction] = useState<{ userId: string; role: "seller" | "manager"; action: "grant" | "revoke" } | null>(null);
   const [deleteProductId, setDeleteProductId] = useState("");
   const [myRole, setMyRole] = useState<"admin" | "manager" | null>(null);
@@ -203,16 +206,41 @@ const AdminDashboard = () => {
   };
 
   const handleDeleteUser = async () => {
-    const { data, error } = await supabase.functions.invoke("admin-delete-user", {
-      body: { target_user_id: deleteUserId },
-    });
-    if (error || data?.error) {
-      toast({ title: "Lỗi", description: data?.error || error?.message, variant: "destructive" });
-    } else {
-      toast({ title: "Thành công", description: "Đã xóa tài khoản" });
-      setShowDeleteDialog(false);
-      fetchAllData();
+    if (!deleteReason.trim()) {
+      toast({ title: "Lỗi", description: "Vui lòng nhập lý do xóa", variant: "destructive" });
+      return;
     }
+    // Soft delete: mark profile as deleted
+    const { error: profileError } = await supabase
+      .from("profiles")
+      .update({
+        is_deleted: true,
+        deleted_at: new Date().toISOString(),
+        delete_reason: deleteReason,
+        deleted_by: currentUserId,
+      })
+      .eq("id", deleteUserId);
+
+    if (profileError) {
+      toast({ title: "Lỗi", description: profileError.message, variant: "destructive" });
+      return;
+    }
+
+    // Log deletion
+    const targetUser = users.find(u => u.id === deleteUserId);
+    await supabase.from("deletion_logs").insert({
+      target_type: "account",
+      target_id: deleteUserId,
+      target_name: targetUser?.display_name || targetUser?.email || "",
+      user_id: deleteUserId,
+      reason: deleteReason,
+      deleted_by: currentUserId,
+    });
+
+    toast({ title: "Thành công", description: "Đã xóa tài khoản (mềm)" });
+    setShowDeleteDialog(false);
+    setDeleteReason("");
+    fetchAllData();
   };
 
   const confirmToggleRole = (userId: string, role: "seller" | "manager") => {
@@ -247,6 +275,24 @@ const AdminDashboard = () => {
 
   const handleDeleteProduct = async () => {
     if (!deleteProductId) return;
+    if (!deleteProductReason.trim()) {
+      toast({ title: "Lỗi", description: "Vui lòng nhập lý do xóa", variant: "destructive" });
+      return;
+    }
+
+    const product = products.find(p => p.id === deleteProductId);
+    // Log deletion for the product seller
+    if (product?.seller_id) {
+      await supabase.from("deletion_logs").insert({
+        target_type: "product",
+        target_id: deleteProductId,
+        target_name: product?.name || "",
+        user_id: product.seller_id,
+        reason: deleteProductReason,
+        deleted_by: currentUserId,
+      });
+    }
+
     const { error } = await supabase.from("products").delete().eq("id", deleteProductId);
     if (error) {
       toast({ title: "Lỗi", description: error.message, variant: "destructive" });
@@ -256,6 +302,7 @@ const AdminDashboard = () => {
     }
     setShowDeleteProductDialog(false);
     setDeleteProductId("");
+    setDeleteProductReason("");
   };
 
   const handleEditOrder = (order: any) => {
@@ -554,15 +601,18 @@ const AdminDashboard = () => {
                       const isSelf = user.id === currentUserId;
                       const pets = userPets[user.id] || [];
                       return (
-                        <TableRow key={user.id}>
+                        <TableRow key={user.id} className={user.is_deleted ? "opacity-60 bg-destructive/5" : ""}>
                           <TableCell className="font-medium">
-                            {!isAdmin ? (
-                              <button className="text-left hover:text-primary hover:underline transition-colors" onClick={() => { setDetailUser(user); setShowUserDetail(true); }}>
-                                {user.display_name}
-                              </button>
-                            ) : (
-                              <span className="text-muted-foreground">{user.display_name}</span>
-                            )}
+                            <div className="flex items-center gap-1.5">
+                              {!isAdmin ? (
+                                <button className="text-left hover:text-primary hover:underline transition-colors" onClick={() => { setDetailUser(user); setShowUserDetail(true); }}>
+                                  {user.display_name}
+                                </button>
+                              ) : (
+                                <span className="text-muted-foreground">{user.display_name}</span>
+                              )}
+                              {user.is_deleted && <Badge variant="destructive" className="text-[10px] px-1.5 py-0">Đã xóa</Badge>}
+                            </div>
                           </TableCell>
                           <TableCell className="text-muted-foreground text-xs">{user.email}</TableCell>
                           <TableCell>
@@ -619,16 +669,31 @@ const AdminDashboard = () => {
                                   <Shield className="h-3 w-3" />
                                 </Button>
                               )}
-                              {/* Xóa tài khoản - chỉ admin, không xóa admin khác */}
+                              {/* Xóa / Khôi phục tài khoản - chỉ admin, không xóa admin khác */}
                               {canDeleteUser && !isAdmin && !isSelf && (
-                                <Button
-                                  size="sm"
-                                  variant="destructive"
-                                  onClick={() => { setDeleteUserId(user.id); setShowDeleteDialog(true); }}
-                                  title="Xóa tài khoản"
-                                >
-                                  <Trash2 className="h-3 w-3" />
-                                </Button>
+                                user.is_deleted ? (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={async () => {
+                                      await supabase.from("profiles").update({ is_deleted: false, deleted_at: null, delete_reason: null, deleted_by: null }).eq("id", user.id);
+                                      toast({ title: "Thành công", description: "Đã khôi phục tài khoản" });
+                                      fetchAllData();
+                                    }}
+                                    title="Khôi phục tài khoản"
+                                  >
+                                    <RotateCcw className="h-3 w-3" />
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    onClick={() => { setDeleteUserId(user.id); setShowDeleteDialog(true); }}
+                                    title="Xóa tài khoản"
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                )
                               )}
                             </div>
                           </TableCell>
@@ -687,7 +752,13 @@ const AdminDashboard = () => {
                           <TableCell>{buyer?.display_name || "N/A"}</TableCell>
                           <TableCell className="font-semibold">{formatPrice(order.total_amount)}</TableCell>
                           <TableCell>
-                            <Badge variant={order.status === "delivered" ? "default" : order.status === "cancelled" ? "destructive" : "secondary"}>
+                            <Badge 
+                              variant={order.status === "delivered" ? "default" : order.status === "cancelled" ? "destructive" : "secondary"}
+                              className={
+                                order.status === "confirmed" ? "bg-gray-500 text-white hover:bg-gray-500/80" :
+                                order.status === "shipping" ? "bg-[#0068FF] text-white hover:bg-[#0068FF]/80" : ""
+                              }
+                            >
                               {statusLabels[order.status] || order.status}
                             </Badge>
                           </TableCell>
@@ -828,16 +899,25 @@ const AdminDashboard = () => {
 
 
       {/* Delete User Dialog */}
-      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+      <Dialog open={showDeleteDialog} onOpenChange={(open) => { setShowDeleteDialog(open); if (!open) setDeleteReason(""); }}>
         <DialogContent>
           <DialogHeader><DialogTitle>Xác nhận xóa tài khoản</DialogTitle></DialogHeader>
-          <div className="py-2">
+          <div className="py-2 space-y-3">
             <p className="text-sm">Bạn có chắc muốn xóa tài khoản <strong>{users.find(u => u.id === deleteUserId)?.display_name}</strong>?</p>
-            <p className="text-sm text-destructive mt-2">Hành động này không thể hoàn tác!</p>
+            <p className="text-sm text-muted-foreground">Tài khoản sẽ được đánh dấu là đã xóa. Người dùng có thể khôi phục khi đăng nhập lại.</p>
+            <div>
+              <label className="text-sm font-medium">Lý do xóa <span className="text-destructive">*</span></label>
+              <Textarea
+                placeholder="Nhập lý do xóa tài khoản..."
+                value={deleteReason}
+                onChange={(e) => setDeleteReason(e.target.value)}
+                rows={3}
+              />
+            </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>Hủy</Button>
-            <Button variant="destructive" onClick={handleDeleteUser}>Xóa</Button>
+            <Button variant="outline" onClick={() => { setShowDeleteDialog(false); setDeleteReason(""); }}>Hủy</Button>
+            <Button variant="destructive" onClick={handleDeleteUser} disabled={!deleteReason.trim()}>Xóa</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -917,18 +997,27 @@ const AdminDashboard = () => {
       </Dialog>
 
       {/* Delete Product Confirmation Dialog */}
-      <Dialog open={showDeleteProductDialog} onOpenChange={setShowDeleteProductDialog}>
+      <Dialog open={showDeleteProductDialog} onOpenChange={(open) => { setShowDeleteProductDialog(open); if (!open) { setDeleteProductId(""); setDeleteProductReason(""); } }}>
         <DialogContent>
           <DialogHeader><DialogTitle>Xác nhận xóa sản phẩm</DialogTitle></DialogHeader>
-          <div className="py-2">
+          <div className="py-2 space-y-3">
             <p className="text-sm">
               Bạn có chắc muốn xóa sản phẩm <strong>{products.find(p => p.id === deleteProductId)?.name}</strong>?
             </p>
-            <p className="text-sm text-destructive mt-2">Hành động này không thể hoàn tác!</p>
+            <p className="text-sm text-destructive">Hành động này không thể hoàn tác!</p>
+            <div>
+              <label className="text-sm font-medium">Lý do xóa <span className="text-destructive">*</span></label>
+              <Textarea
+                placeholder="Nhập lý do xóa sản phẩm..."
+                value={deleteProductReason}
+                onChange={(e) => setDeleteProductReason(e.target.value)}
+                rows={3}
+              />
+            </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setShowDeleteProductDialog(false); setDeleteProductId(""); }}>Hủy</Button>
-            <Button variant="destructive" onClick={handleDeleteProduct}>Xóa</Button>
+            <Button variant="outline" onClick={() => { setShowDeleteProductDialog(false); setDeleteProductId(""); setDeleteProductReason(""); }}>Hủy</Button>
+            <Button variant="destructive" onClick={handleDeleteProduct} disabled={!deleteProductReason.trim()}>Xóa</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

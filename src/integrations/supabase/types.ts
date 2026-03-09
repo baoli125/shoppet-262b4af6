@@ -171,6 +171,42 @@ export type Database = {
           },
         ]
       }
+      deletion_logs: {
+        Row: {
+          created_at: string | null
+          deleted_by: string
+          id: string
+          is_acknowledged: boolean | null
+          reason: string
+          target_id: string
+          target_name: string | null
+          target_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          deleted_by: string
+          id?: string
+          is_acknowledged?: boolean | null
+          reason: string
+          target_id: string
+          target_name?: string | null
+          target_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          deleted_by?: string
+          id?: string
+          is_acknowledged?: boolean | null
+          reason?: string
+          target_id?: string
+          target_name?: string | null
+          target_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       feeding_logs: {
         Row: {
           actual_end_date: string | null
@@ -899,10 +935,14 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string | null
+          delete_reason: string | null
+          deleted_at: string | null
+          deleted_by: string | null
           display_name: string
           email: string | null
           has_completed_onboarding: boolean | null
           id: string
+          is_deleted: boolean | null
           is_new_user: boolean | null
           phone: string | null
           points: number | null
@@ -911,10 +951,14 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           created_at?: string | null
+          delete_reason?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           display_name: string
           email?: string | null
           has_completed_onboarding?: boolean | null
           id: string
+          is_deleted?: boolean | null
           is_new_user?: boolean | null
           phone?: string | null
           points?: number | null
@@ -923,10 +967,14 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           created_at?: string | null
+          delete_reason?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           display_name?: string
           email?: string | null
           has_completed_onboarding?: boolean | null
           id?: string
+          is_deleted?: boolean | null
           is_new_user?: boolean | null
           phone?: string | null
           points?: number | null

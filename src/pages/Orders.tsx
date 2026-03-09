@@ -177,8 +177,8 @@ const Orders = () => {
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
       pending: "bg-yellow-500",
-      confirmed: "bg-blue-500",
-      shipping: "bg-purple-500",
+      confirmed: "bg-gray-500",
+      shipping: "bg-[#0068FF]",
       delivered: "bg-green-500",
       cancelled: "bg-red-500",
     };

@@ -27,6 +27,8 @@ import { GuidedTourOverlay } from "@/components/GuidedTourOverlay";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import DeletionNoticePopup from "@/components/DeletionNoticePopup";
+import DeletedAccountPopup from "@/components/DeletedAccountPopup";
 import type { User, Session } from "@supabase/supabase-js";
 
 const queryClient = new QueryClient();
@@ -38,6 +40,7 @@ const AppContent = () => {
   const [isNewUser, setIsNewUser] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [deletedAccountInfo, setDeletedAccountInfo] = useState<{ reason: string; userId: string } | null>(null);
   const { toast } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
@@ -138,10 +141,13 @@ const AppContent = () => {
       
       setProfile(data);
       
+      // Kiểm tra tài khoản đã bị xóa mềm
+      if (data?.is_deleted) {
+        setDeletedAccountInfo({ reason: data.delete_reason || "", userId: data.id });
+      }
+      
       if (data?.is_new_user !== undefined) {
         setIsNewUser(data.is_new_user);
-        // Note: Guided tour is now triggered by custom event from Index.tsx
-        // after user completes onboarding, not here
       }
     } catch (err) {
       console.error("Unexpected error fetching profile:", err);
@@ -276,6 +282,20 @@ const AppContent = () => {
       />
       
       <GuidedTourOverlay />
+
+      {/* Popup thông báo tài khoản bị xóa */}
+      {deletedAccountInfo && (
+        <DeletedAccountPopup
+          open={!!deletedAccountInfo}
+          reason={deletedAccountInfo.reason}
+          userId={deletedAccountInfo.userId}
+          onClose={() => { setDeletedAccountInfo(null); navigate("/"); }}
+          onRestored={() => { setDeletedAccountInfo(null); if (user) fetchProfile(user.id); }}
+        />
+      )}
+
+      {/* Popup thông báo nội dung bị xóa */}
+      {user && !deletedAccountInfo && <DeletionNoticePopup userId={user.id} />}
     </>
   );
 };
