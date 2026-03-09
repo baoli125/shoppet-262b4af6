@@ -117,6 +117,22 @@ const AdminDashboard = () => {
       });
       setUserPets(petMap);
     }
+    if (medicalRes.data) {
+      const map: Record<string, any[]> = {};
+      medicalRes.data.forEach((r: any) => {
+        if (!map[r.pet_id]) map[r.pet_id] = [];
+        map[r.pet_id].push(r);
+      });
+      setPetMedicalRecords(map);
+    }
+    if (vaccinesRes.data) {
+      const map: Record<string, any[]> = {};
+      vaccinesRes.data.forEach((v: any) => {
+        if (!map[v.pet_id]) map[v.pet_id] = [];
+        map[v.pet_id].push(v);
+      });
+      setPetVaccines(map);
+    }
   };
 
   const handleChangePassword = async () => {
