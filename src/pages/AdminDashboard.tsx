@@ -367,6 +367,13 @@ const AdminDashboard = () => {
   if (loading) return <div className="flex items-center justify-center min-h-screen">Đang tải...</div>;
   if (!myRole) return null;
 
+  const InfoRow = ({ label, value, mono, full }: { label: string; value: string; mono?: boolean; full?: boolean }) => (
+    <div className={full ? "col-span-2" : ""}>
+      <div className="text-muted-foreground text-xs">{label}</div>
+      <div className={`text-sm font-medium break-all ${mono ? "font-mono text-xs" : ""}`}>{value}</div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-muted/30">
       <div className="bg-card border-b px-4 py-3 flex items-center justify-between sticky top-0 z-50">
