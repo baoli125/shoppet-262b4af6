@@ -506,6 +506,46 @@ const AdminDashboard = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Role Confirmation Dialog */}
+      <Dialog open={showRoleDialog} onOpenChange={setShowRoleDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {roleAction?.action === "grant" ? "Xác nhận cấp quyền" : "Xác nhận thu quyền"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-2">
+            <p className="text-sm">
+              Bạn có chắc muốn {roleAction?.action === "grant" ? "cấp" : "thu"} quyền <strong>{roleAction?.role}</strong> cho{" "}
+              <strong>{users.find(u => u.id === roleAction?.userId)?.display_name}</strong>?
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setShowRoleDialog(false); setRoleAction(null); }}>Hủy</Button>
+            <Button variant={roleAction?.action === "revoke" ? "destructive" : "default"} onClick={handleToggleRole}>
+              {roleAction?.action === "grant" ? "Cấp quyền" : "Thu quyền"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Product Confirmation Dialog */}
+      <Dialog open={showDeleteProductDialog} onOpenChange={setShowDeleteProductDialog}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Xác nhận xóa sản phẩm</DialogTitle></DialogHeader>
+          <div className="py-2">
+            <p className="text-sm">
+              Bạn có chắc muốn xóa sản phẩm <strong>{products.find(p => p.id === deleteProductId)?.name}</strong>?
+            </p>
+            <p className="text-sm text-destructive mt-2">Hành động này không thể hoàn tác!</p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setShowDeleteProductDialog(false); setDeleteProductId(""); }}>Hủy</Button>
+            <Button variant="destructive" onClick={handleDeleteProduct}>Xóa</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
