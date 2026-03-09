@@ -990,6 +990,52 @@ const AdminDashboard = () => {
                   <InfoRow label="Ngày tạo" value={new Date(pet.created_at).toLocaleDateString("vi-VN")} />
                   {pet.notes && <InfoRow label="Ghi chú" value={pet.notes} full />}
                 </div>
+
+                {/* Hồ sơ y tế */}
+                <div>
+                  <div className="text-sm font-medium mb-1">Hồ sơ y tế</div>
+                  {(petMedicalRecords[pet.id]?.length || 0) > 0 ? (
+                    <div className="space-y-1">
+                      {petMedicalRecords[pet.id].map((rec: any) => (
+                        <div key={rec.id} className="bg-muted/50 rounded p-2 text-xs space-y-0.5">
+                          <div className="flex justify-between">
+                            <span className="font-medium">{rec.title}</span>
+                            <span className="text-muted-foreground">{new Date(rec.date).toLocaleDateString("vi-VN")}</span>
+                          </div>
+                          {rec.record_type && <div className="text-muted-foreground">Loại: {rec.record_type}</div>}
+                          {rec.veterinarian && <div className="text-muted-foreground">Bác sĩ: {rec.veterinarian}</div>}
+                          {rec.clinic_name && <div className="text-muted-foreground">Phòng khám: {rec.clinic_name}</div>}
+                          {rec.description && <div className="text-muted-foreground">{rec.description}</div>}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground italic">Không có hồ sơ y tế</p>
+                  )}
+                </div>
+
+                {/* Tiêm chủng */}
+                <div>
+                  <div className="text-sm font-medium mb-1">Tiêm chủng</div>
+                  {(petVaccines[pet.id]?.length || 0) > 0 ? (
+                    <div className="space-y-1">
+                      {petVaccines[pet.id].map((vac: any) => (
+                        <div key={vac.id} className="bg-muted/50 rounded p-2 text-xs space-y-0.5">
+                          <div className="flex justify-between">
+                            <span className="font-medium">{vac.name}</span>
+                            <span className="text-muted-foreground">{new Date(vac.date).toLocaleDateString("vi-VN")}</span>
+                          </div>
+                          {vac.veterinarian && <div className="text-muted-foreground">Bác sĩ: {vac.veterinarian}</div>}
+                          {vac.clinic && <div className="text-muted-foreground">Phòng khám: {vac.clinic}</div>}
+                          {vac.batch_no && <div className="text-muted-foreground">Số lô: {vac.batch_no}</div>}
+                          {vac.next_date && <div className="text-muted-foreground">Lần tiếp: {new Date(vac.next_date).toLocaleDateString("vi-VN")}</div>}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground italic">Không có lịch tiêm chủng</p>
+                  )}
+                </div>
               </div>
             ))}
           </div>
