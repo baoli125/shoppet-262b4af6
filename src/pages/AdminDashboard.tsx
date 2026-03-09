@@ -216,6 +216,7 @@ const AdminDashboard = () => {
     if (error || data?.error) {
       toast({ title: "Lỗi", description: data?.error || error?.message, variant: "destructive" });
     } else {
+      await logActivity("create_user", "user", data?.user_id || "", createUserEmail, `Tạo tài khoản ${createUserEmail} với vai trò ${createUserRole}`);
       toast({ title: "Thành công", description: `Đã tạo tài khoản ${createUserEmail}` });
       setShowCreateUserDialog(false);
       setCreateUserEmail("");
