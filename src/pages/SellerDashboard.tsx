@@ -371,7 +371,7 @@ const SellerDashboard = () => {
 };
 
 // ─── Dashboard Section ─────────────────────────────────
-const DashboardSection = ({ stats, orders, products, onNavigate }: any) => (
+const DashboardSection = ({ stats, orders, products, onNavigate, buyers }: any) => (
   <div className="space-y-6">
     <div>
       <h2 className="text-xl font-bold mb-1">Tổng quan</h2>
