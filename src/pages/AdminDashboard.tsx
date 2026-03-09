@@ -616,7 +616,9 @@ const AdminDashboard = () => {
                         <TableCell>
                           <div className="flex items-center gap-2">
                             {product.image_url && <img src={product.image_url} alt="" className="h-8 w-8 rounded object-cover" />}
-                            <span className="font-medium line-clamp-1">{product.name}</span>
+                            <button className="font-medium line-clamp-1 text-left hover:text-primary hover:underline transition-colors" onClick={() => { setDetailProduct(product); setShowProductDetail(true); }}>
+                              {product.name}
+                            </button>
                           </div>
                         </TableCell>
                         <TableCell>{formatPrice(product.price)}</TableCell>
