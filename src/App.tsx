@@ -17,6 +17,7 @@ import Community from "./pages/Community";
 import Profile from "./pages/Profile";
 import Analytics from "./pages/Analytics";
 import SellerDashboard from "./pages/SellerDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 import Header from "@/components/Header";
 import AuthModal from "@/components/AuthModal";
