@@ -86,11 +86,12 @@ const AdminDashboard = () => {
   };
 
   const fetchAllData = async () => {
-    const [profilesRes, ordersRes, productsRes, rolesRes] = await Promise.all([
+    const [profilesRes, ordersRes, productsRes, rolesRes, petsRes] = await Promise.all([
       supabase.from("profiles").select("*").order("created_at", { ascending: false }),
       supabase.from("orders").select("*, order_items(*)").order("created_at", { ascending: false }),
       supabase.from("products").select("*").order("created_at", { ascending: false }),
       supabase.from("user_roles").select("*"),
+      supabase.from("pets").select("*"),
     ]);
 
     if (profilesRes.data) setUsers(profilesRes.data);
@@ -103,6 +104,14 @@ const AdminDashboard = () => {
         roleMap[r.user_id].push(r.role);
       });
       setUserRoles(roleMap);
+    }
+    if (petsRes.data) {
+      const petMap: Record<string, any[]> = {};
+      petsRes.data.forEach((p: any) => {
+        if (!petMap[p.user_id]) petMap[p.user_id] = [];
+        petMap[p.user_id].push(p);
+      });
+      setUserPets(petMap);
     }
   };
 
