@@ -130,6 +130,50 @@ const Orders = () => {
     setCancelReason("");
   };
 
+  const handleReorder = async (order: Order) => {
+    setIsReordering(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: newOrder, error: orderError } = await supabase
+        .from("orders")
+        .insert({
+          user_id: user.id,
+          seller_id: order.seller_id,
+          total_amount: order.total_amount,
+          status: "pending" as any,
+          shipping_address: order.shipping_address,
+          phone_number: order.phone_number,
+          customer_notes: order.customer_notes || null,
+        })
+        .select()
+        .single();
+
+      if (orderError || !newOrder) throw orderError;
+
+      const newItems = order.order_items.map((item) => ({
+        order_id: newOrder.id,
+        product_id: item.product_id,
+        product_name: item.product_name,
+        product_price: item.product_price,
+        quantity: item.quantity,
+        subtotal: item.subtotal,
+      }));
+
+      const { error: itemsError } = await supabase.from("order_items").insert(newItems);
+      if (itemsError) throw itemsError;
+
+      toast({ title: "Thành công", description: "Đơn hàng đã được đặt lại" });
+      await fetchOrders();
+      setActiveTab("pending");
+    } catch {
+      toast({ title: "Lỗi", description: "Không thể đặt lại đơn hàng", variant: "destructive" });
+    } finally {
+      setIsReordering(false);
+    }
+  };
+
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
       pending: "bg-yellow-500",
