@@ -38,7 +38,7 @@ const Pets = () => {
     nickname: "",
     type: "dog",
     breed: "",
-    gender: "unknown",
+    gender: "",
     birth_date: "",
     weight: "",
     notes: "",
