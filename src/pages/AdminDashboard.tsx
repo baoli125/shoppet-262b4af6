@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Users, ShieldCheck, Package, ShoppingCart, Search, Key, Trash2, UserCheck, UserX, Eye, LogOut, Shield, ArrowUp, ArrowDown, ArrowUpDown, Filter } from "lucide-react";
+import { Users, ShieldCheck, Package, ShoppingCart, Search, Key, Trash2, UserCheck, UserX, Eye, LogOut, Shield, ArrowUp, ArrowDown, ArrowUpDown, Filter, Check, X, PawPrint } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -29,6 +29,10 @@ const AdminDashboard = () => {
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
   const [customerFilter, setCustomerFilter] = useState<string[]>([]);
+  const [petFilter, setPetFilter] = useState<string[]>([]);
+  const [userPets, setUserPets] = useState<Record<string, any[]>>({});
+  const [showPetDetail, setShowPetDetail] = useState(false);
+  const [detailPets, setDetailPets] = useState<any[]>([]);
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [showOrderDialog, setShowOrderDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -82,11 +86,12 @@ const AdminDashboard = () => {
   };
 
   const fetchAllData = async () => {
-    const [profilesRes, ordersRes, productsRes, rolesRes] = await Promise.all([
+    const [profilesRes, ordersRes, productsRes, rolesRes, petsRes] = await Promise.all([
       supabase.from("profiles").select("*").order("created_at", { ascending: false }),
       supabase.from("orders").select("*, order_items(*)").order("created_at", { ascending: false }),
       supabase.from("products").select("*").order("created_at", { ascending: false }),
       supabase.from("user_roles").select("*"),
+      supabase.from("pets").select("*"),
     ]);
 
     if (profilesRes.data) setUsers(profilesRes.data);
@@ -99,6 +104,14 @@ const AdminDashboard = () => {
         roleMap[r.user_id].push(r.role);
       });
       setUserRoles(roleMap);
+    }
+    if (petsRes.data) {
+      const petMap: Record<string, any[]> = {};
+      petsRes.data.forEach((p: any) => {
+        if (!petMap[p.user_id]) petMap[p.user_id] = [];
+        petMap[p.user_id].push(p);
+      });
+      setUserPets(petMap);
     }
   };
 
@@ -258,7 +271,12 @@ const AdminDashboard = () => {
     if (roleFilter.length > 0) {
       const roles = userRoles[u.id] || [];
       const effectiveRoles = roles.length > 0 ? roles : ["user"];
-      return roleFilter.every(r => effectiveRoles.includes(r));
+      if (!roleFilter.every(r => effectiveRoles.includes(r))) return false;
+    }
+    if (petFilter.length > 0) {
+      const hasPets = (userPets[u.id]?.length || 0) > 0;
+      const petStatus = hasPets ? "yes" : "no";
+      if (!petFilter.includes(petStatus)) return false;
     }
     return true;
   });
@@ -445,6 +463,15 @@ const AdminDashboard = () => {
                           labelMap={roleLabels}
                         />
                       </TableHead>
+                      <TableHead>
+                        <FilterDropdown
+                          label="Thú cưng"
+                          options={["yes", "no"]}
+                          selected={petFilter}
+                          onToggle={(v) => toggleFilter(setPetFilter, v)}
+                          labelMap={{ yes: "Đã đăng ký", no: "Chưa đăng ký" }}
+                        />
+                      </TableHead>
                       <TableHead>Hành động</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -452,6 +479,7 @@ const AdminDashboard = () => {
                     {sortedUsers.map((user) => {
                       const isAdmin = isAdminUser(user.id);
                       const isSelf = user.id === currentUserId;
+                      const pets = userPets[user.id] || [];
                       return (
                         <TableRow key={user.id}>
                           <TableCell className="font-medium">
@@ -473,6 +501,20 @@ const AdminDashboard = () => {
                               ))}
                               {(!userRoles[user.id] || userRoles[user.id].length === 0) && <Badge variant="outline">user</Badge>}
                             </div>
+                          </TableCell>
+                          <TableCell>
+                            {pets.length > 0 ? (
+                              <button
+                                className="flex items-center gap-1 text-green-600 hover:text-green-700 transition-colors"
+                                onClick={() => { setDetailPets(pets); setShowPetDetail(true); }}
+                                title={`${pets.length} thú cưng`}
+                              >
+                                <Check className="h-4 w-4" />
+                                <span className="text-xs font-medium">{pets.length}</span>
+                              </button>
+                            ) : (
+                              <X className="h-4 w-4 text-muted-foreground/50" />
+                            )}
                           </TableCell>
                           <TableCell>
                             <div className="flex gap-1 flex-wrap">
@@ -783,7 +825,7 @@ const AdminDashboard = () => {
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <InfoRow label="ID" value={detailUser.id} mono />
+                {myRole === "admin" && <InfoRow label="ID" value={detailUser.id} mono />}
                 <InfoRow label="Số điện thoại" value={detailUser.phone || "Chưa cập nhật"} />
                 <InfoRow label="Điểm" value={detailUser.points?.toString() || "0"} />
                 <InfoRow label="Vai trò" value={(userRoles[detailUser.id] ? sortRoles(userRoles[detailUser.id]) : ["user"]).join(", ")} />
@@ -899,6 +941,40 @@ const AdminDashboard = () => {
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowProductDetail(false)}>Đóng</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Pet Detail Dialog */}
+      <Dialog open={showPetDetail} onOpenChange={setShowPetDetail}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <PawPrint className="h-5 w-5" /> Thú cưng đã đăng ký ({detailPets.length})
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            {detailPets.map((pet) => (
+              <div key={pet.id} className="border rounded-lg p-3 space-y-2">
+                <div className="flex items-center gap-3">
+                  {pet.image_url && <img src={pet.image_url} alt="" className="h-12 w-12 rounded-full object-cover border" />}
+                  <div>
+                    <div className="font-semibold">{pet.name} {pet.nickname ? `(${pet.nickname})` : ""}</div>
+                    <div className="text-xs text-muted-foreground capitalize">{pet.type} {pet.breed ? `• ${pet.breed}` : ""}</div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <InfoRow label="Giới tính" value={pet.gender === "male" ? "Đực" : pet.gender === "female" ? "Cái" : "Không rõ"} />
+                  <InfoRow label="Cân nặng" value={pet.weight ? `${pet.weight} kg` : "Chưa cập nhật"} />
+                  <InfoRow label="Ngày sinh" value={pet.birth_date ? new Date(pet.birth_date).toLocaleDateString("vi-VN") : "Chưa cập nhật"} />
+                  <InfoRow label="Ngày tạo" value={new Date(pet.created_at).toLocaleDateString("vi-VN")} />
+                  {pet.notes && <InfoRow label="Ghi chú" value={pet.notes} full />}
+                </div>
+              </div>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowPetDetail(false)}>Đóng</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
