@@ -8,15 +8,21 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Users, ShieldCheck, Package, ShoppingCart, Search, Key, Trash2, UserCheck, UserX, Eye, LogOut, Shield } from "lucide-react";
+import { Users, ShieldCheck, Package, ShoppingCart, Search, Key, Trash2, UserCheck, UserX, Eye, LogOut, Shield, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+
+type SortDir = "asc" | "desc" | null;
+type SortState = { key: string; dir: SortDir };
 
 const AdminDashboard = () => {
   const [users, setUsers] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [userSort, setUserSort] = useState<SortState>({ key: "", dir: null });
+  const [orderSort, setOrderSort] = useState<SortState>({ key: "", dir: null });
+  const [productSort, setProductSort] = useState<SortState>({ key: "", dir: null });
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [showOrderDialog, setShowOrderDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -193,10 +199,60 @@ const AdminDashboard = () => {
     navigate("/");
   };
 
+  const toggleSort = (setter: React.Dispatch<React.SetStateAction<SortState>>, key: string) => {
+    setter(prev => {
+      if (prev.key !== key) return { key, dir: "asc" };
+      if (prev.dir === "asc") return { key, dir: "desc" };
+      if (prev.dir === "desc") return { key: "", dir: null };
+      return { key, dir: "asc" };
+    });
+  };
+
+  const SortIcon = ({ sortState, colKey }: { sortState: SortState; colKey: string }) => {
+    if (sortState.key !== colKey || !sortState.dir) return <ArrowUpDown className="h-3 w-3 ml-1 opacity-40" />;
+    return sortState.dir === "asc" ? <ArrowUp className="h-3 w-3 ml-1 text-primary" /> : <ArrowDown className="h-3 w-3 ml-1 text-primary" />;
+  };
+
+  const sortData = <T,>(data: T[], sort: SortState, getVal: (item: T, key: string) => any): T[] => {
+    if (!sort.key || !sort.dir) return data;
+    return [...data].sort((a, b) => {
+      const va = getVal(a, sort.key);
+      const vb = getVal(b, sort.key);
+      if (va == null && vb == null) return 0;
+      if (va == null) return 1;
+      if (vb == null) return -1;
+      const cmp = typeof va === "string" ? va.localeCompare(vb, "vi") : va - vb;
+      return sort.dir === "asc" ? cmp : -cmp;
+    });
+  };
+
   const filteredUsers = users.filter(u =>
     u.display_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     u.email?.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const sortedUsers = sortData(filteredUsers, userSort, (u, k) => {
+    if (k === "name") return u.display_name?.toLowerCase() || "";
+    if (k === "email") return u.email?.toLowerCase() || "";
+    if (k === "role") return (userRoles[u.id] || []).join(",");
+    return "";
+  });
+
+  const sortedOrders = sortData(orders, orderSort, (o, k) => {
+    if (k === "id") return o.id;
+    if (k === "customer") return users.find((u: any) => u.id === o.user_id)?.display_name?.toLowerCase() || "";
+    if (k === "total") return Number(o.total_amount);
+    if (k === "status") return o.status || "";
+    return "";
+  });
+
+  const sortedProducts = sortData(products, productSort, (p, k) => {
+    if (k === "name") return p.name?.toLowerCase() || "";
+    if (k === "price") return Number(p.price);
+    if (k === "category") return p.category || "";
+    if (k === "stock") return Number(p.stock || 0);
+    return "";
+  });
 
   const statusLabels: Record<string, string> = {
     pending: "Chờ xác nhận", confirmed: "Đã xác nhận",
@@ -266,17 +322,23 @@ const AdminDashboard = () => {
                 <Input placeholder="Tìm kiếm người dùng..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="flex-1" />
               </div>
               <div className="overflow-x-auto">
-                <Table>
+                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Tên</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Vai trò</TableHead>
+                      <TableHead className="cursor-pointer select-none" onClick={() => toggleSort(setUserSort, "name")}>
+                        <span className="flex items-center">Tên <SortIcon sortState={userSort} colKey="name" /></span>
+                      </TableHead>
+                      <TableHead className="cursor-pointer select-none" onClick={() => toggleSort(setUserSort, "email")}>
+                        <span className="flex items-center">Email <SortIcon sortState={userSort} colKey="email" /></span>
+                      </TableHead>
+                      <TableHead className="cursor-pointer select-none" onClick={() => toggleSort(setUserSort, "role")}>
+                        <span className="flex items-center">Vai trò <SortIcon sortState={userSort} colKey="role" /></span>
+                      </TableHead>
                       <TableHead>Hành động</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredUsers.map((user) => {
+                    {sortedUsers.map((user) => {
                       const isAdmin = isAdminUser(user.id);
                       const isSelf = user.id === currentUserId;
                       return (
@@ -350,15 +412,23 @@ const AdminDashboard = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Mã đơn</TableHead>
-                      <TableHead>Khách hàng</TableHead>
-                      <TableHead>Tổng tiền</TableHead>
-                      <TableHead>Trạng thái</TableHead>
+                      <TableHead className="cursor-pointer select-none" onClick={() => toggleSort(setOrderSort, "id")}>
+                        <span className="flex items-center">Mã đơn <SortIcon sortState={orderSort} colKey="id" /></span>
+                      </TableHead>
+                      <TableHead className="cursor-pointer select-none" onClick={() => toggleSort(setOrderSort, "customer")}>
+                        <span className="flex items-center">Khách hàng <SortIcon sortState={orderSort} colKey="customer" /></span>
+                      </TableHead>
+                      <TableHead className="cursor-pointer select-none" onClick={() => toggleSort(setOrderSort, "total")}>
+                        <span className="flex items-center">Tổng tiền <SortIcon sortState={orderSort} colKey="total" /></span>
+                      </TableHead>
+                      <TableHead className="cursor-pointer select-none" onClick={() => toggleSort(setOrderSort, "status")}>
+                        <span className="flex items-center">Trạng thái <SortIcon sortState={orderSort} colKey="status" /></span>
+                      </TableHead>
                       <TableHead>Hành động</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {orders.map((order) => {
+                    {sortedOrders.map((order) => {
                       const buyer = users.find(u => u.id === order.user_id);
                       return (
                         <TableRow key={order.id}>
@@ -390,15 +460,23 @@ const AdminDashboard = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Sản phẩm</TableHead>
-                      <TableHead>Giá</TableHead>
-                      <TableHead>Danh mục</TableHead>
-                      <TableHead>Tồn kho</TableHead>
+                      <TableHead className="cursor-pointer select-none" onClick={() => toggleSort(setProductSort, "name")}>
+                        <span className="flex items-center">Sản phẩm <SortIcon sortState={productSort} colKey="name" /></span>
+                      </TableHead>
+                      <TableHead className="cursor-pointer select-none" onClick={() => toggleSort(setProductSort, "price")}>
+                        <span className="flex items-center">Giá <SortIcon sortState={productSort} colKey="price" /></span>
+                      </TableHead>
+                      <TableHead className="cursor-pointer select-none" onClick={() => toggleSort(setProductSort, "category")}>
+                        <span className="flex items-center">Danh mục <SortIcon sortState={productSort} colKey="category" /></span>
+                      </TableHead>
+                      <TableHead className="cursor-pointer select-none" onClick={() => toggleSort(setProductSort, "stock")}>
+                        <span className="flex items-center">Tồn kho <SortIcon sortState={productSort} colKey="stock" /></span>
+                      </TableHead>
                       <TableHead>Hành động</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {products.map((product) => (
+                    {sortedProducts.map((product) => (
                       <TableRow key={product.id}>
                         <TableCell>
                           <div className="flex items-center gap-2">
