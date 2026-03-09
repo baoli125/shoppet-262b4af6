@@ -252,7 +252,7 @@ const AdminDashboard = () => {
     if (roleFilter.length > 0) {
       const roles = userRoles[u.id] || [];
       const effectiveRoles = roles.length > 0 ? roles : ["user"];
-      return roleFilter.some(r => effectiveRoles.includes(r));
+      return roleFilter.every(r => effectiveRoles.includes(r));
     }
     return true;
   });
