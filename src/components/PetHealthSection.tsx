@@ -346,6 +346,19 @@ export const PetHealthSection = ({ petId }: PetHealthSectionProps) => {
     
     if (!record?.attachments) return;
 
+    // Extract file path from URL to delete from storage
+    try {
+      const bucketName = 'medical-documents';
+      const urlObj = new URL(url);
+      const pathParts = urlObj.pathname.split(`/object/public/${bucketName}/`);
+      if (pathParts.length > 1) {
+        const filePath = decodeURIComponent(pathParts[1]);
+        await supabase.storage.from(bucketName).remove([filePath]);
+      }
+    } catch (e) {
+      console.error("Error deleting file from storage:", e);
+    }
+
     const updatedAttachments = record.attachments.filter(a => a !== url);
 
     const { error } = await supabase
