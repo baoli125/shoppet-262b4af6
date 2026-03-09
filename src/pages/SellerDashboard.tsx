@@ -290,7 +290,7 @@ const SellerDashboard = () => {
           </header>
 
           <main className="flex-1 p-4 md:p-6 max-w-7xl mx-auto w-full">
-            {section === "dashboard" && <DashboardSection stats={stats} orders={orders} products={products} onNavigate={setSection} />}
+            {section === "dashboard" && <DashboardSection stats={stats} orders={orders} products={products} onNavigate={setSection} buyers={buyers} />}
             {section === "orders" && (
               <OrdersSection
                 orders={orders}
