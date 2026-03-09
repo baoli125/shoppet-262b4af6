@@ -944,6 +944,40 @@ const AdminDashboard = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Pet Detail Dialog */}
+      <Dialog open={showPetDetail} onOpenChange={setShowPetDetail}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <PawPrint className="h-5 w-5" /> Thú cưng đã đăng ký ({detailPets.length})
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            {detailPets.map((pet) => (
+              <div key={pet.id} className="border rounded-lg p-3 space-y-2">
+                <div className="flex items-center gap-3">
+                  {pet.image_url && <img src={pet.image_url} alt="" className="h-12 w-12 rounded-full object-cover border" />}
+                  <div>
+                    <div className="font-semibold">{pet.name} {pet.nickname ? `(${pet.nickname})` : ""}</div>
+                    <div className="text-xs text-muted-foreground capitalize">{pet.type} {pet.breed ? `• ${pet.breed}` : ""}</div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <InfoRow label="Giới tính" value={pet.gender === "male" ? "Đực" : pet.gender === "female" ? "Cái" : "Không rõ"} />
+                  <InfoRow label="Cân nặng" value={pet.weight ? `${pet.weight} kg` : "Chưa cập nhật"} />
+                  <InfoRow label="Ngày sinh" value={pet.birth_date ? new Date(pet.birth_date).toLocaleDateString("vi-VN") : "Chưa cập nhật"} />
+                  <InfoRow label="Ngày tạo" value={new Date(pet.created_at).toLocaleDateString("vi-VN")} />
+                  {pet.notes && <InfoRow label="Ghi chú" value={pet.notes} full />}
+                </div>
+              </div>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowPetDetail(false)}>Đóng</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
