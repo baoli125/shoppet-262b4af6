@@ -305,7 +305,7 @@ const AdminDashboard = () => {
                                 <Button
                                   size="sm"
                                   variant={userRoles[user.id]?.includes("seller") ? "destructive" : "default"}
-                                  onClick={() => handleToggleRole(user.id, "seller")}
+                                  onClick={() => confirmToggleRole(user.id, "seller")}
                                   title={userRoles[user.id]?.includes("seller") ? "Thu quyền seller" : "Cấp quyền seller"}
                                 >
                                   {userRoles[user.id]?.includes("seller") ? <UserX className="h-3 w-3" /> : <UserCheck className="h-3 w-3" />}
