@@ -141,10 +141,13 @@ const AppContent = () => {
       
       setProfile(data);
       
+      // Kiểm tra tài khoản đã bị xóa mềm
+      if (data?.is_deleted) {
+        setDeletedAccountInfo({ reason: data.delete_reason || "", userId: data.id });
+      }
+      
       if (data?.is_new_user !== undefined) {
         setIsNewUser(data.is_new_user);
-        // Note: Guided tour is now triggered by custom event from Index.tsx
-        // after user completes onboarding, not here
       }
     } catch (err) {
       console.error("Unexpected error fetching profile:", err);
