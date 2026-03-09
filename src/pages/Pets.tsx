@@ -381,15 +381,14 @@ const Pets = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="gender">Giới tính</Label>
+                      <Label htmlFor="gender">Giới tính *</Label>
                       <Select value={formData.gender} onValueChange={(value) => setFormData({ ...formData, gender: value })}>
-                        <SelectTrigger>
-                          <SelectValue />
+                        <SelectTrigger className={!formData.gender ? "text-muted-foreground" : ""}>
+                          <SelectValue placeholder="Chọn giới tính" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="male">Đực</SelectItem>
                           <SelectItem value="female">Cái</SelectItem>
-                          <SelectItem value="unknown">Chưa rõ</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
