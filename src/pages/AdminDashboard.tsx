@@ -183,6 +183,8 @@ const AdminDashboard = () => {
     if (error || data?.error) {
       toast({ title: "Lỗi", description: data?.error || error?.message, variant: "destructive" });
     } else {
+      const targetUser = users.find(u => u.id === passwordUserId);
+      await logActivity("change_password", "user", passwordUserId, targetUser?.display_name || "", `Đổi mật khẩu cho ${targetUser?.display_name || targetUser?.email}`);
       toast({ title: "Thành công", description: "Đã thay đổi mật khẩu" });
       setShowPasswordDialog(false);
       setNewPassword("");
