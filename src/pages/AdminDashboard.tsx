@@ -687,7 +687,13 @@ const AdminDashboard = () => {
                           <TableCell>{buyer?.display_name || "N/A"}</TableCell>
                           <TableCell className="font-semibold">{formatPrice(order.total_amount)}</TableCell>
                           <TableCell>
-                            <Badge variant={order.status === "delivered" ? "default" : order.status === "cancelled" ? "destructive" : "secondary"}>
+                            <Badge 
+                              variant={order.status === "delivered" ? "default" : order.status === "cancelled" ? "destructive" : "secondary"}
+                              className={
+                                order.status === "confirmed" ? "bg-gray-500 text-white hover:bg-gray-500/80" :
+                                order.status === "shipping" ? "bg-[#0068FF] text-white hover:bg-[#0068FF]/80" : ""
+                              }
+                            >
                               {statusLabels[order.status] || order.status}
                             </Badge>
                           </TableCell>
