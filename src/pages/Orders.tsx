@@ -263,6 +263,8 @@ const Orders = () => {
                       getStatusColor={getStatusColor}
                       getStatusLabel={getStatusLabel}
                       onCancel={activeTab === "pending" ? () => setCancellingOrderId(order.id) : undefined}
+                      onReorder={activeTab === "cancelled" ? () => handleReorder(order) : undefined}
+                      isReordering={isReordering}
                     />
                   ))}
                 </div>
