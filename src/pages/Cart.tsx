@@ -450,7 +450,26 @@ const Cart = () => {
                 <Button
                   className="w-full btn-hero h-11 sm:h-12 text-base touch-manipulation shadow-md hover:shadow-lg transition-shadow"
                   size="lg"
-                  onClick={() => {
+                  onClick={async () => {
+                    // Fetch last order info
+                    const { data: { user } } = await supabase.auth.getUser();
+                    if (user) {
+                      const { data: lastOrder } = await supabase
+                        .from("orders")
+                        .select("phone_number, shipping_address")
+                        .eq("user_id", user.id)
+                        .order("created_at", { ascending: false })
+                        .limit(1)
+                        .single();
+                      
+                      if (lastOrder) {
+                        setLastOrderInfo({ phone_number: lastOrder.phone_number, shipping_address: lastOrder.shipping_address });
+                        setInfoChoice(null);
+                      } else {
+                        setLastOrderInfo(null);
+                        setInfoChoice(null);
+                      }
+                    }
                     setIsCheckoutOpen(true);
                     setCheckoutStep(1);
                   }}
