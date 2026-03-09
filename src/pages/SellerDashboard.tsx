@@ -331,7 +331,7 @@ const SellerDashboard = () => {
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div><span className="text-muted-foreground text-xs">Mã đơn</span><p className="font-mono text-xs">{selectedOrder.id.slice(0, 8)}...</p></div>
                 <div><span className="text-muted-foreground text-xs">Trạng thái</span><div><Badge className={`${STATUS_CONFIG[selectedOrder.status]?.color} text-white text-xs`}>{STATUS_CONFIG[selectedOrder.status]?.label}</Badge></div></div>
-                <div><span className="text-muted-foreground text-xs">Khách hàng</span><p className="font-medium">{selectedOrder.profiles?.display_name || "N/A"}</p></div>
+                <div><span className="text-muted-foreground text-xs">Khách hàng</span><p className="font-medium">{buyers[selectedOrder.user_id]?.display_name || "N/A"}</p></div>
                 <div><span className="text-muted-foreground text-xs">Tổng tiền</span><p className="font-bold text-primary">{formatPrice(selectedOrder.total_amount)}</p></div>
                 <div className="col-span-2"><span className="text-muted-foreground text-xs">Địa chỉ</span><p>{selectedOrder.shipping_address}</p></div>
                 <div><span className="text-muted-foreground text-xs">SĐT</span><p>{selectedOrder.phone_number}</p></div>
