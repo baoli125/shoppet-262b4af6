@@ -149,10 +149,23 @@ const SellerDashboard = () => {
   const fetchData = async (userId: string) => {
     const [prodRes, orderRes] = await Promise.all([
       supabase.from("products").select("*").eq("seller_id", userId).order("created_at", { ascending: false }),
-      supabase.from("orders").select("*, order_items(*), profiles!orders_user_id_fkey(display_name, email, phone)").eq("seller_id", userId).order("created_at", { ascending: false }),
+      supabase.from("orders").select("*, order_items(*)").eq("seller_id", userId).order("created_at", { ascending: false }),
     ]);
     setProducts(prodRes.data || []);
-    setOrders(orderRes.data || []);
+    const ordersData = orderRes.data || [];
+    setOrders(ordersData);
+
+    // Fetch buyer profiles separately
+    const buyerIds = [...new Set(ordersData.map(o => o.user_id))];
+    if (buyerIds.length > 0) {
+      const { data: buyerProfiles } = await supabase
+        .from("profiles")
+        .select("id, display_name, email, phone")
+        .in("id", buyerIds);
+      const map: Record<string, any> = {};
+      buyerProfiles?.forEach(b => { map[b.id] = b; });
+      setBuyers(map);
+    }
   };
 
   // ─── Stats ─────────────────────────────────────────
