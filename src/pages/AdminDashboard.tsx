@@ -250,8 +250,9 @@ const AdminDashboard = () => {
       u.email?.toLowerCase().includes(searchQuery.toLowerCase());
     if (!matchSearch) return false;
     if (roleFilter.length > 0) {
-      const highest = getUserHighestRole(u.id);
-      return roleFilter.includes(highest);
+      const roles = userRoles[u.id] || [];
+      const effectiveRoles = roles.length > 0 ? roles : ["user"];
+      return roleFilter.some(r => effectiveRoles.includes(r));
     }
     return true;
   });
