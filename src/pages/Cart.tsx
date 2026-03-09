@@ -524,7 +524,53 @@ const Cart = () => {
             </div>
           </div>
 
-          <form onSubmit={handleCheckout} className="space-y-4">
+          {/* Info Choice - show when there's a previous order and no choice made yet */}
+          {lastOrderInfo && infoChoice === null && checkoutStep === 1 && (
+            <div className="space-y-4 animate-fade-in mb-4">
+              <p className="text-sm text-muted-foreground">Bạn đã có thông tin từ đơn hàng trước. Bạn muốn sử dụng lại hay nhập mới?</p>
+              <Card 
+                className="p-4 cursor-pointer border-2 hover:border-primary transition-colors touch-manipulation"
+                onClick={() => {
+                  setInfoChoice("last");
+                  setCheckoutForm(prev => ({
+                    ...prev,
+                    phone_number: lastOrderInfo.phone_number,
+                    shipping_address: lastOrderInfo.shipping_address,
+                  }));
+                }}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Check className="w-5 h-5 text-primary" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-sm">Sử dụng thông tin gần nhất</p>
+                    <p className="text-xs text-muted-foreground truncate">📞 {lastOrderInfo.phone_number}</p>
+                    <p className="text-xs text-muted-foreground truncate">📍 {lastOrderInfo.shipping_address}</p>
+                  </div>
+                </div>
+              </Card>
+              <Card 
+                className="p-4 cursor-pointer border-2 hover:border-primary transition-colors touch-manipulation"
+                onClick={() => {
+                  setInfoChoice("new");
+                  setCheckoutForm({ shipping_address: "", phone_number: "", customer_notes: "" });
+                }}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                    <Plus className="w-5 h-5 text-muted-foreground" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm">Nhập thông tin mới</p>
+                    <p className="text-xs text-muted-foreground">Nhập số điện thoại và địa chỉ khác</p>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          )}
+
+          <form onSubmit={handleCheckout} className="space-y-4" style={{ display: (lastOrderInfo && infoChoice === null && checkoutStep === 1) ? 'none' : 'block' }}>
             {checkoutStep === 1 && (
               <div className="space-y-4 animate-fade-in">
                 <div className="space-y-2">
