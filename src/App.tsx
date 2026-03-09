@@ -282,6 +282,20 @@ const AppContent = () => {
       />
       
       <GuidedTourOverlay />
+
+      {/* Popup thông báo tài khoản bị xóa */}
+      {deletedAccountInfo && (
+        <DeletedAccountPopup
+          open={!!deletedAccountInfo}
+          reason={deletedAccountInfo.reason}
+          userId={deletedAccountInfo.userId}
+          onClose={() => { setDeletedAccountInfo(null); navigate("/"); }}
+          onRestored={() => { setDeletedAccountInfo(null); if (user) fetchProfile(user.id); }}
+        />
+      )}
+
+      {/* Popup thông báo nội dung bị xóa */}
+      {user && !deletedAccountInfo && <DeletionNoticePopup userId={user.id} />}
     </>
   );
 };
