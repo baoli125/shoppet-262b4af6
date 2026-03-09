@@ -402,6 +402,19 @@ const OrderCard = ({ order, getStatusColor, getStatusLabel, onCancel, onReorder,
         )}
       </div>
     </div>
+
+    {onReorder && (
+      <div className="border-t mt-4 pt-4 flex justify-end">
+        <Button
+          onClick={onReorder}
+          disabled={isReordering}
+          className="gap-2"
+        >
+          {isReordering ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+          Đặt lại đơn hàng
+        </Button>
+      </div>
+    )}
   </Card>
 );
 
