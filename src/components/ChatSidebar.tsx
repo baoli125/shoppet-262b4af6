@@ -129,20 +129,55 @@ const ChatSidebar = ({
             >
               <MessageSquare className="w-4 h-4 flex-shrink-0 opacity-60" />
               <div className="flex-1 min-w-0">
-                <p className="truncate text-sm">{convo.title || "Cuộc trò chuyện"}</p>
-                <p className="text-xs text-muted-foreground">{formatDate(convo.updated_at)}</p>
+                {editingId === convo.id ? (
+                  <input
+                    type="text"
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    onClick={(e) => e.stopPropagation()}
+                    autoFocus
+                    onBlur={() => handleEditSave()}
+                    className="w-full bg-background border border-input rounded px-1.5 py-0.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                  />
+                ) : (
+                  <p className="truncate text-sm">{convo.title || "Cuộc trò chuyện"}</p>
+                )}
+                {editingId !== convo.id && <p className="text-xs text-muted-foreground">{formatDate(convo.updated_at)}</p>}
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDeleteConversation(convo.id);
-                }}
-              >
-                <Trash2 className="w-3 h-3 text-destructive" />
-              </Button>
+              
+              {editingId === convo.id ? (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 flex-shrink-0 text-primary hover:text-primary"
+                  onClick={handleEditSave}
+                >
+                  <Check className="w-3 h-3" />
+                </Button>
+              ) : (
+                <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 flex-shrink-0"
+                    onClick={(e) => handleEditStart(e, convo.id, convo.title)}
+                  >
+                    <Pencil className="w-3 h-3 text-muted-foreground hover:text-foreground" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 flex-shrink-0"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDeleteConversation(convo.id);
+                    }}
+                  >
+                    <Trash2 className="w-3 h-3 text-destructive" />
+                  </Button>
+                </div>
+              )}
             </div>
           ))}
         </div>

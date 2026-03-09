@@ -340,6 +340,7 @@ const AIChat = () => {
         onSelectConversation={handleSelectConversation}
         onNewConversation={handleNewConversation}
         onDeleteConversation={handleDeleteConversation}
+        onRenameConversation={handleRenameConversation}
         isLoading={isLoading}
         isOpen={sidebarOpen}
         onToggle={() => setSidebarOpen((prev) => !prev)}
