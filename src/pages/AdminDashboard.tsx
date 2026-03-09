@@ -463,6 +463,15 @@ const AdminDashboard = () => {
                           labelMap={roleLabels}
                         />
                       </TableHead>
+                      <TableHead>
+                        <FilterDropdown
+                          label="Thú cưng"
+                          options={["yes", "no"]}
+                          selected={petFilter}
+                          onToggle={(v) => toggleFilter(setPetFilter, v)}
+                          labelMap={{ yes: "Đã đăng ký", no: "Chưa đăng ký" }}
+                        />
+                      </TableHead>
                       <TableHead>Hành động</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -470,6 +479,7 @@ const AdminDashboard = () => {
                     {sortedUsers.map((user) => {
                       const isAdmin = isAdminUser(user.id);
                       const isSelf = user.id === currentUserId;
+                      const pets = userPets[user.id] || [];
                       return (
                         <TableRow key={user.id}>
                           <TableCell className="font-medium">
@@ -491,6 +501,20 @@ const AdminDashboard = () => {
                               ))}
                               {(!userRoles[user.id] || userRoles[user.id].length === 0) && <Badge variant="outline">user</Badge>}
                             </div>
+                          </TableCell>
+                          <TableCell>
+                            {pets.length > 0 ? (
+                              <button
+                                className="flex items-center gap-1 text-green-600 hover:text-green-700 transition-colors"
+                                onClick={() => { setDetailPets(pets); setShowPetDetail(true); }}
+                                title={`${pets.length} thú cưng`}
+                              >
+                                <Check className="h-4 w-4" />
+                                <span className="text-xs font-medium">{pets.length}</span>
+                              </button>
+                            ) : (
+                              <X className="h-4 w-4 text-muted-foreground/50" />
+                            )}
                           </TableCell>
                           <TableCell>
                             <div className="flex gap-1 flex-wrap">
