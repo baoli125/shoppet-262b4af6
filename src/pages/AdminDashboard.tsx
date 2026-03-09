@@ -99,7 +99,7 @@ const AdminDashboard = () => {
   };
 
   const fetchAllData = async () => {
-    const [profilesRes, ordersRes, productsRes, rolesRes, petsRes, medicalRes, vaccinesRes] = await Promise.all([
+    const [profilesRes, ordersRes, productsRes, rolesRes, petsRes, medicalRes, vaccinesRes, logsRes] = await Promise.all([
       supabase.from("profiles").select("*").order("created_at", { ascending: false }),
       supabase.from("orders").select("*, order_items(*)").order("created_at", { ascending: false }),
       supabase.from("products").select("*").order("created_at", { ascending: false }),
@@ -107,6 +107,7 @@ const AdminDashboard = () => {
       supabase.from("pets").select("*"),
       supabase.from("medical_records").select("*").order("date", { ascending: false }),
       supabase.from("vaccines").select("*").order("date", { ascending: false }),
+      supabase.from("activity_logs").select("*").order("created_at", { ascending: false }).limit(500),
     ]);
 
     if (profilesRes.data) setUsers(profilesRes.data);
