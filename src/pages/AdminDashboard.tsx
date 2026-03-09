@@ -644,7 +644,15 @@ const AdminDashboard = () => {
                           <TableCell className="font-medium">
                             <div className="flex items-center gap-1.5">
                               {!isAdmin ? (
-                                <button className="text-left hover:text-primary hover:underline transition-colors" onClick={() => { setDetailUser(user); setShowUserDetail(true); }}>
+                                <button className="text-left hover:text-primary hover:underline transition-colors" onClick={() => {
+                                  // Seller → navigate to full-page detail
+                                  if (userRoles[user.id]?.includes("seller")) {
+                                    navigate(`/admin/seller/${user.id}`);
+                                  } else {
+                                    setDetailUser(user);
+                                    setShowUserDetail(true);
+                                  }
+                                }}>
                                   {user.display_name}
                                 </button>
                               ) : (
