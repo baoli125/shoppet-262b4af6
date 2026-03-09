@@ -294,6 +294,7 @@ const SellerDashboard = () => {
             {section === "orders" && (
               <OrdersSection
                 orders={orders}
+                buyers={buyers}
                 onUpdateStatus={handleUpdateOrderStatus}
                 onViewDetail={(o) => { setSelectedOrder(o); setShowOrderDetail(true); }}
               />
