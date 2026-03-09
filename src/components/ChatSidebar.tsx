@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, MessageSquare, Trash2, ChevronLeft, ChevronRight, X } from "lucide-react";
+  import { Plus, MessageSquare, Trash2, ChevronLeft, ChevronRight, X, Pencil, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Conversation {
