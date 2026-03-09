@@ -632,6 +632,17 @@ export const PetHealthSection = ({ petId }: PetHealthSectionProps) => {
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <h4 className="font-medium">{vaccine.name}</h4>
+                      {vaccine.attachments && vaccine.attachments.length > 0 ? (
+                        <Badge variant="secondary" className="text-xs gap-1 text-green-600 border-green-200 bg-green-50">
+                          <CheckCircle className="h-3 w-3" />
+                          Có file
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary" className="text-xs gap-1 text-destructive border-destructive/20 bg-destructive/5">
+                          <X className="h-3 w-3" />
+                          Chưa có file
+                        </Badge>
+                      )}
                       {vaccine.next_date && (
                         <Badge variant="outline" className="text-xs">
                           <Calendar className="h-3 w-3 mr-1" />
