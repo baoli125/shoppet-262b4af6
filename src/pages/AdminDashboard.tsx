@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
-import { Users, ShieldCheck, Package, ShoppingCart, Search, Key, Trash2, UserCheck, UserX, Eye, LogOut, Shield, ArrowUp, ArrowDown, ArrowUpDown, Filter, Check, X, PawPrint, UserPlus, RefreshCw, RotateCcw } from "lucide-react";
+import { Users, ShieldCheck, Package, ShoppingCart, Search, Key, Trash2, UserCheck, UserX, Eye, LogOut, Shield, ArrowUp, ArrowDown, ArrowUpDown, Filter, Check, X, PawPrint, UserPlus, RefreshCw, RotateCcw, ScrollText, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
