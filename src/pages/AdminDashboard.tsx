@@ -146,8 +146,18 @@ const AdminDashboard = () => {
       toast({ title: "Lỗi", description: "Mật khẩu phải có ít nhất 6 ký tự", variant: "destructive" });
       return;
     }
+    // Nếu target là admin, yêu cầu mật khẩu hiện tại
+    const targetIsAdmin = isAdminUser(passwordUserId);
+    if (targetIsAdmin && !currentPassword) {
+      toast({ title: "Lỗi", description: "Cần nhập mật khẩu hiện tại để đổi mật khẩu admin", variant: "destructive" });
+      return;
+    }
     const { data, error } = await supabase.functions.invoke("admin-change-password", {
-      body: { target_user_id: passwordUserId, new_password: newPassword },
+      body: { 
+        target_user_id: passwordUserId, 
+        new_password: newPassword,
+        ...(targetIsAdmin ? { current_password: currentPassword } : {}),
+      },
     });
     if (error || data?.error) {
       toast({ title: "Lỗi", description: data?.error || error?.message, variant: "destructive" });
@@ -155,6 +165,40 @@ const AdminDashboard = () => {
       toast({ title: "Thành công", description: "Đã thay đổi mật khẩu" });
       setShowPasswordDialog(false);
       setNewPassword("");
+      setCurrentPassword("");
+    }
+  };
+
+  const generatePassword = () => {
+    const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%";
+    let pw = "";
+    for (let i = 0; i < 12; i++) pw += chars[Math.floor(Math.random() * chars.length)];
+    return pw;
+  };
+
+  const handleCreateUser = async () => {
+    if (!createUserEmail) {
+      toast({ title: "Lỗi", description: "Email là bắt buộc", variant: "destructive" });
+      return;
+    }
+    if (!createUserPassword || createUserPassword.length < 6) {
+      toast({ title: "Lỗi", description: "Mật khẩu phải có ít nhất 6 ký tự", variant: "destructive" });
+      return;
+    }
+    setCreateUserLoading(true);
+    const { data, error } = await supabase.functions.invoke("admin-create-user", {
+      body: { email: createUserEmail, password: createUserPassword, role: createUserRole },
+    });
+    setCreateUserLoading(false);
+    if (error || data?.error) {
+      toast({ title: "Lỗi", description: data?.error || error?.message, variant: "destructive" });
+    } else {
+      toast({ title: "Thành công", description: `Đã tạo tài khoản ${createUserEmail}` });
+      setShowCreateUserDialog(false);
+      setCreateUserEmail("");
+      setCreateUserPassword("");
+      setCreateUserRole("user");
+      fetchAllData();
     }
   };
 
