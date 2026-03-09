@@ -76,6 +76,7 @@ const Orders = () => {
       .from("orders")
       .select(`
         id,
+        seller_id,
         total_amount,
         status,
         shipping_address,
@@ -83,6 +84,7 @@ const Orders = () => {
         customer_notes,
         created_at,
         order_items (
+          product_id,
           product_name,
           product_price,
           quantity,
