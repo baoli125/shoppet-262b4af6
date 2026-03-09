@@ -762,14 +762,23 @@ const AdminDashboard = () => {
       </div>
 
       {/* Change Password Dialog */}
-      <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
+      <Dialog open={showPasswordDialog} onOpenChange={(open) => { setShowPasswordDialog(open); if (!open) { setNewPassword(""); setCurrentPassword(""); } }}>
         <DialogContent>
           <DialogHeader><DialogTitle>Đổi mật khẩu người dùng</DialogTitle></DialogHeader>
           <div className="space-y-4 py-2">
             <p className="text-sm text-muted-foreground">
               Người dùng: {users.find(u => u.id === passwordUserId)?.display_name || users.find(u => u.id === passwordUserId)?.email}
             </p>
-            <Input type="password" placeholder="Mật khẩu mới (tối thiểu 6 ký tự)" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+            {isAdminUser(passwordUserId) && (
+              <div>
+                <label className="text-sm font-medium">Mật khẩu hiện tại <span className="text-destructive">*</span></label>
+                <Input type="password" placeholder="Nhập mật khẩu hiện tại của admin" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
+              </div>
+            )}
+            <div>
+              <label className="text-sm font-medium">Mật khẩu mới</label>
+              <Input type="password" placeholder="Mật khẩu mới (tối thiểu 6 ký tự)" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowPasswordDialog(false)}>Hủy</Button>
@@ -777,6 +786,46 @@ const AdminDashboard = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Create User Dialog */}
+      <Dialog open={showCreateUserDialog} onOpenChange={(open) => { setShowCreateUserDialog(open); if (!open) { setCreateUserEmail(""); setCreateUserPassword(""); setCreateUserRole("user"); } }}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Tạo tài khoản mới</DialogTitle></DialogHeader>
+          <div className="space-y-4 py-2">
+            <div>
+              <label className="text-sm font-medium">Email <span className="text-destructive">*</span></label>
+              <Input type="email" placeholder="email@example.com" value={createUserEmail} onChange={(e) => setCreateUserEmail(e.target.value)} />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Mật khẩu <span className="text-destructive">*</span></label>
+              <div className="flex gap-2">
+                <Input type="text" placeholder="Tối thiểu 6 ký tự" value={createUserPassword} onChange={(e) => setCreateUserPassword(e.target.value)} className="flex-1" />
+                <Button size="sm" variant="outline" type="button" onClick={() => setCreateUserPassword(generatePassword())} title="Tạo mật khẩu tự động">
+                  <RefreshCw className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium">Vai trò</label>
+              <Select value={createUserRole} onValueChange={setCreateUserRole}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="user">User</SelectItem>
+                  <SelectItem value="seller">Seller</SelectItem>
+                  {myRole === "admin" && <SelectItem value="manager">Manager</SelectItem>}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCreateUserDialog(false)}>Hủy</Button>
+            <Button onClick={handleCreateUser} disabled={createUserLoading}>
+              {createUserLoading ? "Đang tạo..." : "Tạo tài khoản"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
 
       {/* Delete User Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
