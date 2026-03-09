@@ -232,19 +232,48 @@ const AdminDashboard = () => {
     });
   };
 
-  const filteredUsers = users.filter(u =>
-    u.display_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    u.email?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Thứ tự ưu tiên vai trò khi hiển thị
+  const ROLE_ORDER = ["admin", "manager", "seller", "user"];
+  const sortRoles = (roles: string[]) => [...roles].sort((a, b) => ROLE_ORDER.indexOf(a) - ROLE_ORDER.indexOf(b));
+
+  const getUserHighestRole = (userId: string) => {
+    const roles = userRoles[userId];
+    if (!roles || roles.length === 0) return "user";
+    for (const r of ROLE_ORDER) {
+      if (roles.includes(r)) return r;
+    }
+    return "user";
+  };
+
+  const filteredUsers = users.filter(u => {
+    const matchSearch = u.display_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      u.email?.toLowerCase().includes(searchQuery.toLowerCase());
+    if (!matchSearch) return false;
+    if (roleFilter.length > 0) {
+      const highest = getUserHighestRole(u.id);
+      return roleFilter.includes(highest);
+    }
+    return true;
+  });
 
   const sortedUsers = sortData(filteredUsers, userSort, (u, k) => {
     if (k === "name") return u.display_name?.toLowerCase() || "";
     if (k === "email") return u.email?.toLowerCase() || "";
-    if (k === "role") return (userRoles[u.id] || []).join(",");
     return "";
   });
 
-  const sortedOrders = sortData(orders, orderSort, (o, k) => {
+  // Lấy danh sách khách hàng duy nhất từ đơn hàng
+  const uniqueCustomers = Array.from(new Set(orders.map(o => o.user_id)))
+    .map(uid => ({ id: uid, name: users.find(u => u.id === uid)?.display_name || "N/A" }))
+    .sort((a, b) => a.name.localeCompare(b.name, "vi"));
+
+  const filteredOrders = orders.filter(o => {
+    if (statusFilter.length > 0 && !statusFilter.includes(o.status)) return false;
+    if (customerFilter.length > 0 && !customerFilter.includes(o.user_id)) return false;
+    return true;
+  });
+
+  const sortedOrders = sortData(filteredOrders, orderSort, (o, k) => {
     if (k === "id") return o.id;
     if (k === "customer") return users.find((u: any) => u.id === o.user_id)?.display_name?.toLowerCase() || "";
     if (k === "total") return Number(o.total_amount);
@@ -252,7 +281,12 @@ const AdminDashboard = () => {
     return "";
   });
 
-  const sortedProducts = sortData(products, productSort, (p, k) => {
+  const filteredProducts = products.filter(p => {
+    if (categoryFilter.length > 0 && !categoryFilter.includes(p.category)) return false;
+    return true;
+  });
+
+  const sortedProducts = sortData(filteredProducts, productSort, (p, k) => {
     if (k === "name") return p.name?.toLowerCase() || "";
     if (k === "price") return Number(p.price);
     if (k === "category") return p.category || "";
@@ -263,6 +297,57 @@ const AdminDashboard = () => {
   const statusLabels: Record<string, string> = {
     pending: "Chờ xác nhận", confirmed: "Đã xác nhận",
     shipping: "Đang giao", delivered: "Đã giao", cancelled: "Đã hủy",
+  };
+
+  const categoryLabels: Record<string, string> = {
+    food: "Thức ăn", toy: "Đồ chơi", accessory: "Phụ kiện",
+    medicine: "Thuốc", grooming: "Chăm sóc", other: "Khác",
+  };
+
+  const roleLabels: Record<string, string> = {
+    admin: "Admin", manager: "Manager", seller: "Seller", user: "User",
+  };
+
+  const FilterDropdown = ({ label, options, selected, onToggle, labelMap }: {
+    label: string;
+    options: string[];
+    selected: string[];
+    onToggle: (val: string) => void;
+    labelMap?: Record<string, string>;
+  }) => (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button className="flex items-center gap-1 text-left w-full">
+          {label}
+          <Filter className={`h-3 w-3 ml-1 ${selected.length > 0 ? "text-primary" : "opacity-40"}`} />
+          {selected.length > 0 && (
+            <span className="text-[10px] bg-primary text-primary-foreground rounded-full px-1.5 leading-4">{selected.length}</span>
+          )}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-48 p-2" align="start">
+        <div className="space-y-1">
+          {options.map(opt => (
+            <label key={opt} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted cursor-pointer text-sm">
+              <Checkbox
+                checked={selected.includes(opt)}
+                onCheckedChange={() => onToggle(opt)}
+              />
+              {labelMap?.[opt] || opt}
+            </label>
+          ))}
+          {selected.length > 0 && (
+            <Button size="sm" variant="ghost" className="w-full mt-1 text-xs" onClick={() => selected.forEach(s => onToggle(s))}>
+              Bỏ lọc
+            </Button>
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+
+  const toggleFilter = (setter: React.Dispatch<React.SetStateAction<string[]>>, val: string) => {
+    setter(prev => prev.includes(val) ? prev.filter(v => v !== val) : [...prev, val]);
   };
 
   const formatPrice = (price: number) => new Intl.NumberFormat("vi-VN").format(price) + "đ";
