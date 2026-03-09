@@ -144,6 +144,14 @@ const AIChat = () => {
     }
   };
 
+  // Đổi tên cuộc trò chuyện
+  const handleRenameConversation = async (id: string, newTitle: string) => {
+    await supabase.from("chat_conversations").update({ title: newTitle }).eq("id", id);
+    setConversations((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, title: newTitle } : c))
+    );
+  };
+
   // Lưu tin nhắn
   const saveMessage = useCallback(async (role: string, content: string, convoId: string) => {
     await supabase.from("chat_messages").insert({
