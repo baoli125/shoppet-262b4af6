@@ -513,14 +513,26 @@ const AdminDashboard = () => {
                       <TableHead className="cursor-pointer select-none" onClick={() => toggleSort(setOrderSort, "id")}>
                         <span className="flex items-center">Mã đơn <SortIcon sortState={orderSort} colKey="id" /></span>
                       </TableHead>
-                      <TableHead className="cursor-pointer select-none" onClick={() => toggleSort(setOrderSort, "customer")}>
-                        <span className="flex items-center">Khách hàng <SortIcon sortState={orderSort} colKey="customer" /></span>
+                      <TableHead>
+                        <FilterDropdown
+                          label="Khách hàng"
+                          options={uniqueCustomers.map(c => c.id)}
+                          selected={customerFilter}
+                          onToggle={(v) => toggleFilter(setCustomerFilter, v)}
+                          labelMap={Object.fromEntries(uniqueCustomers.map(c => [c.id, c.name]))}
+                        />
                       </TableHead>
                       <TableHead className="cursor-pointer select-none" onClick={() => toggleSort(setOrderSort, "total")}>
                         <span className="flex items-center">Tổng tiền <SortIcon sortState={orderSort} colKey="total" /></span>
                       </TableHead>
-                      <TableHead className="cursor-pointer select-none" onClick={() => toggleSort(setOrderSort, "status")}>
-                        <span className="flex items-center">Trạng thái <SortIcon sortState={orderSort} colKey="status" /></span>
+                      <TableHead>
+                        <FilterDropdown
+                          label="Trạng thái"
+                          options={["pending", "confirmed", "shipping", "delivered", "cancelled"]}
+                          selected={statusFilter}
+                          onToggle={(v) => toggleFilter(setStatusFilter, v)}
+                          labelMap={statusLabels}
+                        />
                       </TableHead>
                       <TableHead>Hành động</TableHead>
                     </TableRow>
