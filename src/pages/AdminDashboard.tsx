@@ -601,15 +601,18 @@ const AdminDashboard = () => {
                       const isSelf = user.id === currentUserId;
                       const pets = userPets[user.id] || [];
                       return (
-                        <TableRow key={user.id}>
+                        <TableRow key={user.id} className={user.is_deleted ? "opacity-60 bg-destructive/5" : ""}>
                           <TableCell className="font-medium">
-                            {!isAdmin ? (
-                              <button className="text-left hover:text-primary hover:underline transition-colors" onClick={() => { setDetailUser(user); setShowUserDetail(true); }}>
-                                {user.display_name}
-                              </button>
-                            ) : (
-                              <span className="text-muted-foreground">{user.display_name}</span>
-                            )}
+                            <div className="flex items-center gap-1.5">
+                              {!isAdmin ? (
+                                <button className="text-left hover:text-primary hover:underline transition-colors" onClick={() => { setDetailUser(user); setShowUserDetail(true); }}>
+                                  {user.display_name}
+                                </button>
+                              ) : (
+                                <span className="text-muted-foreground">{user.display_name}</span>
+                              )}
+                              {user.is_deleted && <Badge variant="destructive" className="text-[10px] px-1.5 py-0">Đã xóa</Badge>}
+                            </div>
                           </TableCell>
                           <TableCell className="text-muted-foreground text-xs">{user.email}</TableCell>
                           <TableCell>
