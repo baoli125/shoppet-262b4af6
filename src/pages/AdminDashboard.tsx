@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Users, ShieldCheck, Package, ShoppingCart, Search, Key, Trash2, UserCheck, UserX, Eye, LogOut, Shield, ArrowUp, ArrowDown, ArrowUpDown, Filter, Check, X, PawPrint } from "lucide-react";
+import { Users, ShieldCheck, Package, ShoppingCart, Search, Key, Trash2, UserCheck, UserX, Eye, LogOut, Shield, ArrowUp, ArrowDown, ArrowUpDown, Filter, Check, X, PawPrint, UserPlus, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
