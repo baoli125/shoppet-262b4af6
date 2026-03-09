@@ -14,8 +14,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Package, Clock, Truck, CheckCircle, XCircle, Ban, Loader2 } from "lucide-react";
+import { ArrowLeft, Package, Clock, Truck, CheckCircle, XCircle, Ban, Loader2, MoreVertical } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
