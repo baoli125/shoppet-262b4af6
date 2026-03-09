@@ -144,14 +144,17 @@ const AdminDashboard = () => {
     setRoleAction(null);
   };
 
-  const handleDeleteProduct = async (productId: string) => {
-    const { error } = await supabase.from("products").delete().eq("id", productId);
+  const handleDeleteProduct = async () => {
+    if (!deleteProductId) return;
+    const { error } = await supabase.from("products").delete().eq("id", deleteProductId);
     if (error) {
       toast({ title: "Lỗi", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Thành công", description: "Đã xóa sản phẩm" });
       fetchAllData();
     }
+    setShowDeleteProductDialog(false);
+    setDeleteProductId("");
   };
 
   const handleEditOrder = (order: any) => {
