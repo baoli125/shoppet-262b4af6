@@ -322,17 +322,23 @@ const AdminDashboard = () => {
                 <Input placeholder="Tìm kiếm người dùng..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="flex-1" />
               </div>
               <div className="overflow-x-auto">
-                <Table>
+                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Tên</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Vai trò</TableHead>
+                      <TableHead className="cursor-pointer select-none" onClick={() => toggleSort(setUserSort, "name")}>
+                        <span className="flex items-center">Tên <SortIcon sortState={userSort} colKey="name" /></span>
+                      </TableHead>
+                      <TableHead className="cursor-pointer select-none" onClick={() => toggleSort(setUserSort, "email")}>
+                        <span className="flex items-center">Email <SortIcon sortState={userSort} colKey="email" /></span>
+                      </TableHead>
+                      <TableHead className="cursor-pointer select-none" onClick={() => toggleSort(setUserSort, "role")}>
+                        <span className="flex items-center">Vai trò <SortIcon sortState={userSort} colKey="role" /></span>
+                      </TableHead>
                       <TableHead>Hành động</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredUsers.map((user) => {
+                    {sortedUsers.map((user) => {
                       const isAdmin = isAdminUser(user.id);
                       const isSelf = user.id === currentUserId;
                       return (
