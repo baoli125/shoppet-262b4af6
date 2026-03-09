@@ -123,6 +123,7 @@ const SellerDashboard = () => {
   // Order detail
   const [showOrderDetail, setShowOrderDetail] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [buyers, setBuyers] = useState<Record<string, any>>({});
 
   const navigate = useNavigate();
   const { toast } = useToast();
