@@ -21,12 +21,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Package, Clock, Truck, CheckCircle, XCircle, Ban, Loader2, MoreVertical } from "lucide-react";
+import { ArrowLeft, Package, Clock, Truck, CheckCircle, XCircle, Ban, Loader2, MoreVertical, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 interface Order {
   id: string;
+  seller_id: string;
   total_amount: number;
   status: string;
   shipping_address: string;
@@ -34,6 +35,7 @@ interface Order {
   customer_notes: string;
   created_at: string;
   order_items: {
+    product_id: string | null;
     product_name: string;
     product_price: number;
     quantity: number;
@@ -55,6 +57,7 @@ const Orders = () => {
   const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
   const [cancelReason, setCancelReason] = useState("");
   const [isCancelling, setIsCancelling] = useState(false);
+  const [isReordering, setIsReordering] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -73,6 +76,7 @@ const Orders = () => {
       .from("orders")
       .select(`
         id,
+        seller_id,
         total_amount,
         status,
         shipping_address,
@@ -80,6 +84,7 @@ const Orders = () => {
         customer_notes,
         created_at,
         order_items (
+          product_id,
           product_name,
           product_price,
           quantity,
@@ -123,6 +128,50 @@ const Orders = () => {
 
     setCancellingOrderId(null);
     setCancelReason("");
+  };
+
+  const handleReorder = async (order: Order) => {
+    setIsReordering(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: newOrder, error: orderError } = await supabase
+        .from("orders")
+        .insert({
+          user_id: user.id,
+          seller_id: order.seller_id,
+          total_amount: order.total_amount,
+          status: "pending" as any,
+          shipping_address: order.shipping_address,
+          phone_number: order.phone_number,
+          customer_notes: order.customer_notes || null,
+        })
+        .select()
+        .single();
+
+      if (orderError || !newOrder) throw orderError;
+
+      const newItems = order.order_items.map((item) => ({
+        order_id: newOrder.id,
+        product_id: item.product_id,
+        product_name: item.product_name,
+        product_price: item.product_price,
+        quantity: item.quantity,
+        subtotal: item.subtotal,
+      }));
+
+      const { error: itemsError } = await supabase.from("order_items").insert(newItems);
+      if (itemsError) throw itemsError;
+
+      toast({ title: "Thành công", description: "Đơn hàng đã được đặt lại" });
+      await fetchOrders();
+      setActiveTab("pending");
+    } catch {
+      toast({ title: "Lỗi", description: "Không thể đặt lại đơn hàng", variant: "destructive" });
+    } finally {
+      setIsReordering(false);
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -214,6 +263,8 @@ const Orders = () => {
                       getStatusColor={getStatusColor}
                       getStatusLabel={getStatusLabel}
                       onCancel={activeTab === "pending" ? () => setCancellingOrderId(order.id) : undefined}
+                      onReorder={activeTab === "cancelled" ? () => handleReorder(order) : undefined}
+                      isReordering={isReordering}
                     />
                   ))}
                 </div>
@@ -277,9 +328,11 @@ interface OrderCardProps {
   getStatusColor: (status: string) => string;
   getStatusLabel: (status: string) => string;
   onCancel?: () => void;
+  onReorder?: () => void;
+  isReordering?: boolean;
 }
 
-const OrderCard = ({ order, getStatusColor, getStatusLabel, onCancel }: OrderCardProps) => (
+const OrderCard = ({ order, getStatusColor, getStatusLabel, onCancel, onReorder, isReordering }: OrderCardProps) => (
   <Card className="p-4 sm:p-6">
     <div className="flex flex-col sm:flex-row items-start justify-between mb-4 gap-3 sm:gap-4">
       <div className="w-full sm:w-auto">
@@ -349,6 +402,19 @@ const OrderCard = ({ order, getStatusColor, getStatusLabel, onCancel }: OrderCar
         )}
       </div>
     </div>
+
+    {onReorder && (
+      <div className="border-t mt-4 pt-4 flex justify-end">
+        <Button
+          onClick={onReorder}
+          disabled={isReordering}
+          className="gap-2"
+        >
+          {isReordering ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+          Đặt lại đơn hàng
+        </Button>
+      </div>
+    )}
   </Card>
 );
 
