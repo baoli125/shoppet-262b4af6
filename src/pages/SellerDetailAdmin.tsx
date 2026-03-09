@@ -82,13 +82,14 @@ const SellerDetailAdmin = () => {
     setOrders(ordersRes.data || []);
     setPets(petsRes.data || []);
 
-    // Fetch buyer profiles
+    // Fetch buyer profiles before setting loading to false
     if (ordersRes.data && ordersRes.data.length > 0) {
       const buyerIds = [...new Set(ordersRes.data.map((o: any) => o.user_id))];
-      const { data: buyerProfiles } = await supabase
+      const { data: buyerProfiles, error: buyerError } = await supabase
         .from("profiles")
         .select("id, display_name, avatar_url, phone, email")
         .in("id", buyerIds);
+      console.log("Buyer profiles fetched:", buyerProfiles, "error:", buyerError);
       if (buyerProfiles) {
         const map: Record<string, any> = {};
         buyerProfiles.forEach(b => { map[b.id] = b; });
