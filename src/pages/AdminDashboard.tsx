@@ -582,10 +582,11 @@ const AdminDashboard = () => {
         </div>
 
         <Tabs defaultValue="users">
-          <TabsList className="w-full grid grid-cols-3 mb-4">
+          <TabsList className="w-full grid grid-cols-4 mb-4">
             <TabsTrigger value="users">Người dùng</TabsTrigger>
             <TabsTrigger value="orders">Đơn hàng</TabsTrigger>
             <TabsTrigger value="products">Sản phẩm</TabsTrigger>
+            <TabsTrigger value="logs" className="gap-1"><ScrollText className="h-3.5 w-3.5" /> Logs</TabsTrigger>
           </TabsList>
 
           <TabsContent value="users">
