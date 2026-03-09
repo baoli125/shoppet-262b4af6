@@ -20,10 +20,14 @@ const AdminDashboard = () => {
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [showOrderDialog, setShowOrderDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showRoleDialog, setShowRoleDialog] = useState(false);
+  const [showDeleteProductDialog, setShowDeleteProductDialog] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [newPassword, setNewPassword] = useState("");
   const [passwordUserId, setPasswordUserId] = useState("");
   const [deleteUserId, setDeleteUserId] = useState("");
+  const [roleAction, setRoleAction] = useState<{ userId: string; role: "seller" | "manager"; action: "grant" | "revoke" } | null>(null);
+  const [deleteProductId, setDeleteProductId] = useState("");
   const [myRole, setMyRole] = useState<"admin" | "manager" | null>(null);
   const [currentUserId, setCurrentUserId] = useState("");
   const [loading, setLoading] = useState(true);
@@ -110,9 +114,16 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleToggleRole = async (userId: string, role: "seller" | "manager") => {
+  const confirmToggleRole = (userId: string, role: "seller" | "manager") => {
     const hasRole = userRoles[userId]?.includes(role);
-    if (hasRole) {
+    setRoleAction({ userId, role, action: hasRole ? "revoke" : "grant" });
+    setShowRoleDialog(true);
+  };
+
+  const handleToggleRole = async () => {
+    if (!roleAction) return;
+    const { userId, role, action } = roleAction;
+    if (action === "revoke") {
       const { error } = await supabase.from("user_roles").delete().eq("user_id", userId).eq("role", role);
       if (error) {
         toast({ title: "Lỗi", description: error.message, variant: "destructive" });
@@ -129,16 +140,21 @@ const AdminDashboard = () => {
         fetchAllData();
       }
     }
+    setShowRoleDialog(false);
+    setRoleAction(null);
   };
 
-  const handleDeleteProduct = async (productId: string) => {
-    const { error } = await supabase.from("products").delete().eq("id", productId);
+  const handleDeleteProduct = async () => {
+    if (!deleteProductId) return;
+    const { error } = await supabase.from("products").delete().eq("id", deleteProductId);
     if (error) {
       toast({ title: "Lỗi", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Thành công", description: "Đã xóa sản phẩm" });
       fetchAllData();
     }
+    setShowDeleteProductDialog(false);
+    setDeleteProductId("");
   };
 
   const handleEditOrder = (order: any) => {
@@ -289,7 +305,7 @@ const AdminDashboard = () => {
                                 <Button
                                   size="sm"
                                   variant={userRoles[user.id]?.includes("seller") ? "destructive" : "default"}
-                                  onClick={() => handleToggleRole(user.id, "seller")}
+                                  onClick={() => confirmToggleRole(user.id, "seller")}
                                   title={userRoles[user.id]?.includes("seller") ? "Thu quyền seller" : "Cấp quyền seller"}
                                 >
                                   {userRoles[user.id]?.includes("seller") ? <UserX className="h-3 w-3" /> : <UserCheck className="h-3 w-3" />}
@@ -300,7 +316,7 @@ const AdminDashboard = () => {
                                 <Button
                                   size="sm"
                                   variant={userRoles[user.id]?.includes("manager") ? "destructive" : "secondary"}
-                                  onClick={() => handleToggleRole(user.id, "manager")}
+                                  onClick={() => confirmToggleRole(user.id, "manager")}
                                   title={userRoles[user.id]?.includes("manager") ? "Thu quyền manager" : "Cấp quyền manager"}
                                 >
                                   <Shield className="h-3 w-3" />
@@ -394,7 +410,7 @@ const AdminDashboard = () => {
                         <TableCell><Badge variant="outline">{product.category}</Badge></TableCell>
                         <TableCell>{product.stock}</TableCell>
                         <TableCell>
-                          <Button size="sm" variant="destructive" onClick={() => handleDeleteProduct(product.id)}>
+                          <Button size="sm" variant="destructive" onClick={() => { setDeleteProductId(product.id); setShowDeleteProductDialog(true); }}>
                             <Trash2 className="h-3 w-3" />
                           </Button>
                         </TableCell>
@@ -487,6 +503,46 @@ const AdminDashboard = () => {
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowOrderDialog(false)}>Hủy</Button>
             <Button onClick={handleSaveOrder}>Lưu thay đổi</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Role Confirmation Dialog */}
+      <Dialog open={showRoleDialog} onOpenChange={setShowRoleDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {roleAction?.action === "grant" ? "Xác nhận cấp quyền" : "Xác nhận thu quyền"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-2">
+            <p className="text-sm">
+              Bạn có chắc muốn {roleAction?.action === "grant" ? "cấp" : "thu"} quyền <strong>{roleAction?.role}</strong> cho{" "}
+              <strong>{users.find(u => u.id === roleAction?.userId)?.display_name}</strong>?
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setShowRoleDialog(false); setRoleAction(null); }}>Hủy</Button>
+            <Button variant={roleAction?.action === "revoke" ? "destructive" : "default"} onClick={handleToggleRole}>
+              {roleAction?.action === "grant" ? "Cấp quyền" : "Thu quyền"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Product Confirmation Dialog */}
+      <Dialog open={showDeleteProductDialog} onOpenChange={setShowDeleteProductDialog}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Xác nhận xóa sản phẩm</DialogTitle></DialogHeader>
+          <div className="py-2">
+            <p className="text-sm">
+              Bạn có chắc muốn xóa sản phẩm <strong>{products.find(p => p.id === deleteProductId)?.name}</strong>?
+            </p>
+            <p className="text-sm text-destructive mt-2">Hành động này không thể hoàn tác!</p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setShowDeleteProductDialog(false); setDeleteProductId(""); }}>Hủy</Button>
+            <Button variant="destructive" onClick={handleDeleteProduct}>Xóa</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
