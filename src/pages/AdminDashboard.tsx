@@ -316,7 +316,7 @@ const AdminDashboard = () => {
                                 <Button
                                   size="sm"
                                   variant={userRoles[user.id]?.includes("manager") ? "destructive" : "secondary"}
-                                  onClick={() => handleToggleRole(user.id, "manager")}
+                                  onClick={() => confirmToggleRole(user.id, "manager")}
                                   title={userRoles[user.id]?.includes("manager") ? "Thu quyền manager" : "Cấp quyền manager"}
                                 >
                                   <Shield className="h-3 w-3" />
