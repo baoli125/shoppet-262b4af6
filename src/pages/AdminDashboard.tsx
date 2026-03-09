@@ -31,6 +31,8 @@ const AdminDashboard = () => {
   const [customerFilter, setCustomerFilter] = useState<string[]>([]);
   const [petFilter, setPetFilter] = useState<string[]>([]);
   const [userPets, setUserPets] = useState<Record<string, any[]>>({});
+  const [petMedicalRecords, setPetMedicalRecords] = useState<Record<string, any[]>>({});
+  const [petVaccines, setPetVaccines] = useState<Record<string, any[]>>({});
   const [showPetDetail, setShowPetDetail] = useState(false);
   const [detailPets, setDetailPets] = useState<any[]>([]);
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
@@ -86,12 +88,14 @@ const AdminDashboard = () => {
   };
 
   const fetchAllData = async () => {
-    const [profilesRes, ordersRes, productsRes, rolesRes, petsRes] = await Promise.all([
+    const [profilesRes, ordersRes, productsRes, rolesRes, petsRes, medicalRes, vaccinesRes] = await Promise.all([
       supabase.from("profiles").select("*").order("created_at", { ascending: false }),
       supabase.from("orders").select("*, order_items(*)").order("created_at", { ascending: false }),
       supabase.from("products").select("*").order("created_at", { ascending: false }),
       supabase.from("user_roles").select("*"),
       supabase.from("pets").select("*"),
+      supabase.from("medical_records").select("*").order("date", { ascending: false }),
+      supabase.from("vaccines").select("*").order("date", { ascending: false }),
     ]);
 
     if (profilesRes.data) setUsers(profilesRes.data);
@@ -112,6 +116,22 @@ const AdminDashboard = () => {
         petMap[p.user_id].push(p);
       });
       setUserPets(petMap);
+    }
+    if (medicalRes.data) {
+      const map: Record<string, any[]> = {};
+      medicalRes.data.forEach((r: any) => {
+        if (!map[r.pet_id]) map[r.pet_id] = [];
+        map[r.pet_id].push(r);
+      });
+      setPetMedicalRecords(map);
+    }
+    if (vaccinesRes.data) {
+      const map: Record<string, any[]> = {};
+      vaccinesRes.data.forEach((v: any) => {
+        if (!map[v.pet_id]) map[v.pet_id] = [];
+        map[v.pet_id].push(v);
+      });
+      setPetVaccines(map);
     }
   };
 
@@ -513,7 +533,7 @@ const AdminDashboard = () => {
                                 <span className="text-xs font-medium">{pets.length}</span>
                               </button>
                             ) : (
-                              <X className="h-4 w-4 text-muted-foreground/50" />
+                              <X className="h-4 w-4 text-destructive" />
                             )}
                           </TableCell>
                           <TableCell>
@@ -969,6 +989,52 @@ const AdminDashboard = () => {
                   <InfoRow label="Ngày sinh" value={pet.birth_date ? new Date(pet.birth_date).toLocaleDateString("vi-VN") : "Chưa cập nhật"} />
                   <InfoRow label="Ngày tạo" value={new Date(pet.created_at).toLocaleDateString("vi-VN")} />
                   {pet.notes && <InfoRow label="Ghi chú" value={pet.notes} full />}
+                </div>
+
+                {/* Hồ sơ y tế */}
+                <div>
+                  <div className="text-sm font-medium mb-1">Hồ sơ y tế</div>
+                  {(petMedicalRecords[pet.id]?.length || 0) > 0 ? (
+                    <div className="space-y-1">
+                      {petMedicalRecords[pet.id].map((rec: any) => (
+                        <div key={rec.id} className="bg-muted/50 rounded p-2 text-xs space-y-0.5">
+                          <div className="flex justify-between">
+                            <span className="font-medium">{rec.title}</span>
+                            <span className="text-muted-foreground">{new Date(rec.date).toLocaleDateString("vi-VN")}</span>
+                          </div>
+                          {rec.record_type && <div className="text-muted-foreground">Loại: {rec.record_type}</div>}
+                          {rec.veterinarian && <div className="text-muted-foreground">Bác sĩ: {rec.veterinarian}</div>}
+                          {rec.clinic_name && <div className="text-muted-foreground">Phòng khám: {rec.clinic_name}</div>}
+                          {rec.description && <div className="text-muted-foreground">{rec.description}</div>}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground italic">Không có hồ sơ y tế</p>
+                  )}
+                </div>
+
+                {/* Tiêm chủng */}
+                <div>
+                  <div className="text-sm font-medium mb-1">Tiêm chủng</div>
+                  {(petVaccines[pet.id]?.length || 0) > 0 ? (
+                    <div className="space-y-1">
+                      {petVaccines[pet.id].map((vac: any) => (
+                        <div key={vac.id} className="bg-muted/50 rounded p-2 text-xs space-y-0.5">
+                          <div className="flex justify-between">
+                            <span className="font-medium">{vac.name}</span>
+                            <span className="text-muted-foreground">{new Date(vac.date).toLocaleDateString("vi-VN")}</span>
+                          </div>
+                          {vac.veterinarian && <div className="text-muted-foreground">Bác sĩ: {vac.veterinarian}</div>}
+                          {vac.clinic && <div className="text-muted-foreground">Phòng khám: {vac.clinic}</div>}
+                          {vac.batch_no && <div className="text-muted-foreground">Số lô: {vac.batch_no}</div>}
+                          {vac.next_date && <div className="text-muted-foreground">Lần tiếp: {new Date(vac.next_date).toLocaleDateString("vi-VN")}</div>}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground italic">Không có lịch tiêm chủng</p>
+                  )}
                 </div>
               </div>
             ))}
