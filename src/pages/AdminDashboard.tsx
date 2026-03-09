@@ -48,7 +48,13 @@ const AdminDashboard = () => {
   const [detailProduct, setDetailProduct] = useState<any>(null);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [newPassword, setNewPassword] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
   const [passwordUserId, setPasswordUserId] = useState("");
+  const [showCreateUserDialog, setShowCreateUserDialog] = useState(false);
+  const [createUserEmail, setCreateUserEmail] = useState("");
+  const [createUserPassword, setCreateUserPassword] = useState("");
+  const [createUserRole, setCreateUserRole] = useState("user");
+  const [createUserLoading, setCreateUserLoading] = useState(false);
   const [deleteUserId, setDeleteUserId] = useState("");
   const [roleAction, setRoleAction] = useState<{ userId: string; role: "seller" | "manager"; action: "grant" | "revoke" } | null>(null);
   const [deleteProductId, setDeleteProductId] = useState("");
