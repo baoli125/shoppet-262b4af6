@@ -123,6 +123,7 @@ const SellerDashboard = () => {
   // Order detail
   const [showOrderDetail, setShowOrderDetail] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [buyers, setBuyers] = useState<Record<string, any>>({});
 
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -148,10 +149,23 @@ const SellerDashboard = () => {
   const fetchData = async (userId: string) => {
     const [prodRes, orderRes] = await Promise.all([
       supabase.from("products").select("*").eq("seller_id", userId).order("created_at", { ascending: false }),
-      supabase.from("orders").select("*, order_items(*), profiles!orders_user_id_fkey(display_name, email, phone)").eq("seller_id", userId).order("created_at", { ascending: false }),
+      supabase.from("orders").select("*, order_items(*)").eq("seller_id", userId).order("created_at", { ascending: false }),
     ]);
     setProducts(prodRes.data || []);
-    setOrders(orderRes.data || []);
+    const ordersData = orderRes.data || [];
+    setOrders(ordersData);
+
+    // Fetch buyer profiles separately
+    const buyerIds = [...new Set(ordersData.map(o => o.user_id))];
+    if (buyerIds.length > 0) {
+      const { data: buyerProfiles } = await supabase
+        .from("profiles")
+        .select("id, display_name, email, phone")
+        .in("id", buyerIds);
+      const map: Record<string, any> = {};
+      buyerProfiles?.forEach(b => { map[b.id] = b; });
+      setBuyers(map);
+    }
   };
 
   // ─── Stats ─────────────────────────────────────────
@@ -276,10 +290,11 @@ const SellerDashboard = () => {
           </header>
 
           <main className="flex-1 p-4 md:p-6 max-w-7xl mx-auto w-full">
-            {section === "dashboard" && <DashboardSection stats={stats} orders={orders} products={products} onNavigate={setSection} />}
+            {section === "dashboard" && <DashboardSection stats={stats} orders={orders} products={products} onNavigate={setSection} buyers={buyers} />}
             {section === "orders" && (
               <OrdersSection
                 orders={orders}
+                buyers={buyers}
                 onUpdateStatus={handleUpdateOrderStatus}
                 onViewDetail={(o) => { setSelectedOrder(o); setShowOrderDetail(true); }}
               />
@@ -316,7 +331,7 @@ const SellerDashboard = () => {
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div><span className="text-muted-foreground text-xs">Mã đơn</span><p className="font-mono text-xs">{selectedOrder.id.slice(0, 8)}...</p></div>
                 <div><span className="text-muted-foreground text-xs">Trạng thái</span><div><Badge className={`${STATUS_CONFIG[selectedOrder.status]?.color} text-white text-xs`}>{STATUS_CONFIG[selectedOrder.status]?.label}</Badge></div></div>
-                <div><span className="text-muted-foreground text-xs">Khách hàng</span><p className="font-medium">{selectedOrder.profiles?.display_name || "N/A"}</p></div>
+                <div><span className="text-muted-foreground text-xs">Khách hàng</span><p className="font-medium">{buyers[selectedOrder.user_id]?.display_name || "N/A"}</p></div>
                 <div><span className="text-muted-foreground text-xs">Tổng tiền</span><p className="font-bold text-primary">{formatPrice(selectedOrder.total_amount)}</p></div>
                 <div className="col-span-2"><span className="text-muted-foreground text-xs">Địa chỉ</span><p>{selectedOrder.shipping_address}</p></div>
                 <div><span className="text-muted-foreground text-xs">SĐT</span><p>{selectedOrder.phone_number}</p></div>
@@ -356,7 +371,7 @@ const SellerDashboard = () => {
 };
 
 // ─── Dashboard Section ─────────────────────────────────
-const DashboardSection = ({ stats, orders, products, onNavigate }: any) => (
+const DashboardSection = ({ stats, orders, products, onNavigate, buyers }: any) => (
   <div className="space-y-6">
     <div>
       <h2 className="text-xl font-bold mb-1">Tổng quan</h2>
@@ -406,7 +421,7 @@ const DashboardSection = ({ stats, orders, products, onNavigate }: any) => (
                 <span className="font-mono text-xs text-muted-foreground">#{order.id.slice(0, 8)}</span>
                 <Badge className={`${STATUS_CONFIG[order.status]?.color} text-white text-[10px] px-1.5`}>{STATUS_CONFIG[order.status]?.label}</Badge>
               </div>
-              <p className="text-sm font-medium mt-0.5 truncate">{order.profiles?.display_name || "N/A"}</p>
+              <p className="text-sm font-medium mt-0.5 truncate">{buyers[order.user_id]?.display_name || "N/A"}</p>
             </div>
             <div className="text-right flex-shrink-0 ml-3">
               <p className="font-semibold text-sm">{formatPrice(order.total_amount)}</p>
@@ -429,7 +444,7 @@ const StatCard = ({ icon: Icon, label, value, color, onClick }: any) => (
 );
 
 // ─── Orders Section ────────────────────────────────────
-const OrdersSection = ({ orders, onUpdateStatus, onViewDetail }: any) => {
+const OrdersSection = ({ orders, buyers, onUpdateStatus, onViewDetail }: any) => {
   const [activeTab, setActiveTab] = useState("all");
   const tabs = [
     { key: "all", label: "Tất cả" },
@@ -481,8 +496,8 @@ const OrdersSection = ({ orders, onUpdateStatus, onViewDetail }: any) => {
                   <TableCell className="font-mono text-xs">#{order.id.slice(0, 8)}</TableCell>
                   <TableCell>
                     <div>
-                      <p className="text-sm font-medium">{order.profiles?.display_name || "N/A"}</p>
-                      <p className="text-xs text-muted-foreground">{order.profiles?.email}</p>
+                      <p className="text-sm font-medium">{buyers[order.user_id]?.display_name || "N/A"}</p>
+                      <p className="text-xs text-muted-foreground">{buyers[order.user_id]?.email}</p>
                     </div>
                   </TableCell>
                   <TableCell className="font-semibold">{formatPrice(order.total_amount)}</TableCell>
