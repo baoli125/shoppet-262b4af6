@@ -29,6 +29,10 @@ const AdminDashboard = () => {
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
   const [customerFilter, setCustomerFilter] = useState<string[]>([]);
+  const [petFilter, setPetFilter] = useState<string[]>([]);
+  const [userPets, setUserPets] = useState<Record<string, any[]>>({});
+  const [showPetDetail, setShowPetDetail] = useState(false);
+  const [detailPets, setDetailPets] = useState<any[]>([]);
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [showOrderDialog, setShowOrderDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
