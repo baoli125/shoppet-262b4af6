@@ -771,6 +771,9 @@ const AdminDashboard = () => {
                           labelMap={statusLabels}
                         />
                       </TableHead>
+                      <TableHead className="cursor-pointer select-none" onClick={() => toggleSort(setOrderSort, "created_at")}>
+                        <span className="flex items-center"><Clock className="h-3 w-3 mr-1" />Thời gian <SortIcon sortState={orderSort} colKey="created_at" /></span>
+                      </TableHead>
                       <TableHead>Hành động</TableHead>
                     </TableRow>
                   </TableHeader>
