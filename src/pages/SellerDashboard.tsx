@@ -159,8 +159,8 @@ const SellerDashboard = () => {
     const buyerIds = [...new Set(ordersData.map(o => o.user_id))];
     if (buyerIds.length > 0) {
       const { data: buyerProfiles } = await supabase
-        .from("profiles")
-        .select("id, display_name, email, phone")
+        .from("public_profiles")
+        .select("id, display_name, avatar_url")
         .in("id", buyerIds);
       const map: Record<string, any> = {};
       buyerProfiles?.forEach(b => { map[b.id] = b; });
