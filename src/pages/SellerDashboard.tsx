@@ -497,7 +497,7 @@ const OrdersSection = ({ orders, buyers, onUpdateStatus, onViewDetail }: any) =>
                   <TableCell>
                     <div>
                       <p className="text-sm font-medium">{buyers[order.user_id]?.display_name || "N/A"}</p>
-                      <p className="text-xs text-muted-foreground">{buyers[order.user_id]?.email}</p>
+                      <p className="text-xs text-muted-foreground">{order.phone_number}</p>
                     </div>
                   </TableCell>
                   <TableCell className="font-semibold">{formatPrice(order.total_amount)}</TableCell>
