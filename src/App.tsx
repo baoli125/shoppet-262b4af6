@@ -70,7 +70,7 @@ const AppContent = () => {
             if (roleList.includes('admin') || roleList.includes('manager')) {
               navigate('/admin');
             } else if (roleList.includes('seller')) {
-              navigate('/seller');
+              navigate('/seller-dashboard');
             }
           }
         }, 0);
