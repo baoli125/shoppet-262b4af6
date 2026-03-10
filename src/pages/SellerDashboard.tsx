@@ -159,8 +159,8 @@ const SellerDashboard = () => {
     const buyerIds = [...new Set(ordersData.map(o => o.user_id))];
     if (buyerIds.length > 0) {
       const { data: buyerProfiles } = await supabase
-        .from("public_profiles")
-        .select("id, display_name, avatar_url")
+        .from("profiles")
+        .select("id, display_name, email, phone")
         .in("id", buyerIds);
       const map: Record<string, any> = {};
       buyerProfiles?.forEach(b => { map[b.id] = b; });
@@ -497,7 +497,7 @@ const OrdersSection = ({ orders, buyers, onUpdateStatus, onViewDetail }: any) =>
                   <TableCell>
                     <div>
                       <p className="text-sm font-medium">{buyers[order.user_id]?.display_name || "N/A"}</p>
-                      <p className="text-xs text-muted-foreground">{order.phone_number}</p>
+                      <p className="text-xs text-muted-foreground">{buyers[order.user_id]?.email}</p>
                     </div>
                   </TableCell>
                   <TableCell className="font-semibold">{formatPrice(order.total_amount)}</TableCell>
