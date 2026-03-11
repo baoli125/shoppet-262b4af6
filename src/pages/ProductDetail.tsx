@@ -415,7 +415,7 @@ const ProductDetail = () => {
                           <img src={supplier.logo} alt={supplier.name} className="w-full h-full object-cover" />
                         </div>
                         <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none transition-opacity z-10">
-                          {supplier.name}
+                          {supplier.name} · Còn {supplier.stock}
                         </div>
                       </div>
                     ))}
