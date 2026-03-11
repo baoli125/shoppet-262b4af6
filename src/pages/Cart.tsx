@@ -299,6 +299,42 @@ const Cart = () => {
 
       if (itemsError) throw itemsError;
 
+      // Giảm tồn kho từ product_suppliers
+      for (const item of selectedItems) {
+        if (item.supplier_id) {
+          // Giảm stock trong product_suppliers
+          const { data: psData } = await supabase
+            .from("product_suppliers")
+            .select("stock")
+            .eq("product_id", item.product_id)
+            .eq("supplier_id", item.supplier_id)
+            .single();
+
+          if (psData) {
+            const newStock = Math.max(0, psData.stock - item.quantity);
+            await supabase
+              .from("product_suppliers")
+              .update({ stock: newStock })
+              .eq("product_id", item.product_id)
+              .eq("supplier_id", item.supplier_id);
+          }
+        }
+        // Giảm stock trong products
+        const { data: prodData } = await supabase
+          .from("products")
+          .select("stock")
+          .eq("id", item.product_id)
+          .single();
+
+        if (prodData) {
+          const newProdStock = Math.max(0, (prodData.stock || 0) - item.quantity);
+          await supabase
+            .from("products")
+            .update({ stock: newProdStock })
+            .eq("id", item.product_id);
+        }
+      }
+
       // Only delete selected items from cart
       const selectedItemIds = selectedItems.map((item) => item.id);
       const { error: clearError } = await supabase
