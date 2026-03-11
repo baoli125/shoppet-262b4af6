@@ -740,6 +740,7 @@ const ProductDetail = () => {
                     {selectedSupplier?.id === compareB.id && <Badge className="absolute top-2 left-2">Đang chọn</Badge>}
                     <img src={compareB.logo} className="w-16 h-16 rounded-full mx-auto mb-2" />
                     <p className="text-2xl font-bold text-primary">{compareB.price.toLocaleString()}đ</p>
+                    <p className="text-xs text-muted-foreground">Còn {compareB.stock} sản phẩm</p>
                     <div className="flex items-center justify-center gap-1 mt-2 text-orange-500 font-bold">
                       <Star className="w-4 h-4 fill-orange-500" /> {compareB.rating} / 5
                     </div>
