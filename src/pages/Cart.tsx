@@ -299,6 +299,15 @@ const Cart = () => {
 
       if (itemsError) throw itemsError;
 
+      // Giảm tồn kho qua RPC function (SECURITY DEFINER)
+      for (const item of selectedItems) {
+        await supabase.rpc("decrement_stock", {
+          p_product_id: item.product_id,
+          p_supplier_id: item.supplier_id,
+          p_quantity: item.quantity,
+        });
+      }
+
       // Only delete selected items from cart
       const selectedItemIds = selectedItems.map((item) => item.id);
       const { error: clearError } = await supabase

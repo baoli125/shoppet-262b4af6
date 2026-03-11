@@ -415,7 +415,7 @@ const ProductDetail = () => {
                           <img src={supplier.logo} alt={supplier.name} className="w-full h-full object-cover" />
                         </div>
                         <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none transition-opacity z-10">
-                          {supplier.name}
+                          {supplier.name} · Còn {supplier.stock}
                         </div>
                       </div>
                     ))}
@@ -682,6 +682,7 @@ const ProductDetail = () => {
                     {selectedSupplier?.id === compareA.id && <Badge className="absolute top-2 left-2">Đang chọn</Badge>}
                     <img src={compareA.logo} className="w-16 h-16 rounded-full mx-auto mb-2" />
                     <p className="text-2xl font-bold text-primary">{compareA.price.toLocaleString()}đ</p>
+                    <p className="text-xs text-muted-foreground">Còn {compareA.stock} sản phẩm</p>
                     <div className="flex items-center justify-center gap-1 mt-2 text-orange-500 font-bold">
                       <Star className="w-4 h-4 fill-orange-500" /> {compareA.rating} / 5
                     </div>
@@ -739,6 +740,7 @@ const ProductDetail = () => {
                     {selectedSupplier?.id === compareB.id && <Badge className="absolute top-2 left-2">Đang chọn</Badge>}
                     <img src={compareB.logo} className="w-16 h-16 rounded-full mx-auto mb-2" />
                     <p className="text-2xl font-bold text-primary">{compareB.price.toLocaleString()}đ</p>
+                    <p className="text-xs text-muted-foreground">Còn {compareB.stock} sản phẩm</p>
                     <div className="flex items-center justify-center gap-1 mt-2 text-orange-500 font-bold">
                       <Star className="w-4 h-4 fill-orange-500" /> {compareB.rating} / 5
                     </div>

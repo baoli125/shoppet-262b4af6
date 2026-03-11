@@ -1223,6 +1223,14 @@ export type Database = {
       }
     }
     Functions: {
+      decrement_stock: {
+        Args: {
+          p_product_id: string
+          p_quantity: number
+          p_supplier_id: string
+        }
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
