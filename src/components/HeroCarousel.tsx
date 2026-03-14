@@ -100,9 +100,7 @@ const HeroCarousel = () => {
               }`}
               style={{ backgroundImage: `url(${slide.image})` }}
             >
-              {/* Animated Gradient Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/70 via-accent/50 to-transparent animate-pulse-glow" />
-              <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-black/20" />
+              {/* Overlay gradients đã bị xóa để trả về ảnh nguyên bản */}
             </div>
 
             {/* Content - Mobile Optimized with Floating Animation */}
