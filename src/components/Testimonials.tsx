@@ -11,7 +11,7 @@ const Testimonials = () => {
       name: "Nguyễn Minh Anh",
       avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=1",
       role: "Chủ nhân của Milo",
-      content: "Shoppet đã giúp tôi chăm sóc Milo tốt hơn rất nhiều. Trợ lý AI rất thông minh, luôn tư vấn kịp thời khi tôi gặp vấn đề.",
+      content: "PurriPaws đã giúp tôi chăm sóc Milo tốt hơn rất nhiều. Trợ lý AI rất thông minh, luôn tư vấn kịp thời khi tôi gặp vấn đề.",
       rating: 5,
       petType: "🐕",
     },
@@ -19,7 +19,7 @@ const Testimonials = () => {
       name: "Trần Hoàng Nam",
       avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=2",
       role: "Chủ nhân của Luna & Leo",
-      content: "Sản phẩm chất lượng, giao hàng nhanh. Cộng đồng Shoppet rất thân thiện, tôi đã học được nhiều kinh nghiệm nuôi mèo.",
+      content: "Sản phẩm chất lượng, giao hàng nhanh. Cộng đồng PurriPaws rất thân thiện, tôi đã học được nhiều kinh nghiệm nuôi mèo.",
       rating: 5,
       petType: "🐱",
     },
@@ -41,7 +41,7 @@ const Testimonials = () => {
             Khách hàng nói gì về chúng tôi
           </h2>
           <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
-            Hàng ngàn người yêu thú cưng đã tin tưởng Shoppet
+            Hàng ngàn người yêu thú cưng đã tin tưởng PurriPaws
           </p>
         </div>
 

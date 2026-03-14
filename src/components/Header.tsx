@@ -13,9 +13,9 @@ import { Badge } from "@/components/ui/badge";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { NotificationBell } from "@/components/NotificationBell";
-import shoppetLogoSmall from "@/assets/logo-small.png";
-import shoppetLogoMedium from "@/assets/logo-medium.png";
-import shoppetLogo from "@/assets/logo.png";
+import purripawsLogoSmall from "@/assets/logo-small.png";
+import purripawsLogoMedium from "@/assets/logo-medium.png";
+import purripawsLogo from "@/assets/logo.png";
 
 interface HeaderProps {
   isLoggedIn?: boolean;
@@ -100,9 +100,9 @@ const Header = ({
             }}
           >
             <img 
-              src={shoppetLogoSmall} 
-              srcSet={`${shoppetLogoSmall} 1x, ${shoppetLogoMedium} 2x, ${shoppetLogo} 3x`}
-              alt="Shoppet Logo" 
+              src={purripawsLogoSmall} 
+              srcSet={`${purripawsLogoSmall} 1x, ${purripawsLogoMedium} 2x, ${purripawsLogo} 3x`}
+              alt="PurriPaws Logo" 
               width="128"
               height="86"
               className="h-10 sm:h-12 md:h-16 w-auto object-contain" 

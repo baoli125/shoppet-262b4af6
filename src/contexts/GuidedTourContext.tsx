@@ -41,7 +41,7 @@ const GUIDED_STEPS: GuidedStep[] = [
   {
     id: "step-1-chatbot-intro",
     title: "Trợ lý AI Thông Minh 🤖",
-    description: "Đây là trợ lý AI của Shoppet! Bạn có thể hỏi về thú cưng, tìm sản phẩm, hoặc nhận tư vấn chăm sóc. Hãy thử click vào để khám phá!",
+    description: "Đây là trợ lý AI của PurriPaws! Bạn có thể hỏi về thú cưng, tìm sản phẩm, hoặc nhận tư vấn chăm sóc. Hãy thử click vào để khám phá!",
     targetSelector: '[data-tour="chatbot"]',
     position: "left",
     allowedInteractions: ['[data-tour="chatbot"]'],

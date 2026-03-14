@@ -46,7 +46,7 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
 
       toast({
         title: "Đăng nhập thành công!",
-        description: "Chào mừng bạn quay lại Shoppet 🐾",
+        description: "Chào mừng bạn quay lại PurriPaws 🐾",
       });
 
       onSuccess();
@@ -95,7 +95,7 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
 
       toast({
         title: "Đăng ký thành công!",
-        description: "Chào mừng bạn đến với Shoppet 🎉",
+        description: "Chào mừng bạn đến với PurriPaws 🎉",
       });
 
       onSuccess();
@@ -143,7 +143,7 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
       <DialogContent className="w-[95vw] max-w-md mx-auto">
         <DialogHeader>
           <DialogTitle className="text-xl sm:text-2xl font-bold text-center">
-            Chào mừng đến Shoppet 🐾
+            Chào mừng đến PurriPaws 🐾
           </DialogTitle>
         </DialogHeader>
 

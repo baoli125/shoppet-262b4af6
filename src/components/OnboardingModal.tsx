@@ -47,13 +47,13 @@ const OnboardingModal = ({ open, onComplete }: OnboardingModalProps) => {
       if (isNewUser) {
         toast({
           title: t('onboarding.welcome') + " 🎉",
-          description: "Tay Nhỏ sẽ hướng dẫn bạn khám phá Shoppet ngay bây giờ!",
+          description: "Tay Nhỏ sẽ hướng dẫn bạn khám phá PurriPaws ngay bây giờ!",
           duration: 3000,
         });
       } else {
         toast({
           title: "Chúc bạn có trải nghiệm tuyệt vời! 🚀",
-          description: "Hãy khám phá Shoppet theo cách của bạn!",
+          description: "Hãy khám phá PurriPaws theo cách của bạn!",
           duration: 3000,
         });
       }

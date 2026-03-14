@@ -24,7 +24,7 @@ const Newsletter = () => {
     // TODO: Implement newsletter subscription logic
     toast({
       title: "Đăng ký thành công! 🎉",
-      description: "Cảm ơn bạn đã đăng ký nhận tin từ Shoppet.",
+      description: "Cảm ơn bạn đã đăng ký nhận tin từ PurriPaws.",
     });
     setEmail("");
   };

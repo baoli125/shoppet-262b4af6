@@ -115,9 +115,9 @@ const translations = {
       },
     },
     aiChat: {
-      title: "Trợ lý AI Shoppet",
+      title: "Trợ lý AI PurriPaws",
       subtitle: "Tư vấn sức khỏe & dinh dưỡng 24/7",
-      welcome: "Xin chào! Tôi là trợ lý AI của Shoppet",
+      welcome: "Xin chào! Tôi là trợ lý AI của PurriPaws",
       welcomeDesc:
         "Tôi có thể giúp bạn tư vấn về sức khỏe, dinh dưỡng, và chăm sóc thú cưng. Hãy hỏi tôi bất cứ điều gì!",
       placeholder: "Hỏi về sức khỏe thú cưng...",
@@ -166,7 +166,7 @@ const translations = {
       },
     },
     community: {
-      title: "Cộng đồng Shoppet 🐾",
+      title: "Cộng đồng PurriPaws 🐾",
       createPost: "Chia sẻ điều gì đó với cộng đồng...",
       post: "Đăng bài",
       addImage: "Thêm ảnh",
@@ -195,7 +195,7 @@ const translations = {
       },
     },
     about: {
-      title: "Về Shoppet",
+      title: "Về PurriPaws",
       subtitle: "Nền tảng toàn diện dành cho người yêu thú cưng tại Việt Nam",
       marketplace: {
         title: "Marketplace",
@@ -222,8 +222,8 @@ const translations = {
     },
     chatbot: {
       title: "Tay Nhỏ",
-      subtitle: "Trợ lý ảo Shoppet",
-      welcomeNew: "Chào mừng bạn đến với Shoppet!",
+      subtitle: "Trợ lý ảo PurriPaws",
+      welcomeNew: "Chào mừng bạn đến với PurriPaws!",
       welcomeNewDesc:
         "Tôi là Tay Nhỏ, tôi sẽ hướng dẫn bạn khám phá tất cả tính năng trên website. Hãy hỏi tôi bất cứ điều gì!",
       welcomeBack: "👋 Chúc bạn một ngày tốt lành!",
@@ -240,10 +240,10 @@ const translations = {
       errorDesc: "Không thể gửi tin nhắn. Vui lòng thử lại.",
     },
     onboarding: {
-      welcome: "Chào mừng đến với Shoppet!",
+      welcome: "Chào mừng đến với PurriPaws!",
       description: "Hãy cho chúng tôi biết về bạn để có trải nghiệm tốt nhất",
       petOwner: "Tôi là người mới",
-      petOwnerDesc: "Hướng dẫn tôi khám phá Shoppet",
+      petOwnerDesc: "Hướng dẫn tôi khám phá PurriPaws",
       seller: "Tôi đã quen rồi",
       sellerDesc: "Tôi muốn tự khám phá",
       both: "Cả hai",
@@ -316,9 +316,9 @@ const translations = {
       },
     },
     aiChat: {
-      title: "Shoppet AI Assistant",
+      title: "PurriPaws AI Assistant",
       subtitle: "Health & nutrition advice 24/7",
-      welcome: "Hello! I'm Shoppet's AI assistant",
+      welcome: "Hello! I'm PurriPaws's AI assistant",
       welcomeDesc: "I can help you with pet health, nutrition, and care advice. Ask me anything!",
       placeholder: "Ask about pet health...",
       tip: "💡 Tip: Provide species, age, and weight information for more accurate advice",
@@ -366,7 +366,7 @@ const translations = {
       },
     },
     community: {
-      title: "Shoppet Community 🐾",
+      title: "PurriPaws Community 🐾",
       createPost: "Share something with the community...",
       post: "Post",
       addImage: "Add image",
@@ -395,7 +395,7 @@ const translations = {
       },
     },
     about: {
-      title: "About Shoppet",
+      title: "About PurriPaws",
       subtitle: "Comprehensive platform for pet lovers in Vietnam",
       marketplace: {
         title: "Marketplace",
@@ -422,8 +422,8 @@ const translations = {
     },
     chatbot: {
       title: "Tay Nhỏ",
-      subtitle: "Shoppet Virtual Assistant",
-      welcomeNew: "Welcome to Shoppet!",
+      subtitle: "PurriPaws Virtual Assistant",
+      welcomeNew: "Welcome to PurriPaws!",
       welcomeNewDesc: "I'm Tay Nhỏ, I'll guide you through all the features. Ask me anything!",
       welcomeBack: "Have a great day!",
       welcomeBackDesc: "If you need any help, just click on me! 🐾",
@@ -440,10 +440,10 @@ const translations = {
       errorDesc: "Unable to send message. Please try again.",
     },
     onboarding: {
-      welcome: "Welcome to Shoppet!",
+      welcome: "Welcome to PurriPaws!",
       description: "Tell us about yourself for the best experience",
       petOwner: "I'm new here",
-      petOwnerDesc: "Guide me through Shoppet",
+      petOwnerDesc: "Guide me through PurriPaws",
       seller: "I'm familiar",
       sellerDesc: "I want to explore on my own",
       both: "Both",

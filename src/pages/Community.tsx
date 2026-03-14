@@ -251,7 +251,7 @@ const Community = () => {
   return (
     <div className="min-h-screen bg-background pt-16">
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8 max-w-2xl">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 md:mb-8 text-center">Cộng đồng Shoppet 🐾</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 md:mb-8 text-center">Cộng đồng PurriPaws 🐾</h1>
 
         {/* Create Post - Mobile Optimized */}
         <Card className="post-card mb-4 sm:mb-6 md:mb-8 animate-fade-in">

@@ -51,7 +51,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       id: "chatbot",
       selector: '[data-tour="chatbot"]',
       title: "Trợ lý AI Thông Minh 🤖",
-      description: "Đây là cổng vào trung tâm của Shoppet! Click để mở và khám phá 4 tính năng chính.",
+      description: "Đây là cổng vào trung tâm của PurriPaws! Click để mở và khám phá 4 tính năng chính.",
       position: "center",
       forceClick: true,
     },
@@ -203,7 +203,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
     {
       id: "community-overview",
       selector: '[data-tour="community-post-input"]',
-      title: "Cộng đồng Shoppet! 👥",
+      title: "Cộng đồng PurriPaws! 👥",
       description: "Chia sẻ kinh nghiệm, kết nối với những người yêu thú cưng khác. Đây là nơi để học hỏi và giao lưu!",
       position: "center",
       forceClick: false,
@@ -266,7 +266,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
       selector: null,
       title: "🎉 Hoàn thành Hướng dẫn!",
       description:
-        "Tuyệt vời! Bạn đã làm quen với tất cả tính năng chính của Shoppet. Giờ hãy bắt đầu khám phá và chăm sóc thú cưng của bạn thật tốt nhé! 🐾",
+        "Tuyệt vời! Bạn đã làm quen với tất cả tính năng chính của PurriPaws. Giờ hãy bắt đầu khám phá và chăm sóc thú cưng của bạn thật tốt nhé! 🐾",
       position: "center",
       forceClick: false,
     },

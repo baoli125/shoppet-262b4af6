@@ -1,5 +1,5 @@
 /**
- * 🎨 ShopPet Theme System
+ * 🎨 PurriPaws Theme System
  * Modern, Pet-friendly Design System inspired by Rover.com & WagWalking
  */
 

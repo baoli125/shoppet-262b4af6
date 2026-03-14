@@ -355,7 +355,7 @@ const AIChat = () => {
                 <Sparkles className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
               </div>
               <h2 className="text-base sm:text-lg font-bold mb-2 text-foreground">
-                Xin chào! Tôi là trợ lý AI của Shoppet
+                Xin chào! Tôi là trợ lý AI của PurriPaws
               </h2>
               <p className="text-xs text-muted-foreground max-w-2xl mx-auto mb-3 px-2">
                 Tôi có thể giúp bạn tư vấn về sức khỏe, dinh dưỡng, và chăm sóc thú cưng.
