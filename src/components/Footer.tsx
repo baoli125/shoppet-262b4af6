@@ -38,7 +38,7 @@ const Footer = () => {
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <div className="text-2xl">🐾</div>
-                <h3 className="text-xl font-bold text-foreground">Shoppet</h3>
+                <h3 className="text-xl font-bold text-foreground">PurriPaws</h3>
               </div>
               <p className="text-muted-foreground text-xs leading-relaxed">
                 Nền tảng chăm sóc thú cưng toàn diện - Nơi tình yêu thương và công nghệ gặp nhau.
@@ -132,10 +132,10 @@ const Footer = () => {
                 <div className="flex items-start gap-3">
                   <Mail className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
                   <a 
-                    href="mailto:ShoppetLazyBeo@gmail.com"
+                    href="mailto:PurriPawsLazyBeo@gmail.com"
                     className="text-muted-foreground hover:text-accent text-xs transition-colors break-all"
                   >
-                    ShoppetLazyBeo@gmail.com
+                    PurriPawsLazyBeo@gmail.com
                   </a>
                 </div>
                 <div className="flex items-center gap-3">
@@ -168,7 +168,7 @@ const Footer = () => {
         <div className="border-t border-border pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <p className="text-xs text-muted-foreground text-center md:text-left">
-              © 2025 Shoppet. {t('footer.allRightsReserved')}
+              © 2025 PurriPaws. {t('footer.allRightsReserved')}
             </p>
             <div className="flex flex-wrap items-center gap-4 justify-center text-xs">
               <button className="text-muted-foreground hover:text-accent transition-colors">

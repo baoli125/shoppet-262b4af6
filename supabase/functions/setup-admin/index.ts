@@ -15,7 +15,7 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
-    const adminEmail = 'admin@shoppet.app';
+    const adminEmail = 'admin@purripaws.app';
     const adminPassword = 'admin';
 
     // Check if admin already exists

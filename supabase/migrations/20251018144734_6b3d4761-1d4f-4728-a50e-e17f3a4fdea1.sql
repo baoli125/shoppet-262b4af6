@@ -465,7 +465,7 @@ CREATE TRIGGER update_conversations_updated_at BEFORE UPDATE ON public.chat_conv
 
 -- Insert default badges
 INSERT INTO public.badges (name, description, icon, points_required) VALUES
-  ('Newcomer', 'Welcome to Shoppet!', '🌟', 0),
+  ('Newcomer', 'Welcome to PurriPaws!', '🌟', 0),
   ('Pet Lover', 'Added first pet profile', '🐾', 10),
   ('Active Member', 'Used AI assistant 10 times', '🤖', 50),
   ('Shopaholic', 'Made 5 purchases', '🛍️', 100),

@@ -220,7 +220,7 @@ const AppContent = () => {
     setShowAuthModal(false);
     toast({
       title: "Chào mừng!",
-      description: "Bạn đã đăng nhập thành công vào Shoppet 🐾",
+      description: "Bạn đã đăng nhập thành công vào PurriPaws 🐾",
     });
   };
 
@@ -237,7 +237,7 @@ const AppContent = () => {
 
     toast({
       title: "Hoàn thành hướng dẫn! 🎉",
-      description: "Bạn đã sẵn sàng khám phá Shoppet!",
+      description: "Bạn đã sẵn sàng khám phá PurriPaws!",
     });
   };
 
