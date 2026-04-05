@@ -14,15 +14,15 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-    const { user_ids, secret } = await req.json();
-    
-    // Simple secret check for one-time use
-    if (secret !== supabaseServiceKey) {
+    // Verify using service role key in Authorization header
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader || authHeader !== `Bearer ${supabaseServiceKey}`) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
+    const { user_ids } = await req.json();
     if (!user_ids || !Array.isArray(user_ids)) {
       return new Response(JSON.stringify({ error: 'Missing user_ids array' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
