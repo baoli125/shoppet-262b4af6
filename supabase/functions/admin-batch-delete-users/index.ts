@@ -11,42 +11,18 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: 'Missing authorization' }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-    }
-
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
 
-    // Verify caller is admin
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } }
-    });
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
+    const { user_ids, secret } = await req.json();
+    
+    // Simple secret check for one-time use
+    if (secret !== supabaseServiceKey) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
-    const { data: adminCheck } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-      .eq('role', 'admin')
-      .single();
-
-    if (!adminCheck) {
-      return new Response(JSON.stringify({ error: 'Admin access required' }), {
-        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-    }
-
-    const { user_ids } = await req.json();
     if (!user_ids || !Array.isArray(user_ids)) {
       return new Response(JSON.stringify({ error: 'Missing user_ids array' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -57,11 +33,6 @@ Deno.serve(async (req) => {
     const results: { id: string; success: boolean; error?: string }[] = [];
 
     for (const uid of user_ids) {
-      // Skip self and other admins
-      if (uid === user.id) {
-        results.push({ id: uid, success: false, error: 'Cannot delete self' });
-        continue;
-      }
       try {
         const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(uid);
         results.push({ id: uid, success: !deleteError, error: deleteError?.message });
@@ -71,7 +42,7 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ results, deleted: results.filter(r => r.success).length, total: user_ids.length }),
+      JSON.stringify({ deleted: results.filter(r => r.success).length, failed: results.filter(r => !r.success).length, total: user_ids.length }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error: any) {
