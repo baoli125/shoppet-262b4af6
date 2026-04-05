@@ -33,7 +33,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
   const [highlightPosition, setHighlightPosition] = useState({ top: 0, left: 0, width: 0, height: 0 });
   const [isProcessingClick, setIsProcessingClick] = useState(false);
   const clickListenerRef = useRef<((e: MouseEvent) => void) | null>(null);
-  const retryIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const retryIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // CRITICAL: Reset to step 0 when tour becomes active
   useEffect(() => {
@@ -525,7 +525,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
     updateHighlight();
 
     // Update on window resize or scroll with debounce
-    let resizeTimeout: NodeJS.Timeout;
+    let resizeTimeout: ReturnType<typeof setTimeout>;
     const debouncedUpdate = () => {
       clearTimeout(resizeTimeout);
       resizeTimeout = setTimeout(updateHighlight, 100);
