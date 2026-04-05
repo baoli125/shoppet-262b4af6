@@ -525,7 +525,7 @@ const GuidedTour = ({ isActive, onComplete }: GuidedTourProps) => {
     updateHighlight();
 
     // Update on window resize or scroll with debounce
-    let resizeTimeout: NodeJS.Timeout;
+    let resizeTimeout: ReturnType<typeof setTimeout>;
     const debouncedUpdate = () => {
       clearTimeout(resizeTimeout);
       resizeTimeout = setTimeout(updateHighlight, 100);
