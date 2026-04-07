@@ -196,57 +196,11 @@ const SellerDashboard = () => {
   }, [orders, products]);
 
   // ─── Product CRUD ──────────────────────────────────
-  const resetForm = () => setFormData({ name: "", description: "", price: "", stock: "", category: "", pet_type: "", brand: "", weight: "", image_url: "", ingredients: "", features: "", usage_instructions: "" });
-
-  const handleSubmitProduct = async () => {
-    if (!formData.name || !formData.price || !formData.category) {
-      toast({ title: "Lỗi", description: "Vui lòng điền đầy đủ thông tin bắt buộc", variant: "destructive" });
-      return;
-    }
-    try {
-      const payload = {
-        name: formData.name,
-        description: formData.description || null,
-        price: parseFloat(formData.price),
-        stock: parseInt(formData.stock) || 0,
-        category: formData.category as any,
-        pet_type: (formData.pet_type || null) as any,
-        brand: formData.brand || null,
-        weight: formData.weight || null,
-        image_url: formData.image_url || null,
-        ingredients: formData.ingredients || null,
-        features: formData.features || null,
-        usage_instructions: formData.usage_instructions || null,
-      };
-
-      if (editingProduct) {
-        const { error } = await supabase.from("products").update(payload).eq("id", editingProduct.id);
-        if (error) throw error;
-        toast({ title: "Cập nhật thành công! ✨" });
-      } else {
-        const { error } = await supabase.from("products").insert({ ...payload, seller_id: user.id });
-        if (error) throw error;
-        toast({ title: "Thêm sản phẩm thành công! 🎉" });
-      }
-      setShowProductDialog(false);
-      setEditingProduct(null);
-      resetForm();
-      fetchData(user.id);
-    } catch {
-      toast({ title: "Lỗi", description: "Không thể lưu sản phẩm.", variant: "destructive" });
-    }
-  };
-
   const handleEditProduct = (product: any) => {
     setEditingProduct(product);
-    setFormData({
-      name: product.name, description: product.description || "", price: product.price.toString(),
-      stock: (product.stock || 0).toString(), category: product.category, pet_type: product.pet_type || "",
-      brand: product.brand || "", weight: product.weight || "", image_url: product.image_url || "",
-      ingredients: product.ingredients || "", features: product.features || "", usage_instructions: product.usage_instructions || "",
-    });
     setShowProductDialog(true);
   };
+
 
   const handleDeleteProduct = async (productId: string) => {
     const { error } = await supabase.from("products").delete().eq("id", productId);
