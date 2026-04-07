@@ -76,7 +76,7 @@ export const AddProductDialog = ({ open, onOpenChange, userId, onSuccess, editin
   // Fetch existing marketplace products
   const fetchExistingProducts = async (category?: string) => {
     let query = supabase.from("products").select("*, product_suppliers(supplier_id)").eq("is_active", true);
-    if (category) query = query.eq("category", category);
+    if (category && category !== "all") query = query.eq("category", category as any);
     const { data } = await query.order("name");
     setExistingProducts(data || []);
   };
