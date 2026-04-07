@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Search, Package, Plus, ArrowLeft, Check } from "lucide-react";
+import { Search, Package, Plus, ArrowLeft, Check, Upload, X, Camera } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -36,6 +36,8 @@ export const AddProductDialog = ({ open, onOpenChange, userId, onSuccess, editin
   const [supplierPrice, setSupplierPrice] = useState("");
   const [supplierStock, setSupplierStock] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string>("");
   const { toast } = useToast();
 
   // New product form
@@ -56,6 +58,7 @@ export const AddProductDialog = ({ open, onOpenChange, userId, onSuccess, editin
           image_url: editingProduct.image_url || "", ingredients: editingProduct.ingredients || "",
           features: editingProduct.features || "", usage_instructions: editingProduct.usage_instructions || "",
         });
+        setImagePreview(editingProduct.image_url || "");
       } else {
         resetAll();
       }
@@ -70,7 +73,77 @@ export const AddProductDialog = ({ open, onOpenChange, userId, onSuccess, editin
     setSelectedProduct(null);
     setSupplierPrice("");
     setSupplierStock("");
+    setImagePreview("");
     setFormData({ name: "", description: "", price: "", stock: "", category: "", pet_type: "", brand: "", weight: "", image_url: "", ingredients: "", features: "", usage_instructions: "" });
+    setImagePreview("");
+  };
+    // Upload product image - tương tự upload avatar
+  const handleProductImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({ title: "Lỗi", description: "Vui lòng chọn file ảnh", variant: "destructive" });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "Lỗi", description: "Kích thước ảnh không được vượt quá 5MB", variant: "destructive" });
+      return;
+    }
+
+    setIsUploadingImage(true);
+    try {
+      // Create file path
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `products/${userId}/${fileName}`;
+
+      // Upload to Supabase storage
+      const { error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(filePath);
+
+      // Update form data and preview
+      setFormData({ ...formData, image_url: publicUrl });
+      setImagePreview(publicUrl);
+
+      toast({ title: "Thành công! ✨", description: "Ảnh sản phẩm đã được tải lên" });
+    } catch (error: any) {
+      console.error("Error uploading image:", error);
+      toast({ title: "Lỗi", description: "Không thể tải lên ảnh", variant: "destructive" });
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
+  // Delete uploaded image
+  const handleDeleteImage = async () => {
+    if (!formData.image_url) return;
+
+    try {
+      // Extract file path from URL
+      const urlParts = formData.image_url.split('/storage/v1/object/public/product-images/');
+      if (urlParts.length > 1) {
+        const filePath = urlParts[1];
+        await supabase.storage.from('product-images').remove([filePath]);
+      }
+    } catch (error) {
+      console.error("Error deleting image:", error);
+    }
+
+    setFormData({ ...formData, image_url: "" });
+    setImagePreview("");
+    toast({ title: "Đã xóa ảnh" });
   };
 
   // Fetch existing marketplace products
@@ -418,9 +491,67 @@ export const AddProductDialog = ({ open, onOpenChange, userId, onSuccess, editin
           <Label>Trọng lượng</Label>
           <Input value={formData.weight} onChange={e => setFormData({ ...formData, weight: e.target.value })} placeholder="VD: 1kg, 500g" />
         </div>
+        {/* 🔥 IMAGE UPLOAD SECTION - Giống Facebook */}
         <div className="sm:col-span-2">
-          <Label>URL hình ảnh</Label>
-          <Input value={formData.image_url} onChange={e => setFormData({ ...formData, image_url: e.target.value })} placeholder="https://..." />
+          <Label>Hình ảnh sản phẩm</Label>
+          <div className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:border-primary/50 hover:bg-muted/20 transition-all relative group">
+            {imagePreview || formData.image_url ? (
+              <div className="space-y-3">
+                <img src={imagePreview || formData.image_url} alt="preview" className="h-28 w-28 mx-auto object-cover rounded-lg shadow-md" />
+                <div className="flex gap-2 justify-center">
+                  <label htmlFor="product-image-upload" className="flex-1">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="w-full cursor-pointer gap-1"
+                      onClick={() => document.getElementById('product-image-upload')?.click()}
+                      disabled={isUploadingImage}
+                    >
+                      <Camera className="h-4 w-4" />
+                      {isUploadingImage ? "Đang tải..." : "Đổi ảnh"}
+                    </Button>
+                  </label>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    className="gap-1"
+                    onClick={handleDeleteImage}
+                    disabled={isUploadingImage}
+                  >
+                    <X className="h-4 w-4" /> Xóa
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <label
+                htmlFor="product-image-upload"
+                className="flex flex-col items-center gap-2 cursor-pointer w-full"
+              >
+                <Upload className="h-8 w-8 text-muted-foreground group-hover:text-primary transition-colors" />
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Chọn ảnh hoặc kéo thả vào</p>
+                  <p className="text-xs text-muted-foreground">JPG, PNG (Tối đa 5MB)</p>
+                </div>
+                {isUploadingImage && (
+                  <div className="mt-2">
+                    <div className="inline-block animate-spin">
+                      <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full" />
+                    </div>
+                  </div>
+                )}
+              </label>
+            )}
+            <input
+              id="product-image-upload"
+              type="file"
+              accept="image/*"
+              onChange={handleProductImageUpload}
+              disabled={isUploadingImage}
+              className="hidden"
+            />
+          </div>
         </div>
         <div className="sm:col-span-2">
           <Label>Mô tả</Label>
