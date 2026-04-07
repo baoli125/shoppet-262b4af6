@@ -75,7 +75,6 @@ export const AddProductDialog = ({ open, onOpenChange, userId, onSuccess, editin
     setSupplierStock("");
     setImagePreview("");
     setFormData({ name: "", description: "", price: "", stock: "", category: "", pet_type: "", brand: "", weight: "", image_url: "", ingredients: "", features: "", usage_instructions: "" });
-    setImagePreview("");
   };
     // Upload product image - tương tự upload avatar
   const handleProductImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
