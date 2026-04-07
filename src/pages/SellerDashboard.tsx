@@ -256,7 +256,7 @@ const SellerDashboard = () => {
             {section === "products" && (
               <ProductsSection
                 products={products}
-                onAdd={() => { resetForm(); setEditingProduct(null); setShowProductDialog(true); }}
+                onAdd={() => { setEditingProduct(null); setShowProductDialog(true); }}
                 onEdit={handleEditProduct}
                 onDelete={handleDeleteProduct}
               />
