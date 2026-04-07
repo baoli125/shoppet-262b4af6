@@ -1026,6 +1026,7 @@ export type Database = {
           logo: string | null
           name: string
           updated_at: string | null
+          user_id: string | null
         }
         Insert: {
           created_at?: string | null
@@ -1034,6 +1035,7 @@ export type Database = {
           logo?: string | null
           name: string
           updated_at?: string | null
+          user_id?: string | null
         }
         Update: {
           created_at?: string | null
@@ -1042,6 +1044,7 @@ export type Database = {
           logo?: string | null
           name?: string
           updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -1231,6 +1234,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      get_or_create_supplier: { Args: { p_user_id: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
