@@ -3,12 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { AddProductDialog } from "@/components/seller/AddProductDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   SidebarProvider,
@@ -115,10 +113,9 @@ const SellerDashboard = () => {
   const [isSeller, setIsSeller] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Product form
+  // Product dialog
   const [showProductDialog, setShowProductDialog] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
-  const [formData, setFormData] = useState({ name: "", description: "", price: "", stock: "", category: "", pet_type: "", brand: "", weight: "", image_url: "", ingredients: "", features: "", usage_instructions: "" });
   
   // Order detail
   const [showOrderDetail, setShowOrderDetail] = useState(false);
@@ -196,57 +193,11 @@ const SellerDashboard = () => {
   }, [orders, products]);
 
   // ─── Product CRUD ──────────────────────────────────
-  const resetForm = () => setFormData({ name: "", description: "", price: "", stock: "", category: "", pet_type: "", brand: "", weight: "", image_url: "", ingredients: "", features: "", usage_instructions: "" });
-
-  const handleSubmitProduct = async () => {
-    if (!formData.name || !formData.price || !formData.category) {
-      toast({ title: "Lỗi", description: "Vui lòng điền đầy đủ thông tin bắt buộc", variant: "destructive" });
-      return;
-    }
-    try {
-      const payload = {
-        name: formData.name,
-        description: formData.description || null,
-        price: parseFloat(formData.price),
-        stock: parseInt(formData.stock) || 0,
-        category: formData.category as any,
-        pet_type: (formData.pet_type || null) as any,
-        brand: formData.brand || null,
-        weight: formData.weight || null,
-        image_url: formData.image_url || null,
-        ingredients: formData.ingredients || null,
-        features: formData.features || null,
-        usage_instructions: formData.usage_instructions || null,
-      };
-
-      if (editingProduct) {
-        const { error } = await supabase.from("products").update(payload).eq("id", editingProduct.id);
-        if (error) throw error;
-        toast({ title: "Cập nhật thành công! ✨" });
-      } else {
-        const { error } = await supabase.from("products").insert({ ...payload, seller_id: user.id });
-        if (error) throw error;
-        toast({ title: "Thêm sản phẩm thành công! 🎉" });
-      }
-      setShowProductDialog(false);
-      setEditingProduct(null);
-      resetForm();
-      fetchData(user.id);
-    } catch {
-      toast({ title: "Lỗi", description: "Không thể lưu sản phẩm.", variant: "destructive" });
-    }
-  };
-
   const handleEditProduct = (product: any) => {
     setEditingProduct(product);
-    setFormData({
-      name: product.name, description: product.description || "", price: product.price.toString(),
-      stock: (product.stock || 0).toString(), category: product.category, pet_type: product.pet_type || "",
-      brand: product.brand || "", weight: product.weight || "", image_url: product.image_url || "",
-      ingredients: product.ingredients || "", features: product.features || "", usage_instructions: product.usage_instructions || "",
-    });
     setShowProductDialog(true);
   };
+
 
   const handleDeleteProduct = async (productId: string) => {
     const { error } = await supabase.from("products").delete().eq("id", productId);
@@ -302,7 +253,7 @@ const SellerDashboard = () => {
             {section === "products" && (
               <ProductsSection
                 products={products}
-                onAdd={() => { resetForm(); setEditingProduct(null); setShowProductDialog(true); }}
+                onAdd={() => { setEditingProduct(null); setShowProductDialog(true); }}
                 onEdit={handleEditProduct}
                 onDelete={handleDeleteProduct}
               />
@@ -313,13 +264,12 @@ const SellerDashboard = () => {
       </div>
 
       {/* Product Dialog */}
-      <ProductFormDialog
+      <AddProductDialog
         open={showProductDialog}
         onOpenChange={setShowProductDialog}
-        formData={formData}
-        setFormData={setFormData}
-        onSubmit={handleSubmitProduct}
-        isEditing={!!editingProduct}
+        userId={user?.id}
+        onSuccess={() => fetchData(user.id)}
+        editingProduct={editingProduct}
       />
 
       {/* Order Detail Dialog */}
@@ -697,89 +647,5 @@ const RevenueSection = ({ stats, orders }: any) => {
     </div>
   );
 };
-
-// ─── Product Form Dialog ───────────────────────────────
-const ProductFormDialog = ({ open, onOpenChange, formData, setFormData, onSubmit, isEditing }: any) => (
-  <Dialog open={open} onOpenChange={onOpenChange}>
-    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-      <DialogHeader><DialogTitle>{isEditing ? "Sửa sản phẩm" : "Thêm sản phẩm mới"}</DialogTitle></DialogHeader>
-      <div className="space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="sm:col-span-2">
-            <Label>Tên sản phẩm <span className="text-destructive">*</span></Label>
-            <Input value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="Nhập tên sản phẩm" />
-          </div>
-          <div>
-            <Label>Giá (đ) <span className="text-destructive">*</span></Label>
-            <Input type="number" value={formData.price} onChange={e => setFormData({ ...formData, price: e.target.value })} />
-          </div>
-          <div>
-            <Label>Số lượng tồn kho</Label>
-            <Input type="number" value={formData.stock} onChange={e => setFormData({ ...formData, stock: e.target.value })} />
-          </div>
-          <div>
-            <Label>Danh mục <span className="text-destructive">*</span></Label>
-            <Select value={formData.category} onValueChange={v => setFormData({ ...formData, category: v })}>
-              <SelectTrigger><SelectValue placeholder="Chọn danh mục" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="food">Thức ăn</SelectItem>
-                <SelectItem value="toy">Đồ chơi</SelectItem>
-                <SelectItem value="accessory">Phụ kiện</SelectItem>
-                <SelectItem value="medicine">Thuốc</SelectItem>
-                <SelectItem value="grooming">Chăm sóc</SelectItem>
-                <SelectItem value="other">Khác</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label>Loại thú cưng</Label>
-            <Select value={formData.pet_type} onValueChange={v => setFormData({ ...formData, pet_type: v })}>
-              <SelectTrigger><SelectValue placeholder="Chọn loại" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="dog">Chó</SelectItem>
-                <SelectItem value="cat">Mèo</SelectItem>
-                <SelectItem value="bird">Chim</SelectItem>
-                <SelectItem value="fish">Cá</SelectItem>
-                <SelectItem value="other">Khác</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label>Thương hiệu</Label>
-            <Input value={formData.brand} onChange={e => setFormData({ ...formData, brand: e.target.value })} />
-          </div>
-          <div>
-            <Label>Trọng lượng</Label>
-            <Input value={formData.weight} onChange={e => setFormData({ ...formData, weight: e.target.value })} placeholder="VD: 1kg, 500g" />
-          </div>
-          <div className="sm:col-span-2">
-            <Label>URL hình ảnh</Label>
-            <Input value={formData.image_url} onChange={e => setFormData({ ...formData, image_url: e.target.value })} placeholder="https://..." />
-          </div>
-          <div className="sm:col-span-2">
-            <Label>Mô tả</Label>
-            <Textarea value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} rows={3} />
-          </div>
-          <div className="sm:col-span-2">
-            <Label>Thành phần</Label>
-            <Textarea value={formData.ingredients} onChange={e => setFormData({ ...formData, ingredients: e.target.value })} rows={2} />
-          </div>
-          <div>
-            <Label>Đặc điểm</Label>
-            <Textarea value={formData.features} onChange={e => setFormData({ ...formData, features: e.target.value })} rows={2} />
-          </div>
-          <div>
-            <Label>Hướng dẫn sử dụng</Label>
-            <Textarea value={formData.usage_instructions} onChange={e => setFormData({ ...formData, usage_instructions: e.target.value })} rows={2} />
-          </div>
-        </div>
-      </div>
-      <DialogFooter>
-        <Button variant="outline" onClick={() => onOpenChange(false)}>Hủy</Button>
-        <Button onClick={onSubmit}>{isEditing ? "Cập nhật" : "Thêm sản phẩm"}</Button>
-      </DialogFooter>
-    </DialogContent>
-  </Dialog>
-);
 
 export default SellerDashboard;
