@@ -267,13 +267,12 @@ const SellerDashboard = () => {
       </div>
 
       {/* Product Dialog */}
-      <ProductFormDialog
+      <AddProductDialog
         open={showProductDialog}
         onOpenChange={setShowProductDialog}
-        formData={formData}
-        setFormData={setFormData}
-        onSubmit={handleSubmitProduct}
-        isEditing={!!editingProduct}
+        userId={user?.id}
+        onSuccess={() => fetchData(user.id)}
+        editingProduct={editingProduct}
       />
 
       {/* Order Detail Dialog */}
