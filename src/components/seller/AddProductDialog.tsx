@@ -254,6 +254,41 @@ export const AddProductDialog = ({ open, onOpenChange, userId, onSuccess, editin
       if (editingProduct) {
         const { error } = await supabase.from("products").update(payload).eq("id", editingProduct.id);
         if (error) throw error;
+
+        const { data: supplierId, error: rpcError } = await supabase.rpc("get_or_create_supplier", { p_user_id: userId });
+        if (rpcError) throw rpcError;
+
+        if (supplierId) {
+          const { data: existingSupplierLink, error: supplierFetchError } = await supabase
+            .from("product_suppliers")
+            .select("id")
+            .eq("product_id", editingProduct.id)
+            .eq("supplier_id", supplierId)
+            .maybeSingle();
+          if (supplierFetchError) throw supplierFetchError;
+
+          const supplierPayload = {
+            product_id: editingProduct.id,
+            supplier_id: supplierId,
+            price: parseFloat(formData.price),
+            stock: parseInt(formData.stock) || 0,
+          };
+
+          if (existingSupplierLink) {
+            const { error: supplierUpdateError } = await supabase
+              .from("product_suppliers")
+              .update(supplierPayload)
+              .eq("product_id", editingProduct.id)
+              .eq("supplier_id", supplierId);
+            if (supplierUpdateError) throw supplierUpdateError;
+          } else {
+            const { error: supplierInsertError } = await supabase
+              .from("product_suppliers")
+              .insert(supplierPayload);
+            if (supplierInsertError) throw supplierInsertError;
+          }
+        }
+
         toast({ title: "Cập nhật thành công! ✨" });
       } else {
         // Create product
