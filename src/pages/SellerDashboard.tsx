@@ -121,6 +121,10 @@ const SellerDashboard = () => {
   const [showOrderDetail, setShowOrderDetail] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [buyers, setBuyers] = useState<Record<string, any>>({});
+  const [hasSellerRole, setHasSellerRole] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isManager, setIsManager] = useState(false);
+  const [orderDateDraft, setOrderDateDraft] = useState<string>("");
 
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -131,12 +135,15 @@ const SellerDashboard = () => {
       setUser(user);
       const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
       const hasSeller = roles?.some(r => r.role === "seller");
-      const isAdmin = roles?.some(r => r.role === "admin");
-      const isManager = roles?.some(r => r.role === "manager");
+      const isAdminRole = roles?.some(r => r.role === "admin");
+      const isManagerRole = roles?.some(r => r.role === "manager");
       
       // Allow access if user has seller, admin, or manager role
-      const hasAccess = hasSeller || isAdmin || isManager;
+      const hasAccess = hasSeller || isAdminRole || isManagerRole;
       setIsSeller(!!hasAccess);
+      setHasSellerRole(!!hasSeller);
+      setIsAdmin(!!isAdminRole);
+      setIsManager(!!isManagerRole);
       
       if (!hasAccess) {
         toast({ title: "Không có quyền", description: "Bạn cần là người bán để truy cập.", variant: "destructive" });
@@ -220,6 +227,37 @@ const SellerDashboard = () => {
     fetchData(user.id);
   };
 
+  const toDatetimeLocal = (isoDate: string) => {
+    if (!isoDate) return "";
+    const date = new Date(isoDate);
+    const tzOffset = date.getTimezoneOffset() * 60000;
+    return new Date(date.getTime() - tzOffset).toISOString().slice(0, 16);
+  };
+
+  const toISOStringFromLocal = (localDate: string) => {
+    if (!localDate) return "";
+    const date = new Date(localDate);
+    return date.toISOString();
+  };
+
+  const handleUpdateOrderDate = async (orderId: string, localDateValue: string) => {
+    const isoDate = toISOStringFromLocal(localDateValue);
+    if (!isoDate) {
+      toast({ title: "Lỗi", description: "Ngày đặt không hợp lệ.", variant: "destructive" });
+      return;
+    }
+
+    const { error } = await supabase.from("orders").update({ created_at: isoDate }).eq("id", orderId);
+    if (error) {
+      toast({ title: "Lỗi", description: error.message, variant: "destructive" });
+      return;
+    }
+
+    toast({ title: "Đã cập nhật ngày đặt" });
+    setShowOrderDetail(false);
+    fetchData(user.id);
+  };
+
   if (loading) return <div className="flex items-center justify-center min-h-screen"><div className="text-center"><Store className="h-8 w-8 text-primary mx-auto mb-2 animate-pulse" /><p className="text-sm text-muted-foreground">Đang tải...</p></div></div>;
   if (!isSeller) return null;
 
@@ -253,7 +291,11 @@ const SellerDashboard = () => {
                 orders={orders}
                 buyers={buyers}
                 onUpdateStatus={handleUpdateOrderStatus}
-                onViewDetail={(o) => { setSelectedOrder(o); setShowOrderDetail(true); }}
+                onViewDetail={(o) => {
+                  setSelectedOrder(o);
+                  setOrderDateDraft(toDatetimeLocal(o.created_at));
+                  setShowOrderDetail(true);
+                }}
               />
             )}
             {section === "products" && (
@@ -291,7 +333,27 @@ const SellerDashboard = () => {
                 <div><span className="text-muted-foreground text-xs">Tổng tiền</span><p className="font-bold text-primary">{formatPrice(selectedOrder.total_amount)}</p></div>
                 <div className="col-span-2"><span className="text-muted-foreground text-xs">Địa chỉ</span><p>{selectedOrder.shipping_address}</p></div>
                 <div><span className="text-muted-foreground text-xs">SĐT</span><p>{selectedOrder.phone_number}</p></div>
-                <div><span className="text-muted-foreground text-xs">Ngày đặt</span><p>{new Date(selectedOrder.created_at).toLocaleString("vi-VN")}</p></div>
+                <div className="col-span-2 space-y-2">
+                  <span className="text-muted-foreground text-xs">Ngày đặt</span>
+                  {hasSellerRole && isManager ? (
+                    <div className="space-y-2">
+                      <Input
+                        type="datetime-local"
+                        value={orderDateDraft}
+                        onChange={(e) => setOrderDateDraft(e.target.value)}
+                      />
+                      <Button
+                        size="sm"
+                        className="w-full"
+                        onClick={() => handleUpdateOrderDate(selectedOrder.id, orderDateDraft)}
+                      >
+                        Lưu ngày đặt
+                      </Button>
+                    </div>
+                  ) : (
+                    <p>{new Date(selectedOrder.created_at).toLocaleString("vi-VN")}</p>
+                  )}
+                </div>
                 {selectedOrder.customer_notes && <div className="col-span-2"><span className="text-muted-foreground text-xs">Ghi chú</span><p>{selectedOrder.customer_notes}</p></div>}
               </div>
               {selectedOrder.order_items?.length > 0 && (
