@@ -131,8 +131,14 @@ const SellerDashboard = () => {
       setUser(user);
       const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
       const hasSeller = roles?.some(r => r.role === "seller");
-      setIsSeller(!!hasSeller);
-      if (!hasSeller) {
+      const isAdmin = roles?.some(r => r.role === "admin");
+      const isManager = roles?.some(r => r.role === "manager");
+      
+      // Allow access if user has seller, admin, or manager role
+      const hasAccess = hasSeller || isAdmin || isManager;
+      setIsSeller(!!hasAccess);
+      
+      if (!hasAccess) {
         toast({ title: "Không có quyền", description: "Bạn cần là người bán để truy cập.", variant: "destructive" });
         navigate("/"); return;
       }

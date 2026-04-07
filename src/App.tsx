@@ -60,14 +60,15 @@ const AppContent = () => {
         setTimeout(async () => {
           fetchProfile(currentSession.user.id);
           fetchCartCount(currentSession.user.id);
-          // Check if admin/manager and redirect
+          // Check if admin/manager and redirect ONLY on first sign in
           if (event === 'SIGNED_IN') {
             const { data: roles } = await supabase
               .from('user_roles')
               .select('role')
               .eq('user_id', currentSession.user.id);
             const roleList = roles?.map(r => r.role) || [];
-            if (roleList.includes('admin') || roleList.includes('manager')) {
+            // Only redirect to admin if SOLELY admin role (not from existing pages)
+            if (roleList.includes('admin')) {
               navigate('/admin');
             } else if (roleList.includes('seller')) {
               navigate('/seller-dashboard');
@@ -110,7 +111,7 @@ const AppContent = () => {
       subscription.unsubscribe();
       window.removeEventListener('startGuidedTour', handleStartGuidedTour);
     };
-  }, [navigate]);
+  }, []);
 
   // Refetch cart count when location changes or cart updated
   useEffect(() => {
