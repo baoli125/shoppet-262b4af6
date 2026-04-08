@@ -70,10 +70,12 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
     setIsLoading(true);
 
     try {
-      // Validate email
-      const emailValidation = emailSchema.safeParse(email);
-      if (!emailValidation.success) {
-        throw new Error(emailValidation.error.errors[0].message);
+      if (!username.trim() || username.trim().length < 3) {
+        throw new Error("Tên đăng nhập phải có ít nhất 3 ký tự");
+      }
+
+      if (!/^[a-zA-Z0-9_]+$/.test(username.trim())) {
+        throw new Error("Tên đăng nhập chỉ chứa chữ cái, số và dấu gạch dưới");
       }
 
       // Validate password
@@ -82,18 +84,26 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
         throw new Error(passwordValidation.error.errors[0].message);
       }
 
+      // Tạo email ảo từ username để dùng với Supabase Auth
+      const generatedEmail = `${username.trim().toLowerCase()}@shoppet.local`;
+
       const { error } = await supabase.auth.signUp({
-        email,
+        email: generatedEmail,
         password,
         options: {
           data: {
-            display_name: displayName,
+            display_name: displayName || username.trim(),
+            username: username.trim().toLowerCase(),
           },
-          emailRedirectTo: `${window.location.origin}/`,
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes("already registered")) {
+          throw new Error("Tên đăng nhập đã tồn tại, vui lòng chọn tên khác");
+        }
+        throw error;
+      }
 
       toast({
         title: "Đăng ký thành công!",
