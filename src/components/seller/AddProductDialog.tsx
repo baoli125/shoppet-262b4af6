@@ -39,6 +39,8 @@ export const AddProductDialog = ({ open, onOpenChange, userId, onSuccess, editin
   const [loading, setLoading] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [imagePreview, setImagePreview] = useState<string>("");
+  const [cropperOpen, setCropperOpen] = useState(false);
+  const [rawImageSrc, setRawImageSrc] = useState<string>("");
   const { toast } = useToast();
 
   // New product form
