@@ -163,6 +163,7 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
     setEmail("");
     setPassword("");
     setDisplayName("");
+    setUsername("");
     setShowPassword(false);
   };
 
