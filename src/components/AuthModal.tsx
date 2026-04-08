@@ -185,11 +185,11 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
           <TabsContent value="login">
             <form onSubmit={handleLogin} className="space-y-3 sm:space-y-4 pt-3 sm:pt-4">
               <div className="space-y-2">
-                <Label htmlFor="login-email" className="text-sm">Email</Label>
+                <Label htmlFor="login-email" className="text-sm">Email hoặc tên đăng nhập</Label>
                 <Input
                   id="login-email"
-                  type="email"
-                  placeholder="you@example.com"
+                  type="text"
+                  placeholder="username hoặc email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
