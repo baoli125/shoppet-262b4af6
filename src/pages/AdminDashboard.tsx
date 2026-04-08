@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
-import { Users, ShieldCheck, Package, ShoppingCart, Search, Key, Trash2, UserCheck, UserX, Eye, LogOut, Shield, ArrowUp, ArrowDown, ArrowUpDown, Filter, Check, X, PawPrint, UserPlus, RefreshCw, RotateCcw, ScrollText, Clock, Pencil, Link2, Store } from "lucide-react";
+import { Users, ShieldCheck, Package, ShoppingCart, Search, Key, Trash2, UserCheck, UserX, Eye, LogOut, Shield, ArrowUp, ArrowDown, ArrowUpDown, Filter, Check, X, PawPrint, UserPlus, RefreshCw, RotateCcw, Clock, Pencil, Link2, Store } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -53,6 +53,7 @@ const AdminDashboard = () => {
   const [detailUser, setDetailUser] = useState<any>(null);
   const [detailOrder, setDetailOrder] = useState<any>(null);
   const [detailProduct, setDetailProduct] = useState<any>(null);
+  const [orderDateDraft, setOrderDateDraft] = useState("");
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [newPassword, setNewPassword] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
@@ -112,7 +113,7 @@ const AdminDashboard = () => {
   };
 
   const fetchAllData = async () => {
-    const [profilesRes, ordersRes, productsRes, rolesRes, petsRes, medicalRes, vaccinesRes, logsRes, psRes, suppRes] = await Promise.all([
+    const [profilesRes, ordersRes, productsRes, rolesRes, petsRes, medicalRes, vaccinesRes, psRes, suppRes] = await Promise.all([
       supabase.from("profiles").select("*").order("created_at", { ascending: false }),
       supabase.from("orders").select("*, order_items(*)").order("created_at", { ascending: false }),
       supabase.from("products").select("*").order("created_at", { ascending: false }),
@@ -120,7 +121,6 @@ const AdminDashboard = () => {
       supabase.from("pets").select("*"),
       supabase.from("medical_records").select("*").order("date", { ascending: false }),
       supabase.from("vaccines").select("*").order("date", { ascending: false }),
-      supabase.from("activity_logs").select("*").order("created_at", { ascending: false }).limit(500),
       supabase.from("product_suppliers").select("*, suppliers(*)"),
       supabase.from("suppliers").select("*"),
     ]);
@@ -160,7 +160,6 @@ const AdminDashboard = () => {
       });
       setPetVaccines(map);
     }
-    if (logsRes.data) setActivityLogs(logsRes.data);
     if (psRes.data) {
       const psMap: Record<string, any[]> = {};
       psRes.data.forEach((ps: any) => {
@@ -446,19 +445,24 @@ const AdminDashboard = () => {
       customer_notes: order.customer_notes || "",
       status: order.status || "pending",
     });
+    setOrderDateDraft(toDatetimeLocal(order.created_at));
     setShowOrderDialog(true);
   };
 
   const handleSaveOrder = async () => {
     if (!selectedOrder) return;
+    const updateData: any = {
+      shipping_address: editOrderData.shipping_address,
+      phone_number: editOrderData.phone_number,
+      customer_notes: editOrderData.customer_notes,
+      status: editOrderData.status as any,
+    };
+    if (orderDateDraft !== toDatetimeLocal(selectedOrder.created_at)) {
+      updateData.created_at = toISOStringFromLocal(orderDateDraft);
+    }
     const { error } = await supabase
       .from("orders")
-      .update({
-        shipping_address: editOrderData.shipping_address,
-        phone_number: editOrderData.phone_number,
-        customer_notes: editOrderData.customer_notes,
-        status: editOrderData.status as any,
-      })
+      .update(updateData)
       .eq("id", selectedOrder.id);
     if (error) {
       toast({ title: "Lỗi", description: error.message, variant: "destructive" });
@@ -468,6 +472,7 @@ const AdminDashboard = () => {
       if (selectedOrder.shipping_address !== editOrderData.shipping_address) changes.push("Địa chỉ giao hàng");
       if (selectedOrder.phone_number !== editOrderData.phone_number) changes.push("Số điện thoại");
       if (selectedOrder.customer_notes !== editOrderData.customer_notes) changes.push("Ghi chú");
+      if (orderDateDraft !== toDatetimeLocal(selectedOrder.created_at)) changes.push("Ngày đặt");
       await logActivity("edit_order", "order", selectedOrder.id, `#${selectedOrder.id.slice(0,8)}`, `Chỉnh sửa đơn hàng: ${changes.join(", ")}`);
       toast({ title: "Thành công", description: "Đã cập nhật đơn hàng" });
       setShowOrderDialog(false);
@@ -475,9 +480,50 @@ const AdminDashboard = () => {
     }
   };
 
+  const toDatetimeLocal = (isoDate: string) => {
+    if (!isoDate) return "";
+    const date = new Date(isoDate);
+    const tzOffset = date.getTimezoneOffset() * 60000;
+    return new Date(date.getTime() - tzOffset).toISOString().slice(0, 16);
+  };
+
+  const toISOStringFromLocal = (localDate: string) => {
+    if (!localDate) return "";
+    const date = new Date(localDate);
+    return date.toISOString();
+  };
+
+  const handleUpdateOrderDate = async (orderId: string, localDateValue: string) => {
+    const isoDate = toISOStringFromLocal(localDateValue);
+    if (!isoDate) {
+      toast({ title: "Lỗi", description: "Ngày đặt không hợp lệ.", variant: "destructive" });
+      return;
+    }
+
+    const { error } = await supabase.from("orders").update({ created_at: isoDate }).eq("id", orderId);
+    if (error) {
+      toast({ title: "Lỗi", description: error.message, variant: "destructive" });
+      return;
+    }
+
+    toast({ title: "Đã cập nhật ngày đặt" });
+    setShowOrderDialog(false);
+    fetchAllData();
+  };
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/");
+  };
+
+  const maskPhone = (phone: string) => {
+    if (!phone || phone.length <= 6) return phone;
+    return phone.slice(0, 3) + "*".repeat(phone.length - 6) + phone.slice(-3);
+  };
+
+  const maskAddress = (address: string) => {
+    if (!address || address.length <= 6) return address;
+    return address.slice(0, 3) + "*".repeat(Math.max(3, address.length - 6)) + address.slice(-3);
   };
 
   const toggleSort = (setter: React.Dispatch<React.SetStateAction<SortState>>, key: string) => {
@@ -689,11 +735,10 @@ const AdminDashboard = () => {
         </div>
 
         <Tabs defaultValue="users">
-          <TabsList className="w-full grid grid-cols-4 mb-4">
+          <TabsList className="w-full grid grid-cols-3 mb-4">
             <TabsTrigger value="users">Người dùng</TabsTrigger>
             <TabsTrigger value="orders">Đơn hàng</TabsTrigger>
             <TabsTrigger value="products">Sản phẩm</TabsTrigger>
-            <TabsTrigger value="logs" className="gap-1"><ScrollText className="h-3.5 w-3.5" /> Logs</TabsTrigger>
           </TabsList>
 
           <TabsContent value="users">
@@ -1009,151 +1054,7 @@ const AdminDashboard = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="logs">
-            <Card className="p-4">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-semibold flex items-center gap-2"><ScrollText className="h-4 w-4" /> Nhật ký hoạt động</h3>
-                <Button size="sm" variant="outline" onClick={fetchAllData}><RefreshCw className="h-3 w-3 mr-1" /> Làm mới</Button>
-              </div>
 
-              {/* Sub-tabs: Admin/Manager vs User */}
-              <div className="flex gap-2 mb-4">
-                <Button size="sm" variant={logTab === "admin" ? "default" : "outline"} onClick={() => { setLogTab("admin"); setLogActorFilter([]); setLogActionFilter([]); setLogTargetFilter([]); }}>
-                  Admin / Manager
-                </Button>
-                <Button size="sm" variant={logTab === "user" ? "default" : "outline"} onClick={() => { setLogTab("user"); setLogActorFilter([]); setLogActionFilter([]); setLogTargetFilter([]); }}>
-                  Người dùng
-                </Button>
-              </div>
-
-              {(() => {
-                const adminActions = ["create_user", "delete_user", "restore_user", "change_password", "grant_role", "revoke_role", "edit_order", "delete_product", "update_order_status", "edit_product", "merge_product"];
-                const userActions = ["create_account", "create_product"];
-
-                const actionLabels: Record<string, string> = {
-                  create_account: "Tạo tài khoản",
-                  create_product: "Thêm sản phẩm",
-                  create_user: "Tạo tài khoản (admin)",
-                  delete_user: "Xóa tài khoản",
-                  restore_user: "Khôi phục tài khoản",
-                  change_password: "Đổi mật khẩu",
-                  grant_role: "Cấp quyền",
-                  revoke_role: "Thu quyền",
-                  edit_order: "Sửa đơn hàng",
-                  delete_product: "Xóa sản phẩm",
-                  edit_product: "Sửa sản phẩm",
-                  merge_product: "Gộp sản phẩm",
-                  update_order_status: "Cập nhật đơn hàng",
-                };
-                const targetTypeLabels: Record<string, string> = {
-                  user: "Người dùng",
-                  product: "Sản phẩm",
-                  order: "Đơn hàng",
-                };
-
-                const relevantActions = logTab === "admin" ? adminActions : userActions;
-                const tabLogs = activityLogs.filter(l => relevantActions.includes(l.action));
-
-                // Build filter options from data
-                const uniqueActors = Array.from(new Set(tabLogs.map(l => l.actor_name || "System"))).sort((a, b) => a.localeCompare(b, "vi"));
-                const uniqueActions = Array.from(new Set(tabLogs.map(l => l.action)));
-                const uniqueTargets = Array.from(new Set(tabLogs.map(l => l.target_type))).sort();
-
-                // Apply filters
-                const filteredLogs = tabLogs.filter(l => {
-                  if (logActorFilter.length > 0 && !logActorFilter.includes(l.actor_name || "System")) return false;
-                  if (logActionFilter.length > 0 && !logActionFilter.includes(l.action)) return false;
-                  if (logTargetFilter.length > 0 && !logTargetFilter.includes(l.target_type)) return false;
-                  return true;
-                });
-
-                const sortedLogs = sortData(filteredLogs, logSort, (l, k) => {
-                  if (k === "created_at") return new Date(l.created_at).getTime();
-                  if (k === "actor") return (l.actor_name || "System").toLowerCase();
-                  if (k === "target") return (l.target_type || "").toLowerCase();
-                  return "";
-                });
-
-                return (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="cursor-pointer select-none" onClick={() => toggleSort(setLogSort, "created_at")}>
-                            <span className="flex items-center">Thời gian <SortIcon sortState={logSort} colKey="created_at" /></span>
-                          </TableHead>
-                          <TableHead>
-                            <div className="flex items-center gap-1">
-                              <span className="cursor-pointer select-none" onClick={() => toggleSort(setLogSort, "actor")}>
-                                <span className="flex items-center">Người thực hiện <SortIcon sortState={logSort} colKey="actor" /></span>
-                              </span>
-                              <FilterDropdown
-                                label=""
-                                options={uniqueActors}
-                                selected={logActorFilter}
-                                onToggle={(v) => toggleFilter(setLogActorFilter, v)}
-                              />
-                            </div>
-                          </TableHead>
-                          <TableHead>
-                            <FilterDropdown
-                              label="Hành động"
-                              options={uniqueActions}
-                              selected={logActionFilter}
-                              onToggle={(v) => toggleFilter(setLogActionFilter, v)}
-                              labelMap={actionLabels}
-                            />
-                          </TableHead>
-                          <TableHead>
-                            <div className="flex items-center gap-1">
-                              <span className="cursor-pointer select-none" onClick={() => toggleSort(setLogSort, "target")}>
-                                <span className="flex items-center">Đối tượng <SortIcon sortState={logSort} colKey="target" /></span>
-                              </span>
-                              <FilterDropdown
-                                label=""
-                                options={uniqueTargets}
-                                selected={logTargetFilter}
-                                onToggle={(v) => toggleFilter(setLogTargetFilter, v)}
-                                labelMap={targetTypeLabels}
-                              />
-                            </div>
-                          </TableHead>
-                          <TableHead>Chi tiết</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {sortedLogs.map((log: any) => (
-                          <TableRow key={log.id}>
-                            <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                              {new Date(log.created_at).toLocaleString("vi-VN")}
-                            </TableCell>
-                            <TableCell className="text-sm">{log.actor_name || "System"}</TableCell>
-                            <TableCell>
-                              <Badge variant="outline" className="text-xs">{actionLabels[log.action] || log.action}</Badge>
-                            </TableCell>
-                            <TableCell className="text-xs">
-                              <span className="text-muted-foreground">{targetTypeLabels[log.target_type] || log.target_type}</span>
-                              {log.target_name && <span className="ml-1 font-medium">{log.target_name}</span>}
-                            </TableCell>
-                            <TableCell className="text-xs text-muted-foreground max-w-[300px] truncate" title={log.details}>
-                              {log.details}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                        {sortedLogs.length === 0 && (
-                          <TableRow>
-                            <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                              {logTab === "admin" ? "Chưa có hoạt động admin/manager nào" : "Chưa có hoạt động người dùng nào"}
-                            </TableCell>
-                          </TableRow>
-                        )}
-                      </TableBody>
-                    </Table>
-                  </div>
-                );
-              })()}
-            </Card>
-          </TabsContent>
         </Tabs>
       </div>
 
@@ -1277,6 +1178,14 @@ const AdminDashboard = () => {
               <label className="text-sm font-medium">Ghi chú</label>
               <Input value={editOrderData.customer_notes} onChange={(e) => setEditOrderData(prev => ({ ...prev, customer_notes: e.target.value }))} />
             </div>
+            <div>
+              <label className="text-sm font-medium">Ngày đặt</label>
+              <Input
+                type="datetime-local"
+                value={orderDateDraft}
+                onChange={(e) => setOrderDateDraft(e.target.value)}
+              />
+            </div>
             {selectedOrder?.order_items && (
               <div>
                 <label className="text-sm font-medium">Sản phẩm</label>
@@ -1362,7 +1271,7 @@ const AdminDashboard = () => {
               </div>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 {myRole === "admin" && <InfoRow label="ID" value={detailUser.id} mono />}
-                <InfoRow label="Số điện thoại" value={detailUser.phone || "Chưa cập nhật"} />
+                <InfoRow label="Số điện thoại" value={maskPhone(detailUser.phone || "Chưa cập nhật")} />
                 <InfoRow label="Điểm" value={detailUser.points?.toString() || "0"} />
                 <InfoRow label="Vai trò" value={(userRoles[detailUser.id] ? sortRoles(userRoles[detailUser.id]) : ["user"]).join(", ")} />
                 <InfoRow label="Đã onboarding" value={detailUser.has_completed_onboarding ? "Có" : "Chưa"} />
@@ -1393,8 +1302,8 @@ const AdminDashboard = () => {
                   <InfoRow label="Khách hàng" value={buyer?.display_name || "N/A"} />
                   <InfoRow label="Nhà bán" value={seller?.display_name || "N/A"} />
                   <InfoRow label="Tổng tiền" value={formatPrice(detailOrder.total_amount)} />
-                  <InfoRow label="Số điện thoại" value={detailOrder.phone_number} />
-                  <InfoRow label="Địa chỉ" value={detailOrder.shipping_address} full />
+                  <InfoRow label="Số điện thoại" value={maskPhone(detailOrder.phone_number)} />
+                  <InfoRow label="Địa chỉ" value={maskAddress(detailOrder.shipping_address)} full />
                   {detailOrder.customer_notes && <InfoRow label="Ghi chú" value={detailOrder.customer_notes} full />}
                   {detailOrder.cancel_reason && <InfoRow label="Lý do hủy" value={detailOrder.cancel_reason} full />}
                   <InfoRow label="Ngày tạo" value={new Date(detailOrder.created_at).toLocaleDateString("vi-VN")} />
