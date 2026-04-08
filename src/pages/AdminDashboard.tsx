@@ -68,6 +68,7 @@ const AdminDashboard = () => {
   const [deleteProductReason, setDeleteProductReason] = useState("");
   const [roleAction, setRoleAction] = useState<{ userId: string; role: "seller" | "manager"; action: "grant" | "revoke" } | null>(null);
   const [deleteProductId, setDeleteProductId] = useState("");
+  const [editUserEmail, setEditUserEmail] = useState("");
   const [myRole, setMyRole] = useState<"admin" | "manager" | null>(null);
   const [currentUserId, setCurrentUserId] = useState("");
   const [loading, setLoading] = useState(true);
@@ -247,6 +248,35 @@ const AdminDashboard = () => {
       setCreateUserRole("user");
       fetchAllData();
     }
+  };
+
+  const handleSaveUserEmail = async () => {
+    if (!detailUser) return;
+    if (!editUserEmail.trim()) {
+      toast({ title: "Lỗi", description: "Email không được để trống", variant: "destructive" });
+      return;
+    }
+    if (editUserEmail.trim() === detailUser.email) {
+      toast({ title: "Lưu không thay đổi", description: "Email không thay đổi", variant: "default" });
+      return;
+    }
+
+    const { data, error } = await supabase.functions.invoke("admin-update-user-email", {
+      body: { target_user_id: detailUser.id, new_email: editUserEmail.trim() },
+    });
+
+    if (error || data?.error) {
+      toast({ title: "Lỗi", description: data?.error || error?.message, variant: "destructive" });
+      return;
+    }
+
+    await logActivity("update_user_email", "user", detailUser.id, detailUser.display_name || "", `Cập nhật email ${detailUser.email} → ${editUserEmail.trim()}`);
+    toast({ title: "Thành công", description: "Đã cập nhật email người dùng" });
+
+    const updatedUser = { ...detailUser, email: editUserEmail.trim() };
+    setDetailUser(updatedUser);
+    setUsers((prev) => prev.map((u) => (u.id === detailUser.id ? updatedUser : u)));
+    fetchAllData();
   };
 
   const handleDeleteUser = async () => {
@@ -797,6 +827,7 @@ const AdminDashboard = () => {
                                     navigate(`/admin/seller/${user.id}`);
                                   } else {
                                     setDetailUser(user);
+                                    setEditUserEmail(user.email || "");
                                     setShowUserDetail(true);
                                   }
                                 }}>
@@ -1264,9 +1295,21 @@ const AdminDashboard = () => {
             <div className="space-y-3 py-2">
               <div className="flex items-center gap-3">
                 {detailUser.avatar_url && <img src={detailUser.avatar_url} alt="" className="h-14 w-14 rounded-full object-cover border" />}
-                <div>
+                <div className="w-full">
                   <div className="font-semibold text-lg">{detailUser.display_name}</div>
-                  <div className="text-sm text-muted-foreground">{detailUser.email}</div>
+                  {myRole === "admin" ? (
+                    <div className="mt-2">
+                      <label className="text-xs text-muted-foreground block mb-1">Email</label>
+                      <Input
+                        type="email"
+                        value={editUserEmail}
+                        onChange={(e) => setEditUserEmail(e.target.value)}
+                        className="w-full"
+                      />
+                    </div>
+                  ) : (
+                    <div className="text-sm text-muted-foreground">{detailUser.email}</div>
+                  )}
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3 text-sm">
@@ -1282,6 +1325,15 @@ const AdminDashboard = () => {
             </div>
           )}
           <DialogFooter>
+            {myRole === "admin" && (
+              <Button
+                variant="secondary"
+                onClick={handleSaveUserEmail}
+                disabled={!detailUser || editUserEmail.trim() === detailUser.email || !editUserEmail.trim()}
+              >
+                Lưu email
+              </Button>
+            )}
             <Button variant="outline" onClick={() => setShowUserDetail(false)}>Đóng</Button>
           </DialogFooter>
         </DialogContent>
