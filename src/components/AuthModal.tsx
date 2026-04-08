@@ -262,6 +262,20 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
           <TabsContent value="signup">
             <form onSubmit={handleSignup} className="space-y-3 sm:space-y-4 pt-3 sm:pt-4">
               <div className="space-y-2">
+                <Label htmlFor="signup-username" className="text-sm">Tên đăng nhập <span className="text-destructive">*</span></Label>
+                <Input
+                  id="signup-username"
+                  type="text"
+                  placeholder="username123"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                  className="h-11 text-base"
+                />
+                <p className="text-xs text-muted-foreground">Chỉ chứa chữ cái, số và dấu gạch dưới (_)</p>
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="signup-name" className="text-sm">Tên hiển thị</Label>
                 <Input
                   id="signup-name"
@@ -269,20 +283,6 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
                   placeholder="Nguyễn Văn A"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  required
-                  className="h-11 text-base"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="signup-email" className="text-sm">Email</Label>
-                <Input
-                  id="signup-email"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
                   className="h-11 text-base"
                 />
               </div>
