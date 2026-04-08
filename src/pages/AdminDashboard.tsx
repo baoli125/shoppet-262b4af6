@@ -942,7 +942,7 @@ const AdminDashboard = () => {
                         <span className="flex items-center">Sản phẩm <SortIcon sortState={productSort} colKey="name" /></span>
                       </TableHead>
                       <TableHead className="cursor-pointer select-none" onClick={() => toggleSort(setProductSort, "price")}>
-                        <span className="flex items-center">Giá <SortIcon sortState={productSort} colKey="price" /></span>
+                        <span className="flex items-center">Giá gốc <SortIcon sortState={productSort} colKey="price" /></span>
                       </TableHead>
                       <TableHead>
                         <FilterDropdown
@@ -956,30 +956,53 @@ const AdminDashboard = () => {
                       <TableHead className="cursor-pointer select-none" onClick={() => toggleSort(setProductSort, "stock")}>
                         <span className="flex items-center">Tồn kho <SortIcon sortState={productSort} colKey="stock" /></span>
                       </TableHead>
+                      <TableHead>NCC</TableHead>
+                      <TableHead>Trạng thái</TableHead>
                       <TableHead>Hành động</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {sortedProducts.map((product) => (
-                      <TableRow key={product.id}>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            {product.image_url && <img src={product.image_url} alt="" className="h-8 w-8 rounded object-cover" />}
-                            <button className="font-medium line-clamp-1 text-left hover:text-primary hover:underline transition-colors" onClick={() => { setDetailProduct(product); setShowProductDetail(true); }}>
-                              {product.name}
-                            </button>
-                          </div>
-                        </TableCell>
-                        <TableCell>{formatPrice(product.price)}</TableCell>
-                        <TableCell><Badge variant="outline">{product.category}</Badge></TableCell>
-                        <TableCell>{product.stock}</TableCell>
-                        <TableCell>
-                          <Button size="sm" variant="destructive" onClick={() => { setDeleteProductId(product.id); setShowDeleteProductDialog(true); }}>
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {sortedProducts.map((product) => {
+                      const supplierCount = productSuppliers[product.id]?.length || 0;
+                      return (
+                        <TableRow key={product.id}>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              {product.image_url && <img src={product.image_url} alt="" className="h-8 w-8 rounded object-cover" />}
+                              <button className="font-medium line-clamp-1 text-left hover:text-primary hover:underline transition-colors" onClick={() => { setDetailProduct(product); setShowProductDetail(true); }}>
+                                {product.name}
+                              </button>
+                            </div>
+                          </TableCell>
+                          <TableCell>{formatPrice(product.price)}</TableCell>
+                          <TableCell><Badge variant="outline">{categoryLabels[product.category] || product.category}</Badge></TableCell>
+                          <TableCell>{product.stock}</TableCell>
+                          <TableCell>
+                            <Badge variant={supplierCount > 0 ? "default" : "secondary"} className="text-xs">
+                              <Store className="h-3 w-3 mr-1" />{supplierCount}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={product.is_active ? "default" : "destructive"} className="text-xs">
+                              {product.is_active ? "Đang bán" : "Ngưng"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                              <Button size="sm" variant="outline" onClick={() => handleEditProduct(product)} title="Chỉnh sửa">
+                                <Pencil className="h-3 w-3" />
+                              </Button>
+                              <Button size="sm" variant="outline" onClick={() => { setMergeSourceId(product.id); setMergeTargetId(""); setMergeSearchQuery(""); setShowMergeDialog(true); }} title="Gộp vào sản phẩm khác">
+                                <Link2 className="h-3 w-3" />
+                              </Button>
+                              <Button size="sm" variant="destructive" onClick={() => { setDeleteProductId(product.id); setShowDeleteProductDialog(true); }} title="Xóa">
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               </div>
