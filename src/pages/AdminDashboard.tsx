@@ -1027,7 +1027,7 @@ const AdminDashboard = () => {
               </div>
 
               {(() => {
-                const adminActions = ["create_user", "delete_user", "restore_user", "change_password", "grant_role", "revoke_role", "edit_order", "delete_product", "update_order_status"];
+                const adminActions = ["create_user", "delete_user", "restore_user", "change_password", "grant_role", "revoke_role", "edit_order", "delete_product", "update_order_status", "edit_product", "merge_product"];
                 const userActions = ["create_account", "create_product"];
 
                 const actionLabels: Record<string, string> = {
