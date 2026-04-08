@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -251,26 +251,38 @@ const AdminDashboard = () => {
   };
 
   const handleSaveUserTestEmail = async () => {
-    if (!detailUser) return;
+    console.log("[handleSaveUserTestEmail] Starting - detailUser:", detailUser, "editUserTestEmail:", editUserTestEmail);
+    
+    if (!detailUser) {
+      console.log("[handleSaveUserTestEmail] No detailUser, returning");
+      return;
+    }
+    
     if (!editUserTestEmail.trim()) {
+      console.log("[handleSaveUserTestEmail] Email empty");
       toast({ title: "Lỗi", description: "Email test không được để trống", variant: "destructive" });
       return;
     }
+    
     if (editUserTestEmail.trim() === detailUser.email) {
+      console.log("[handleSaveUserTestEmail] Email not changed - old:", detailUser.email, "new:", editUserTestEmail.trim());
       toast({ title: "Lưu không thay đổi", description: "Email test không thay đổi", variant: "default" });
       return;
     }
 
+    console.log("[handleSaveUserTestEmail] Updating - userId:", detailUser.id, "newEmail:", editUserTestEmail.trim());
     const { error } = await supabase
       .from("profiles")
       .update({ email: editUserTestEmail.trim() })
       .eq("id", detailUser.id);
 
     if (error) {
+      console.error("[handleSaveUserTestEmail] Supabase error:", error);
       toast({ title: "Lỗi", description: error.message, variant: "destructive" });
       return;
     }
 
+    console.log("[handleSaveUserTestEmail] Update successful");
     await logActivity("update_user_test_email", "user", detailUser.id, detailUser.display_name || "", `Cập nhật email test ${detailUser.email} → ${editUserTestEmail.trim()}`);
     toast({ title: "Thành công", description: "Đã cập nhật email test của người dùng" });
 
@@ -1093,7 +1105,10 @@ const AdminDashboard = () => {
       {/* Change Password Dialog */}
       <Dialog open={showPasswordDialog} onOpenChange={(open) => { setShowPasswordDialog(open); if (!open) { setNewPassword(""); setCurrentPassword(""); } }}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Đổi mật khẩu người dùng</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>Đổi mật khẩu người dùng</DialogTitle>
+            <DialogDescription>Thay đổi mật khẩu cho người dùng được chọn</DialogDescription>
+          </DialogHeader>
           <div className="space-y-4 py-2">
             <p className="text-sm text-muted-foreground">
               Người dùng: {users.find(u => u.id === passwordUserId)?.display_name || users.find(u => u.id === passwordUserId)?.email}
@@ -1119,7 +1134,10 @@ const AdminDashboard = () => {
       {/* Create User Dialog */}
       <Dialog open={showCreateUserDialog} onOpenChange={(open) => { setShowCreateUserDialog(open); if (!open) { setCreateUserEmail(""); setCreateUserPassword(""); setCreateUserRole("user"); } }}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Tạo tài khoản mới</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>Tạo tài khoản mới</DialogTitle>
+            <DialogDescription>Nhập thông tin để tạo tài khoản mới</DialogDescription>
+          </DialogHeader>
           <div className="space-y-4 py-2">
             <div>
               <label className="text-sm font-medium">Email <span className="text-destructive">*</span></label>
@@ -1159,7 +1177,10 @@ const AdminDashboard = () => {
       {/* Delete User Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={(open) => { setShowDeleteDialog(open); if (!open) setDeleteReason(""); }}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Xác nhận xóa tài khoản</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>Xác nhận xóa tài khoản</DialogTitle>
+            <DialogDescription>Hành động này sẽ đánh dấu tài khoản là đã xóa</DialogDescription>
+          </DialogHeader>
           <div className="py-2 space-y-3">
             <p className="text-sm">Bạn có chắc muốn xóa tài khoản <strong>{users.find(u => u.id === deleteUserId)?.display_name}</strong>?</p>
             <p className="text-sm text-muted-foreground">Tài khoản sẽ được đánh dấu là đã xóa. Người dùng có thể khôi phục khi đăng nhập lại.</p>
@@ -1183,7 +1204,10 @@ const AdminDashboard = () => {
       {/* Edit Order Dialog */}
       <Dialog open={showOrderDialog} onOpenChange={setShowOrderDialog}>
         <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>Chỉnh sửa đơn hàng</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>Chỉnh sửa đơn hàng</DialogTitle>
+            <DialogDescription>Cập nhật thông tin đơn hàng</DialogDescription>
+          </DialogHeader>
           <div className="space-y-4 py-2">
             <div>
               <label className="text-sm font-medium">Trạng thái</label>
@@ -1246,6 +1270,7 @@ const AdminDashboard = () => {
             <DialogTitle>
               {roleAction?.action === "grant" ? "Xác nhận cấp quyền" : "Xác nhận thu quyền"}
             </DialogTitle>
+            <DialogDescription>Xác nhận thay đổi vai trò cho người dùng</DialogDescription>
           </DialogHeader>
           <div className="py-2">
             <p className="text-sm">
@@ -1265,7 +1290,10 @@ const AdminDashboard = () => {
       {/* Delete Product Confirmation Dialog */}
       <Dialog open={showDeleteProductDialog} onOpenChange={(open) => { setShowDeleteProductDialog(open); if (!open) { setDeleteProductId(""); setDeleteProductReason(""); } }}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Xác nhận xóa sản phẩm</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>Xác nhận xóa sản phẩm</DialogTitle>
+            <DialogDescription>Hành động này không thể hoàn tác</DialogDescription>
+          </DialogHeader>
           <div className="py-2 space-y-3">
             <p className="text-sm">
               Bạn có chắc muốn xóa sản phẩm <strong>{products.find(p => p.id === deleteProductId)?.name}</strong>?
@@ -1291,7 +1319,10 @@ const AdminDashboard = () => {
       {/* User Detail Dialog */}
       <Dialog open={showUserDetail} onOpenChange={setShowUserDetail}>
         <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>Chi tiết người dùng</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>Chi tiết người dùng</DialogTitle>
+            <DialogDescription>Xem và quản lý thông tin người dùng</DialogDescription>
+          </DialogHeader>
           {detailUser && (
             <div className="space-y-3 py-2">
               <div className="flex items-center gap-3">
@@ -1343,7 +1374,10 @@ const AdminDashboard = () => {
       {/* Order Detail Dialog */}
       <Dialog open={showOrderDetail} onOpenChange={setShowOrderDetail}>
         <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>Chi tiết đơn hàng</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>Chi tiết đơn hàng</DialogTitle>
+            <DialogDescription>Xem chi tiết thông tin đơn hàng</DialogDescription>
+          </DialogHeader>
           {detailOrder && (() => {
             const buyer = users.find(u => u.id === detailOrder.user_id);
             const seller = users.find(u => u.id === detailOrder.seller_id);
@@ -1386,7 +1420,10 @@ const AdminDashboard = () => {
       {/* Product Detail Dialog - Enhanced with supplier info */}
       <Dialog open={showProductDetail} onOpenChange={setShowProductDetail}>
         <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>Chi tiết sản phẩm</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>Chi tiết sản phẩm</DialogTitle>
+            <DialogDescription>Xem chi tiết và quản lý thông tin sản phẩm</DialogDescription>
+          </DialogHeader>
           {detailProduct && (
             <div className="space-y-3 py-2">
               {detailProduct.image_url && (
@@ -1474,7 +1511,10 @@ const AdminDashboard = () => {
       {/* Edit Product Dialog */}
       <Dialog open={showEditProductDialog} onOpenChange={(open) => { setShowEditProductDialog(open); if (!open) setEditProductData(null); }}>
         <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>Chỉnh sửa sản phẩm</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>Chỉnh sửa sản phẩm</DialogTitle>
+            <DialogDescription>Cập nhật thông tin sản phẩm</DialogDescription>
+          </DialogHeader>
           {editProductData && (
             <div className="space-y-4 py-2">
               <div>
@@ -1559,6 +1599,7 @@ const AdminDashboard = () => {
             <DialogTitle className="flex items-center gap-2">
               <Link2 className="h-5 w-5" /> Gộp sản phẩm trùng
             </DialogTitle>
+            <DialogDescription>Chọn sản phẩm nguồn và đích để gộp</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             {/* Sản phẩm nguồn */}
@@ -1656,6 +1697,7 @@ const AdminDashboard = () => {
             <DialogTitle className="flex items-center gap-2">
               <PawPrint className="h-5 w-5" /> Thú cưng đã đăng ký ({detailPets.length})
             </DialogTitle>
+            <DialogDescription>Xem thông tin chi tiết thú cưng của người dùng</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             {detailPets.map((pet) => (
