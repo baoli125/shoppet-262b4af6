@@ -68,7 +68,7 @@ const AdminDashboard = () => {
   const [deleteProductReason, setDeleteProductReason] = useState("");
   const [roleAction, setRoleAction] = useState<{ userId: string; role: "seller" | "manager"; action: "grant" | "revoke" } | null>(null);
   const [deleteProductId, setDeleteProductId] = useState("");
-  const [editUserEmail, setEditUserEmail] = useState("");
+  const [editUserTestEmail, setEditUserTestEmail] = useState("");
   const [myRole, setMyRole] = useState<"admin" | "manager" | null>(null);
   const [currentUserId, setCurrentUserId] = useState("");
   const [loading, setLoading] = useState(true);
@@ -250,30 +250,31 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleSaveUserEmail = async () => {
+  const handleSaveUserTestEmail = async () => {
     if (!detailUser) return;
-    if (!editUserEmail.trim()) {
-      toast({ title: "Lỗi", description: "Email không được để trống", variant: "destructive" });
+    if (!editUserTestEmail.trim()) {
+      toast({ title: "Lỗi", description: "Email test không được để trống", variant: "destructive" });
       return;
     }
-    if (editUserEmail.trim() === detailUser.email) {
-      toast({ title: "Lưu không thay đổi", description: "Email không thay đổi", variant: "default" });
-      return;
-    }
-
-    const { data, error } = await supabase.functions.invoke("admin-update-user-email", {
-      body: { target_user_id: detailUser.id, new_email: editUserEmail.trim() },
-    });
-
-    if (error || data?.error) {
-      toast({ title: "Lỗi", description: data?.error || error?.message, variant: "destructive" });
+    if (editUserTestEmail.trim() === detailUser.email) {
+      toast({ title: "Lưu không thay đổi", description: "Email test không thay đổi", variant: "default" });
       return;
     }
 
-    await logActivity("update_user_email", "user", detailUser.id, detailUser.display_name || "", `Cập nhật email ${detailUser.email} → ${editUserEmail.trim()}`);
-    toast({ title: "Thành công", description: "Đã cập nhật email người dùng" });
+    const { error } = await supabase
+      .from("profiles")
+      .update({ email: editUserTestEmail.trim() })
+      .eq("id", detailUser.id);
 
-    const updatedUser = { ...detailUser, email: editUserEmail.trim() };
+    if (error) {
+      toast({ title: "Lỗi", description: error.message, variant: "destructive" });
+      return;
+    }
+
+    await logActivity("update_user_test_email", "user", detailUser.id, detailUser.display_name || "", `Cập nhật email test ${detailUser.email} → ${editUserTestEmail.trim()}`);
+    toast({ title: "Thành công", description: "Đã cập nhật email test của người dùng" });
+
+    const updatedUser = { ...detailUser, email: editUserTestEmail.trim() };
     setDetailUser(updatedUser);
     setUsers((prev) => prev.map((u) => (u.id === detailUser.id ? updatedUser : u)));
     fetchAllData();
@@ -827,7 +828,7 @@ const AdminDashboard = () => {
                                     navigate(`/admin/seller/${user.id}`);
                                   } else {
                                     setDetailUser(user);
-                                    setEditUserEmail(user.email || "");
+                                    setEditUserTestEmail(user.email || "");
                                     setShowUserDetail(true);
                                   }
                                 }}>
@@ -1299,11 +1300,11 @@ const AdminDashboard = () => {
                   <div className="font-semibold text-lg">{detailUser.display_name}</div>
                   {myRole === "admin" ? (
                     <div className="mt-2">
-                      <label className="text-xs text-muted-foreground block mb-1">Email</label>
+                      <label className="text-xs text-muted-foreground block mb-1">Email test (chỉ lưu profile, không thay đổi đăng nhập)</label>
                       <Input
                         type="email"
-                        value={editUserEmail}
-                        onChange={(e) => setEditUserEmail(e.target.value)}
+                        value={editUserTestEmail}
+                        onChange={(e) => setEditUserTestEmail(e.target.value)}
                         className="w-full"
                       />
                     </div>
@@ -1328,10 +1329,10 @@ const AdminDashboard = () => {
             {myRole === "admin" && (
               <Button
                 variant="secondary"
-                onClick={handleSaveUserEmail}
-                disabled={!detailUser || editUserEmail.trim() === detailUser.email || !editUserEmail.trim()}
+                onClick={handleSaveUserTestEmail}
+                disabled={!detailUser || editUserTestEmail.trim() === detailUser.email || !editUserTestEmail.trim()}
               >
-                Lưu email
+                Lưu email test
               </Button>
             )}
             <Button variant="outline" onClick={() => setShowUserDetail(false)}>Đóng</Button>
