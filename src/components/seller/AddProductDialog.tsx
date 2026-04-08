@@ -588,7 +588,7 @@ export const AddProductDialog = ({ open, onOpenChange, userId, onSuccess, editin
               id="product-image-upload"
               type="file"
               accept="image/*"
-              onChange={handleProductImageUpload}
+              onChange={handleProductImageSelect}
               disabled={isUploadingImage}
               className="hidden"
             />
