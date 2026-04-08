@@ -11,6 +11,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Search, Package, Plus, ArrowLeft, Check, Upload, X, Camera } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import ImageCropper from "@/components/ImageCropper";
 
 const CATEGORY_LABELS: Record<string, string> = {
   food: "Thức ăn", toy: "Đồ chơi", accessory: "Phụ kiện",
