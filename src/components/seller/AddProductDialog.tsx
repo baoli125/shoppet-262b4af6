@@ -11,6 +11,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Search, Package, Plus, ArrowLeft, Check, Upload, X, Camera } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import ImageCropper from "@/components/ImageCropper";
 
 const CATEGORY_LABELS: Record<string, string> = {
   food: "Thức ăn", toy: "Đồ chơi", accessory: "Phụ kiện",
@@ -38,6 +39,8 @@ export const AddProductDialog = ({ open, onOpenChange, userId, onSuccess, editin
   const [loading, setLoading] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [imagePreview, setImagePreview] = useState<string>("");
+  const [cropperOpen, setCropperOpen] = useState(false);
+  const [rawImageSrc, setRawImageSrc] = useState<string>("");
   const { toast } = useToast();
 
   // New product form
@@ -76,46 +79,50 @@ export const AddProductDialog = ({ open, onOpenChange, userId, onSuccess, editin
     setImagePreview("");
     setFormData({ name: "", description: "", price: "", stock: "", category: "", pet_type: "", brand: "", weight: "", image_url: "", ingredients: "", features: "", usage_instructions: "" });
   };
-    // Upload product image - tương tự upload avatar
-  const handleProductImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Open cropper when user selects a file
+  const handleProductImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
     if (!file.type.startsWith('image/')) {
       toast({ title: "Lỗi", description: "Vui lòng chọn file ảnh", variant: "destructive" });
       return;
     }
 
-    // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       toast({ title: "Lỗi", description: "Kích thước ảnh không được vượt quá 5MB", variant: "destructive" });
       return;
     }
 
+    const reader = new FileReader();
+    reader.onload = () => {
+      setRawImageSrc(reader.result as string);
+      setCropperOpen(true);
+    };
+    reader.readAsDataURL(file);
+    // Reset input so same file can be selected again
+    e.target.value = "";
+  };
+
+  // Upload cropped image blob
+  const handleCroppedImage = async (blob: Blob) => {
     setIsUploadingImage(true);
     try {
-      // Create file path
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}.${fileExt}`;
+      const fileName = `${Date.now()}.jpg`;
       const filePath = `products/${userId}/${fileName}`;
 
-      // Upload to Supabase storage
       const { error: uploadError } = await supabase.storage
         .from('product-images')
-        .upload(filePath, file);
+        .upload(filePath, blob, { contentType: 'image/jpeg' });
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('product-images')
         .getPublicUrl(filePath);
 
-      // Update form data and preview
-      setFormData({ ...formData, image_url: publicUrl });
+      setFormData(prev => ({ ...prev, image_url: publicUrl }));
       setImagePreview(publicUrl);
-
       toast({ title: "Thành công! ✨", description: "Ảnh sản phẩm đã được tải lên" });
     } catch (error: any) {
       console.error("Error uploading image:", error);
@@ -581,7 +588,7 @@ export const AddProductDialog = ({ open, onOpenChange, userId, onSuccess, editin
               id="product-image-upload"
               type="file"
               accept="image/*"
-              onChange={handleProductImageUpload}
+              onChange={handleProductImageSelect}
               disabled={isUploadingImage}
               className="hidden"
             />
@@ -624,6 +631,7 @@ export const AddProductDialog = ({ open, onOpenChange, userId, onSuccess, editin
   };
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader><DialogTitle>{getTitle()}</DialogTitle></DialogHeader>
@@ -633,5 +641,14 @@ export const AddProductDialog = ({ open, onOpenChange, userId, onSuccess, editin
         {step === "new-product" && renderNewProduct()}
       </DialogContent>
     </Dialog>
+
+    <ImageCropper
+      open={cropperOpen}
+      imageSrc={rawImageSrc}
+      onClose={() => setCropperOpen(false)}
+      onCropComplete={handleCroppedImage}
+      aspectRatio={1}
+    />
+    </>
   );
 };

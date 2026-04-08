@@ -29,6 +29,7 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [username, setUsername] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -38,8 +39,14 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
     setIsLoading(true);
 
     try {
+      // Nếu không chứa @, coi như username → thêm @shoppet.local
+      let loginEmail = email.trim();
+      if (!loginEmail.includes("@")) {
+        loginEmail = `${loginEmail.toLowerCase()}@shoppet.local`;
+      }
+
       const { error } = await supabase.auth.signInWithPassword({
-        email,
+        email: loginEmail,
         password,
       });
 
@@ -56,7 +63,7 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
     } catch (error: any) {
       toast({
         title: "Đăng nhập thất bại",
-        description: error.message || "Email hoặc mật khẩu không đúng",
+        description: error.message || "Tên đăng nhập/email hoặc mật khẩu không đúng",
         variant: "destructive",
       });
     } finally {
@@ -69,10 +76,12 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
     setIsLoading(true);
 
     try {
-      // Validate email
-      const emailValidation = emailSchema.safeParse(email);
-      if (!emailValidation.success) {
-        throw new Error(emailValidation.error.errors[0].message);
+      if (!username.trim() || username.trim().length < 3) {
+        throw new Error("Tên đăng nhập phải có ít nhất 3 ký tự");
+      }
+
+      if (!/^[a-zA-Z0-9_]+$/.test(username.trim())) {
+        throw new Error("Tên đăng nhập chỉ chứa chữ cái, số và dấu gạch dưới");
       }
 
       // Validate password
@@ -81,18 +90,26 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
         throw new Error(passwordValidation.error.errors[0].message);
       }
 
+      // Tạo email ảo từ username để dùng với Supabase Auth
+      const generatedEmail = `${username.trim().toLowerCase()}@shoppet.local`;
+
       const { error } = await supabase.auth.signUp({
-        email,
+        email: generatedEmail,
         password,
         options: {
           data: {
-            display_name: displayName,
+            display_name: displayName || username.trim(),
+            username: username.trim().toLowerCase(),
           },
-          emailRedirectTo: `${window.location.origin}/`,
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes("already registered")) {
+          throw new Error("Tên đăng nhập đã tồn tại, vui lòng chọn tên khác");
+        }
+        throw error;
+      }
 
       toast({
         title: "Đăng ký thành công!",
@@ -146,6 +163,7 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
     setEmail("");
     setPassword("");
     setDisplayName("");
+    setUsername("");
     setShowPassword(false);
   };
 
@@ -167,11 +185,11 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
           <TabsContent value="login">
             <form onSubmit={handleLogin} className="space-y-3 sm:space-y-4 pt-3 sm:pt-4">
               <div className="space-y-2">
-                <Label htmlFor="login-email" className="text-sm">Email</Label>
+                <Label htmlFor="login-email" className="text-sm">Email hoặc tên đăng nhập</Label>
                 <Input
                   id="login-email"
-                  type="email"
-                  placeholder="you@example.com"
+                  type="text"
+                  placeholder="username hoặc email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -244,6 +262,20 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
           <TabsContent value="signup">
             <form onSubmit={handleSignup} className="space-y-3 sm:space-y-4 pt-3 sm:pt-4">
               <div className="space-y-2">
+                <Label htmlFor="signup-username" className="text-sm">Tên đăng nhập <span className="text-destructive">*</span></Label>
+                <Input
+                  id="signup-username"
+                  type="text"
+                  placeholder="username123"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                  className="h-11 text-base"
+                />
+                <p className="text-xs text-muted-foreground">Chỉ chứa chữ cái, số và dấu gạch dưới (_)</p>
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="signup-name" className="text-sm">Tên hiển thị</Label>
                 <Input
                   id="signup-name"
@@ -251,20 +283,6 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
                   placeholder="Nguyễn Văn A"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  required
-                  className="h-11 text-base"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="signup-email" className="text-sm">Email</Label>
-                <Input
-                  id="signup-email"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
                   className="h-11 text-base"
                 />
               </div>
