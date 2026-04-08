@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
-import { Users, ShieldCheck, Package, ShoppingCart, Search, Key, Trash2, UserCheck, UserX, Eye, LogOut, Shield, ArrowUp, ArrowDown, ArrowUpDown, Filter, Check, X, PawPrint, UserPlus, RefreshCw, RotateCcw, ScrollText, Clock } from "lucide-react";
+import { Users, ShieldCheck, Package, ShoppingCart, Search, Key, Trash2, UserCheck, UserX, Eye, LogOut, Shield, ArrowUp, ArrowDown, ArrowUpDown, Filter, Check, X, PawPrint, UserPlus, RefreshCw, RotateCcw, ScrollText, Clock, Pencil, Link2, Store } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -72,6 +72,15 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [userRoles, setUserRoles] = useState<Record<string, string[]>>({});
   const [editOrderData, setEditOrderData] = useState({ shipping_address: "", phone_number: "", customer_notes: "", status: "" });
+  // Product management states
+  const [productSuppliers, setProductSuppliers] = useState<Record<string, any[]>>({});
+  const [allSuppliers, setAllSuppliers] = useState<any[]>([]);
+  const [showEditProductDialog, setShowEditProductDialog] = useState(false);
+  const [editProductData, setEditProductData] = useState<any>(null);
+  const [showMergeDialog, setShowMergeDialog] = useState(false);
+  const [mergeSourceId, setMergeSourceId] = useState("");
+  const [mergeTargetId, setMergeTargetId] = useState("");
+  const [mergeSearchQuery, setMergeSearchQuery] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -103,7 +112,7 @@ const AdminDashboard = () => {
   };
 
   const fetchAllData = async () => {
-    const [profilesRes, ordersRes, productsRes, rolesRes, petsRes, medicalRes, vaccinesRes, logsRes] = await Promise.all([
+    const [profilesRes, ordersRes, productsRes, rolesRes, petsRes, medicalRes, vaccinesRes, logsRes, psRes, suppRes] = await Promise.all([
       supabase.from("profiles").select("*").order("created_at", { ascending: false }),
       supabase.from("orders").select("*, order_items(*)").order("created_at", { ascending: false }),
       supabase.from("products").select("*").order("created_at", { ascending: false }),
@@ -112,6 +121,8 @@ const AdminDashboard = () => {
       supabase.from("medical_records").select("*").order("date", { ascending: false }),
       supabase.from("vaccines").select("*").order("date", { ascending: false }),
       supabase.from("activity_logs").select("*").order("created_at", { ascending: false }).limit(500),
+      supabase.from("product_suppliers").select("*, suppliers(*)"),
+      supabase.from("suppliers").select("*"),
     ]);
 
     if (profilesRes.data) setUsers(profilesRes.data);
@@ -150,6 +161,15 @@ const AdminDashboard = () => {
       setPetVaccines(map);
     }
     if (logsRes.data) setActivityLogs(logsRes.data);
+    if (psRes.data) {
+      const psMap: Record<string, any[]> = {};
+      psRes.data.forEach((ps: any) => {
+        if (!psMap[ps.product_id]) psMap[ps.product_id] = [];
+        psMap[ps.product_id].push(ps);
+      });
+      setProductSuppliers(psMap);
+    }
+    if (suppRes.data) setAllSuppliers(suppRes.data);
   };
 
   // Helper: ghi log hành động admin/manager
@@ -334,6 +354,88 @@ const AdminDashboard = () => {
     setShowDeleteProductDialog(false);
     setDeleteProductId("");
     setDeleteProductReason("");
+  };
+
+  // Chỉnh sửa sản phẩm (giá, thông tin)
+  const handleEditProduct = (product: any) => {
+    setEditProductData({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      stock: product.stock || 0,
+      is_active: product.is_active,
+      description: product.description || "",
+      brand: product.brand || "",
+    });
+    setShowEditProductDialog(true);
+  };
+
+  const handleSaveProduct = async () => {
+    if (!editProductData) return;
+    const { error } = await supabase.from("products").update({
+      name: editProductData.name,
+      price: editProductData.price,
+      stock: editProductData.stock,
+      is_active: editProductData.is_active,
+      description: editProductData.description,
+      brand: editProductData.brand,
+    }).eq("id", editProductData.id);
+    if (error) {
+      toast({ title: "Lỗi", description: error.message, variant: "destructive" });
+    } else {
+      await logActivity("edit_product", "product", editProductData.id, editProductData.name, `Chỉnh sửa sản phẩm: ${editProductData.name}`);
+      toast({ title: "Thành công", description: "Đã cập nhật sản phẩm" });
+      setShowEditProductDialog(false);
+      setEditProductData(null);
+      fetchAllData();
+    }
+  };
+
+  // Gộp sản phẩm trùng: chuyển supplier từ source sang target, xóa source
+  const handleMergeProduct = async () => {
+    if (!mergeSourceId || !mergeTargetId || mergeSourceId === mergeTargetId) {
+      toast({ title: "Lỗi", description: "Vui lòng chọn sản phẩm đích khác sản phẩm nguồn", variant: "destructive" });
+      return;
+    }
+    const sourcePS = productSuppliers[mergeSourceId] || [];
+    const targetPS = productSuppliers[mergeTargetId] || [];
+    const targetSupplierIds = targetPS.map((ps: any) => ps.supplier_id);
+
+    for (const ps of sourcePS) {
+      if (targetSupplierIds.includes(ps.supplier_id)) continue;
+      await supabase.from("product_suppliers").insert({
+        product_id: mergeTargetId,
+        supplier_id: ps.supplier_id,
+        price: ps.price,
+        stock: ps.stock,
+      });
+    }
+
+    await supabase.from("cart_items").update({ product_id: mergeTargetId }).eq("product_id", mergeSourceId);
+    await supabase.from("product_suppliers").delete().eq("product_id", mergeSourceId);
+
+    const sourceProduct = products.find(p => p.id === mergeSourceId);
+    const targetProduct = products.find(p => p.id === mergeTargetId);
+    
+    if (sourceProduct?.seller_id) {
+      await supabase.from("deletion_logs").insert({
+        target_type: "product",
+        target_id: mergeSourceId,
+        target_name: sourceProduct?.name || "",
+        user_id: sourceProduct.seller_id,
+        reason: `Sản phẩm đã được gộp vào "${targetProduct?.name || mergeTargetId}"`,
+        deleted_by: currentUserId,
+      });
+    }
+    
+    await supabase.from("products").delete().eq("id", mergeSourceId);
+    await logActivity("merge_product", "product", mergeSourceId, sourceProduct?.name || "", `Gộp sản phẩm "${sourceProduct?.name}" vào "${targetProduct?.name}"`);
+    toast({ title: "Thành công", description: `Đã gộp sản phẩm vào "${targetProduct?.name}"` });
+    setShowMergeDialog(false);
+    setMergeSourceId("");
+    setMergeTargetId("");
+    setMergeSearchQuery("");
+    fetchAllData();
   };
 
   const handleEditOrder = (order: any) => {
@@ -840,7 +942,7 @@ const AdminDashboard = () => {
                         <span className="flex items-center">Sản phẩm <SortIcon sortState={productSort} colKey="name" /></span>
                       </TableHead>
                       <TableHead className="cursor-pointer select-none" onClick={() => toggleSort(setProductSort, "price")}>
-                        <span className="flex items-center">Giá <SortIcon sortState={productSort} colKey="price" /></span>
+                        <span className="flex items-center">Giá gốc <SortIcon sortState={productSort} colKey="price" /></span>
                       </TableHead>
                       <TableHead>
                         <FilterDropdown
@@ -854,30 +956,53 @@ const AdminDashboard = () => {
                       <TableHead className="cursor-pointer select-none" onClick={() => toggleSort(setProductSort, "stock")}>
                         <span className="flex items-center">Tồn kho <SortIcon sortState={productSort} colKey="stock" /></span>
                       </TableHead>
+                      <TableHead>NCC</TableHead>
+                      <TableHead>Trạng thái</TableHead>
                       <TableHead>Hành động</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {sortedProducts.map((product) => (
-                      <TableRow key={product.id}>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            {product.image_url && <img src={product.image_url} alt="" className="h-8 w-8 rounded object-cover" />}
-                            <button className="font-medium line-clamp-1 text-left hover:text-primary hover:underline transition-colors" onClick={() => { setDetailProduct(product); setShowProductDetail(true); }}>
-                              {product.name}
-                            </button>
-                          </div>
-                        </TableCell>
-                        <TableCell>{formatPrice(product.price)}</TableCell>
-                        <TableCell><Badge variant="outline">{product.category}</Badge></TableCell>
-                        <TableCell>{product.stock}</TableCell>
-                        <TableCell>
-                          <Button size="sm" variant="destructive" onClick={() => { setDeleteProductId(product.id); setShowDeleteProductDialog(true); }}>
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {sortedProducts.map((product) => {
+                      const supplierCount = productSuppliers[product.id]?.length || 0;
+                      return (
+                        <TableRow key={product.id}>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              {product.image_url && <img src={product.image_url} alt="" className="h-8 w-8 rounded object-cover" />}
+                              <button className="font-medium line-clamp-1 text-left hover:text-primary hover:underline transition-colors" onClick={() => { setDetailProduct(product); setShowProductDetail(true); }}>
+                                {product.name}
+                              </button>
+                            </div>
+                          </TableCell>
+                          <TableCell>{formatPrice(product.price)}</TableCell>
+                          <TableCell><Badge variant="outline">{categoryLabels[product.category] || product.category}</Badge></TableCell>
+                          <TableCell>{product.stock}</TableCell>
+                          <TableCell>
+                            <Badge variant={supplierCount > 0 ? "default" : "secondary"} className="text-xs">
+                              <Store className="h-3 w-3 mr-1" />{supplierCount}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={product.is_active ? "default" : "destructive"} className="text-xs">
+                              {product.is_active ? "Đang bán" : "Ngưng"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                              <Button size="sm" variant="outline" onClick={() => handleEditProduct(product)} title="Chỉnh sửa">
+                                <Pencil className="h-3 w-3" />
+                              </Button>
+                              <Button size="sm" variant="outline" onClick={() => { setMergeSourceId(product.id); setMergeTargetId(""); setMergeSearchQuery(""); setShowMergeDialog(true); }} title="Gộp vào sản phẩm khác">
+                                <Link2 className="h-3 w-3" />
+                              </Button>
+                              <Button size="sm" variant="destructive" onClick={() => { setDeleteProductId(product.id); setShowDeleteProductDialog(true); }} title="Xóa">
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               </div>
@@ -902,7 +1027,7 @@ const AdminDashboard = () => {
               </div>
 
               {(() => {
-                const adminActions = ["create_user", "delete_user", "restore_user", "change_password", "grant_role", "revoke_role", "edit_order", "delete_product", "update_order_status"];
+                const adminActions = ["create_user", "delete_user", "restore_user", "change_password", "grant_role", "revoke_role", "edit_order", "delete_product", "update_order_status", "edit_product", "merge_product"];
                 const userActions = ["create_account", "create_product"];
 
                 const actionLabels: Record<string, string> = {
@@ -916,6 +1041,8 @@ const AdminDashboard = () => {
                   revoke_role: "Thu quyền",
                   edit_order: "Sửa đơn hàng",
                   delete_product: "Xóa sản phẩm",
+                  edit_product: "Sửa sản phẩm",
+                  merge_product: "Gộp sản phẩm",
                   update_order_status: "Cập nhật đơn hàng",
                 };
                 const targetTypeLabels: Record<string, string> = {
@@ -1295,7 +1422,7 @@ const AdminDashboard = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Product Detail Dialog */}
+      {/* Product Detail Dialog - Enhanced with supplier info */}
       <Dialog open={showProductDetail} onOpenChange={setShowProductDetail}>
         <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Chi tiết sản phẩm</DialogTitle></DialogHeader>
@@ -1307,17 +1434,41 @@ const AdminDashboard = () => {
               <div className="font-semibold text-lg">{detailProduct.name}</div>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <InfoRow label="ID" value={detailProduct.id} mono />
-                <InfoRow label="Giá" value={formatPrice(detailProduct.price)} />
+                <InfoRow label="Giá gốc" value={formatPrice(detailProduct.price)} />
                 <InfoRow label="Danh mục" value={categoryLabels[detailProduct.category] || detailProduct.category} />
                 <InfoRow label="Tồn kho" value={detailProduct.stock?.toString() || "0"} />
                 <InfoRow label="Thương hiệu" value={detailProduct.brand || "N/A"} />
                 <InfoRow label="Trọng lượng" value={detailProduct.weight || "N/A"} />
                 <InfoRow label="Loại thú cưng" value={detailProduct.pet_type || "N/A"} />
                 <InfoRow label="Trạng thái" value={detailProduct.is_active ? "Đang bán" : "Ngưng bán"} />
+                <InfoRow label="Người bán" value={users.find(u => u.id === detailProduct.seller_id)?.display_name || "N/A"} />
                 {detailProduct.calories && <InfoRow label="Calories" value={detailProduct.calories.toString()} />}
                 {detailProduct.portion_gr_per_day && <InfoRow label="Khẩu phần/ngày" value={`${detailProduct.portion_gr_per_day}g`} />}
                 {detailProduct.portion_gr_per_kg_per_day && <InfoRow label="Khẩu phần/kg/ngày" value={`${detailProduct.portion_gr_per_kg_per_day}g`} />}
               </div>
+
+              {/* Nhà cung cấp */}
+              <div>
+                <div className="text-sm font-medium mb-2 flex items-center gap-2">
+                  <Store className="h-4 w-4" /> Nhà cung cấp ({productSuppliers[detailProduct.id]?.length || 0})
+                </div>
+                {(productSuppliers[detailProduct.id]?.length || 0) > 0 ? (
+                  <div className="space-y-1">
+                    {productSuppliers[detailProduct.id].map((ps: any) => (
+                      <div key={ps.id} className="flex justify-between items-center text-sm bg-muted/50 rounded p-2">
+                        <div>
+                          <span className="font-medium">{ps.suppliers?.name || "N/A"}</span>
+                          <span className="text-xs text-muted-foreground ml-2">Kho: {ps.stock}</span>
+                        </div>
+                        <span className="font-semibold text-primary">{formatPrice(ps.price)}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground italic">Chưa có nhà cung cấp nào</p>
+                )}
+              </div>
+
               {detailProduct.description && (
                 <div>
                   <div className="text-sm font-medium mb-1">Mô tả</div>
@@ -1350,6 +1501,189 @@ const AdminDashboard = () => {
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowProductDetail(false)}>Đóng</Button>
+            {detailProduct && (
+              <Button onClick={() => { setShowProductDetail(false); handleEditProduct(detailProduct); }}>
+                <Pencil className="h-3 w-3 mr-1" /> Chỉnh sửa
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Product Dialog */}
+      <Dialog open={showEditProductDialog} onOpenChange={(open) => { setShowEditProductDialog(open); if (!open) setEditProductData(null); }}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader><DialogTitle>Chỉnh sửa sản phẩm</DialogTitle></DialogHeader>
+          {editProductData && (
+            <div className="space-y-4 py-2">
+              <div>
+                <label className="text-sm font-medium">Tên sản phẩm</label>
+                <Input value={editProductData.name} onChange={(e) => setEditProductData({ ...editProductData, name: e.target.value })} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm font-medium">Giá gốc (đ)</label>
+                  <Input type="number" value={editProductData.price} onChange={(e) => setEditProductData({ ...editProductData, price: Number(e.target.value) })} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Tồn kho</label>
+                  <Input type="number" value={editProductData.stock} onChange={(e) => setEditProductData({ ...editProductData, stock: Number(e.target.value) })} />
+                </div>
+              </div>
+              <div>
+                <label className="text-sm font-medium">Thương hiệu</label>
+                <Input value={editProductData.brand} onChange={(e) => setEditProductData({ ...editProductData, brand: e.target.value })} />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Mô tả</label>
+                <Textarea value={editProductData.description} onChange={(e) => setEditProductData({ ...editProductData, description: e.target.value })} rows={3} />
+              </div>
+              <div className="flex items-center gap-2">
+                <Checkbox checked={editProductData.is_active} onCheckedChange={(checked) => setEditProductData({ ...editProductData, is_active: !!checked })} />
+                <label className="text-sm">Đang bán (hiển thị trên Marketplace)</label>
+              </div>
+
+              {/* Quản lý giá nhà cung cấp */}
+              {productSuppliers[editProductData.id]?.length > 0 && (
+                <div>
+                  <div className="text-sm font-medium mb-2">Giá theo nhà cung cấp</div>
+                  <div className="space-y-2">
+                    {productSuppliers[editProductData.id].map((ps: any) => (
+                      <div key={ps.id} className="flex items-center gap-2 bg-muted/50 rounded p-2">
+                        <span className="text-sm flex-1 font-medium">{ps.suppliers?.name || "N/A"}</span>
+                        <Input
+                          type="number"
+                          className="w-28 h-8 text-sm"
+                          defaultValue={ps.price}
+                          onBlur={async (e) => {
+                            const newPrice = Number(e.target.value);
+                            if (newPrice > 0 && newPrice !== ps.price) {
+                              await supabase.from("product_suppliers").update({ price: newPrice }).eq("id", ps.id);
+                              fetchAllData();
+                              toast({ title: "Đã cập nhật giá", description: `${ps.suppliers?.name}: ${formatPrice(newPrice)}` });
+                            }
+                          }}
+                        />
+                        <span className="text-xs text-muted-foreground">đ</span>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                          onClick={async () => {
+                            await supabase.from("product_suppliers").delete().eq("id", ps.id);
+                            fetchAllData();
+                            toast({ title: "Đã xóa nhà cung cấp", description: ps.suppliers?.name });
+                          }}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setShowEditProductDialog(false); setEditProductData(null); }}>Hủy</Button>
+            <Button onClick={handleSaveProduct}>Lưu thay đổi</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Merge Product Dialog */}
+      <Dialog open={showMergeDialog} onOpenChange={(open) => { setShowMergeDialog(open); if (!open) { setMergeSourceId(""); setMergeTargetId(""); setMergeSearchQuery(""); } }}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Link2 className="h-5 w-5" /> Gộp sản phẩm trùng
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            {/* Sản phẩm nguồn */}
+            <div className="bg-destructive/10 rounded-lg p-3">
+              <div className="text-xs text-muted-foreground mb-1">Sản phẩm sẽ bị XÓA (nguồn)</div>
+              <div className="flex items-center gap-2">
+                {products.find(p => p.id === mergeSourceId)?.image_url && (
+                  <img src={products.find(p => p.id === mergeSourceId)?.image_url} alt="" className="h-10 w-10 rounded object-cover" />
+                )}
+                <div>
+                  <div className="font-semibold text-sm">{products.find(p => p.id === mergeSourceId)?.name}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {formatPrice(products.find(p => p.id === mergeSourceId)?.price || 0)} • 
+                    {productSuppliers[mergeSourceId]?.length || 0} NCC
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="text-center text-muted-foreground text-sm">↓ Gộp nhà cung cấp vào ↓</div>
+
+            {/* Tìm sản phẩm đích */}
+            <div>
+              <label className="text-sm font-medium">Chọn sản phẩm đích (giữ lại)</label>
+              <Input
+                placeholder="Tìm kiếm sản phẩm..."
+                value={mergeSearchQuery}
+                onChange={(e) => setMergeSearchQuery(e.target.value)}
+                className="mt-1"
+              />
+            </div>
+
+            <div className="max-h-60 overflow-y-auto space-y-1">
+              {products
+                .filter(p => p.id !== mergeSourceId)
+                .filter(p => !mergeSearchQuery || 
+                  p.name.toLowerCase().includes(mergeSearchQuery.toLowerCase()) ||
+                  p.brand?.toLowerCase().includes(mergeSearchQuery.toLowerCase())
+                )
+                .map(p => (
+                  <button
+                    key={p.id}
+                    className={`w-full flex items-center gap-2 p-2 rounded text-left text-sm transition-colors ${
+                      mergeTargetId === p.id ? "bg-primary/10 border border-primary" : "hover:bg-muted/50 border border-transparent"
+                    }`}
+                    onClick={() => setMergeTargetId(p.id)}
+                  >
+                    {p.image_url && <img src={p.image_url} alt="" className="h-8 w-8 rounded object-cover flex-shrink-0" />}
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium truncate">{p.name}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {formatPrice(p.price)} • {p.brand || "N/A"} • {productSuppliers[p.id]?.length || 0} NCC
+                      </div>
+                    </div>
+                    {mergeTargetId === p.id && <Check className="h-4 w-4 text-primary flex-shrink-0" />}
+                  </button>
+                ))
+              }
+            </div>
+
+            {mergeTargetId && (
+              <div className="bg-primary/10 rounded-lg p-3">
+                <div className="text-xs text-muted-foreground mb-1">Sản phẩm đích (GIỮ LẠI)</div>
+                <div className="flex items-center gap-2">
+                  {products.find(p => p.id === mergeTargetId)?.image_url && (
+                    <img src={products.find(p => p.id === mergeTargetId)?.image_url} alt="" className="h-10 w-10 rounded object-cover" />
+                  )}
+                  <div>
+                    <div className="font-semibold text-sm">{products.find(p => p.id === mergeTargetId)?.name}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {formatPrice(products.find(p => p.id === mergeTargetId)?.price || 0)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <p className="text-xs text-destructive">
+              ⚠️ Hành động này sẽ chuyển tất cả nhà cung cấp từ sản phẩm nguồn sang sản phẩm đích, sau đó xóa sản phẩm nguồn. Không thể hoàn tác!
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setShowMergeDialog(false); setMergeSourceId(""); setMergeTargetId(""); setMergeSearchQuery(""); }}>Hủy</Button>
+            <Button variant="destructive" onClick={handleMergeProduct} disabled={!mergeTargetId}>
+              <Link2 className="h-4 w-4 mr-1" /> Gộp sản phẩm
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
