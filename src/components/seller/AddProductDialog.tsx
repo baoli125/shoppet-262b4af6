@@ -640,5 +640,14 @@ export const AddProductDialog = ({ open, onOpenChange, userId, onSuccess, editin
         {step === "new-product" && renderNewProduct()}
       </DialogContent>
     </Dialog>
+
+    <ImageCropper
+      open={cropperOpen}
+      imageSrc={rawImageSrc}
+      onClose={() => setCropperOpen(false)}
+      onCropComplete={handleCroppedImage}
+      aspectRatio={1}
+    />
+    </>
   );
 };
