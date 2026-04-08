@@ -631,6 +631,7 @@ export const AddProductDialog = ({ open, onOpenChange, userId, onSuccess, editin
   };
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader><DialogTitle>{getTitle()}</DialogTitle></DialogHeader>
