@@ -1420,7 +1420,7 @@ const AdminDashboard = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Product Detail Dialog */}
+      {/* Product Detail Dialog - Enhanced with supplier info */}
       <Dialog open={showProductDetail} onOpenChange={setShowProductDetail}>
         <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Chi tiết sản phẩm</DialogTitle></DialogHeader>
@@ -1432,17 +1432,41 @@ const AdminDashboard = () => {
               <div className="font-semibold text-lg">{detailProduct.name}</div>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <InfoRow label="ID" value={detailProduct.id} mono />
-                <InfoRow label="Giá" value={formatPrice(detailProduct.price)} />
+                <InfoRow label="Giá gốc" value={formatPrice(detailProduct.price)} />
                 <InfoRow label="Danh mục" value={categoryLabels[detailProduct.category] || detailProduct.category} />
                 <InfoRow label="Tồn kho" value={detailProduct.stock?.toString() || "0"} />
                 <InfoRow label="Thương hiệu" value={detailProduct.brand || "N/A"} />
                 <InfoRow label="Trọng lượng" value={detailProduct.weight || "N/A"} />
                 <InfoRow label="Loại thú cưng" value={detailProduct.pet_type || "N/A"} />
                 <InfoRow label="Trạng thái" value={detailProduct.is_active ? "Đang bán" : "Ngưng bán"} />
+                <InfoRow label="Người bán" value={users.find(u => u.id === detailProduct.seller_id)?.display_name || "N/A"} />
                 {detailProduct.calories && <InfoRow label="Calories" value={detailProduct.calories.toString()} />}
                 {detailProduct.portion_gr_per_day && <InfoRow label="Khẩu phần/ngày" value={`${detailProduct.portion_gr_per_day}g`} />}
                 {detailProduct.portion_gr_per_kg_per_day && <InfoRow label="Khẩu phần/kg/ngày" value={`${detailProduct.portion_gr_per_kg_per_day}g`} />}
               </div>
+
+              {/* Nhà cung cấp */}
+              <div>
+                <div className="text-sm font-medium mb-2 flex items-center gap-2">
+                  <Store className="h-4 w-4" /> Nhà cung cấp ({productSuppliers[detailProduct.id]?.length || 0})
+                </div>
+                {(productSuppliers[detailProduct.id]?.length || 0) > 0 ? (
+                  <div className="space-y-1">
+                    {productSuppliers[detailProduct.id].map((ps: any) => (
+                      <div key={ps.id} className="flex justify-between items-center text-sm bg-muted/50 rounded p-2">
+                        <div>
+                          <span className="font-medium">{ps.suppliers?.name || "N/A"}</span>
+                          <span className="text-xs text-muted-foreground ml-2">Kho: {ps.stock}</span>
+                        </div>
+                        <span className="font-semibold text-primary">{formatPrice(ps.price)}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground italic">Chưa có nhà cung cấp nào</p>
+                )}
+              </div>
+
               {detailProduct.description && (
                 <div>
                   <div className="text-sm font-medium mb-1">Mô tả</div>
@@ -1475,6 +1499,189 @@ const AdminDashboard = () => {
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowProductDetail(false)}>Đóng</Button>
+            {detailProduct && (
+              <Button onClick={() => { setShowProductDetail(false); handleEditProduct(detailProduct); }}>
+                <Pencil className="h-3 w-3 mr-1" /> Chỉnh sửa
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Product Dialog */}
+      <Dialog open={showEditProductDialog} onOpenChange={(open) => { setShowEditProductDialog(open); if (!open) setEditProductData(null); }}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader><DialogTitle>Chỉnh sửa sản phẩm</DialogTitle></DialogHeader>
+          {editProductData && (
+            <div className="space-y-4 py-2">
+              <div>
+                <label className="text-sm font-medium">Tên sản phẩm</label>
+                <Input value={editProductData.name} onChange={(e) => setEditProductData({ ...editProductData, name: e.target.value })} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm font-medium">Giá gốc (đ)</label>
+                  <Input type="number" value={editProductData.price} onChange={(e) => setEditProductData({ ...editProductData, price: Number(e.target.value) })} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Tồn kho</label>
+                  <Input type="number" value={editProductData.stock} onChange={(e) => setEditProductData({ ...editProductData, stock: Number(e.target.value) })} />
+                </div>
+              </div>
+              <div>
+                <label className="text-sm font-medium">Thương hiệu</label>
+                <Input value={editProductData.brand} onChange={(e) => setEditProductData({ ...editProductData, brand: e.target.value })} />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Mô tả</label>
+                <Textarea value={editProductData.description} onChange={(e) => setEditProductData({ ...editProductData, description: e.target.value })} rows={3} />
+              </div>
+              <div className="flex items-center gap-2">
+                <Checkbox checked={editProductData.is_active} onCheckedChange={(checked) => setEditProductData({ ...editProductData, is_active: !!checked })} />
+                <label className="text-sm">Đang bán (hiển thị trên Marketplace)</label>
+              </div>
+
+              {/* Quản lý giá nhà cung cấp */}
+              {productSuppliers[editProductData.id]?.length > 0 && (
+                <div>
+                  <div className="text-sm font-medium mb-2">Giá theo nhà cung cấp</div>
+                  <div className="space-y-2">
+                    {productSuppliers[editProductData.id].map((ps: any) => (
+                      <div key={ps.id} className="flex items-center gap-2 bg-muted/50 rounded p-2">
+                        <span className="text-sm flex-1 font-medium">{ps.suppliers?.name || "N/A"}</span>
+                        <Input
+                          type="number"
+                          className="w-28 h-8 text-sm"
+                          defaultValue={ps.price}
+                          onBlur={async (e) => {
+                            const newPrice = Number(e.target.value);
+                            if (newPrice > 0 && newPrice !== ps.price) {
+                              await supabase.from("product_suppliers").update({ price: newPrice }).eq("id", ps.id);
+                              fetchAllData();
+                              toast({ title: "Đã cập nhật giá", description: `${ps.suppliers?.name}: ${formatPrice(newPrice)}` });
+                            }
+                          }}
+                        />
+                        <span className="text-xs text-muted-foreground">đ</span>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                          onClick={async () => {
+                            await supabase.from("product_suppliers").delete().eq("id", ps.id);
+                            fetchAllData();
+                            toast({ title: "Đã xóa nhà cung cấp", description: ps.suppliers?.name });
+                          }}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setShowEditProductDialog(false); setEditProductData(null); }}>Hủy</Button>
+            <Button onClick={handleSaveProduct}>Lưu thay đổi</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Merge Product Dialog */}
+      <Dialog open={showMergeDialog} onOpenChange={(open) => { setShowMergeDialog(open); if (!open) { setMergeSourceId(""); setMergeTargetId(""); setMergeSearchQuery(""); } }}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Link2 className="h-5 w-5" /> Gộp sản phẩm trùng
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            {/* Sản phẩm nguồn */}
+            <div className="bg-destructive/10 rounded-lg p-3">
+              <div className="text-xs text-muted-foreground mb-1">Sản phẩm sẽ bị XÓA (nguồn)</div>
+              <div className="flex items-center gap-2">
+                {products.find(p => p.id === mergeSourceId)?.image_url && (
+                  <img src={products.find(p => p.id === mergeSourceId)?.image_url} alt="" className="h-10 w-10 rounded object-cover" />
+                )}
+                <div>
+                  <div className="font-semibold text-sm">{products.find(p => p.id === mergeSourceId)?.name}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {formatPrice(products.find(p => p.id === mergeSourceId)?.price || 0)} • 
+                    {productSuppliers[mergeSourceId]?.length || 0} NCC
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="text-center text-muted-foreground text-sm">↓ Gộp nhà cung cấp vào ↓</div>
+
+            {/* Tìm sản phẩm đích */}
+            <div>
+              <label className="text-sm font-medium">Chọn sản phẩm đích (giữ lại)</label>
+              <Input
+                placeholder="Tìm kiếm sản phẩm..."
+                value={mergeSearchQuery}
+                onChange={(e) => setMergeSearchQuery(e.target.value)}
+                className="mt-1"
+              />
+            </div>
+
+            <div className="max-h-60 overflow-y-auto space-y-1">
+              {products
+                .filter(p => p.id !== mergeSourceId)
+                .filter(p => !mergeSearchQuery || 
+                  p.name.toLowerCase().includes(mergeSearchQuery.toLowerCase()) ||
+                  p.brand?.toLowerCase().includes(mergeSearchQuery.toLowerCase())
+                )
+                .map(p => (
+                  <button
+                    key={p.id}
+                    className={`w-full flex items-center gap-2 p-2 rounded text-left text-sm transition-colors ${
+                      mergeTargetId === p.id ? "bg-primary/10 border border-primary" : "hover:bg-muted/50 border border-transparent"
+                    }`}
+                    onClick={() => setMergeTargetId(p.id)}
+                  >
+                    {p.image_url && <img src={p.image_url} alt="" className="h-8 w-8 rounded object-cover flex-shrink-0" />}
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium truncate">{p.name}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {formatPrice(p.price)} • {p.brand || "N/A"} • {productSuppliers[p.id]?.length || 0} NCC
+                      </div>
+                    </div>
+                    {mergeTargetId === p.id && <Check className="h-4 w-4 text-primary flex-shrink-0" />}
+                  </button>
+                ))
+              }
+            </div>
+
+            {mergeTargetId && (
+              <div className="bg-primary/10 rounded-lg p-3">
+                <div className="text-xs text-muted-foreground mb-1">Sản phẩm đích (GIỮ LẠI)</div>
+                <div className="flex items-center gap-2">
+                  {products.find(p => p.id === mergeTargetId)?.image_url && (
+                    <img src={products.find(p => p.id === mergeTargetId)?.image_url} alt="" className="h-10 w-10 rounded object-cover" />
+                  )}
+                  <div>
+                    <div className="font-semibold text-sm">{products.find(p => p.id === mergeTargetId)?.name}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {formatPrice(products.find(p => p.id === mergeTargetId)?.price || 0)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <p className="text-xs text-destructive">
+              ⚠️ Hành động này sẽ chuyển tất cả nhà cung cấp từ sản phẩm nguồn sang sản phẩm đích, sau đó xóa sản phẩm nguồn. Không thể hoàn tác!
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setShowMergeDialog(false); setMergeSourceId(""); setMergeTargetId(""); setMergeSearchQuery(""); }}>Hủy</Button>
+            <Button variant="destructive" onClick={handleMergeProduct} disabled={!mergeTargetId}>
+              <Link2 className="h-4 w-4 mr-1" /> Gộp sản phẩm
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
