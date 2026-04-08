@@ -161,6 +161,15 @@ const AdminDashboard = () => {
       setPetVaccines(map);
     }
     if (logsRes.data) setActivityLogs(logsRes.data);
+    if (psRes.data) {
+      const psMap: Record<string, any[]> = {};
+      psRes.data.forEach((ps: any) => {
+        if (!psMap[ps.product_id]) psMap[ps.product_id] = [];
+        psMap[ps.product_id].push(ps);
+      });
+      setProductSuppliers(psMap);
+    }
+    if (suppRes.data) setAllSuppliers(suppRes.data);
   };
 
   // Helper: ghi log hành động admin/manager
