@@ -264,16 +264,17 @@ const AdminDashboard = () => {
       return;
     }
     
-    if (editUserTestEmail.trim() === detailUser.email) {
-      console.log("[handleSaveUserTestEmail] Email not changed - old:", detailUser.email, "new:", editUserTestEmail.trim());
+    const currentTestEmail = (detailUser as any).test_email || "";
+    if (editUserTestEmail.trim() === currentTestEmail) {
+      console.log("[handleSaveUserTestEmail] Email not changed - old:", currentTestEmail, "new:", editUserTestEmail.trim());
       toast({ title: "Lưu không thay đổi", description: "Email test không thay đổi", variant: "default" });
       return;
     }
 
-    console.log("[handleSaveUserTestEmail] Updating - userId:", detailUser.id, "newEmail:", editUserTestEmail.trim());
+    console.log("[handleSaveUserTestEmail] Updating - userId:", detailUser.id, "newTestEmail:", editUserTestEmail.trim());
     const { error } = await supabase
       .from("profiles")
-      .update({ email: editUserTestEmail.trim() })
+      .update({ test_email: editUserTestEmail.trim() })
       .eq("id", detailUser.id);
 
     if (error) {
@@ -283,10 +284,11 @@ const AdminDashboard = () => {
     }
 
     console.log("[handleSaveUserTestEmail] Update successful");
-    await logActivity("update_user_test_email", "user", detailUser.id, detailUser.display_name || "", `Cập nhật email test ${detailUser.email} → ${editUserTestEmail.trim()}`);
+    const oldTestEmail = currentTestEmail || "(chưa có)";
+    await logActivity("update_user_test_email", "user", detailUser.id, detailUser.display_name || "", `Cập nhật email test ${oldTestEmail} → ${editUserTestEmail.trim()}`);
     toast({ title: "Thành công", description: "Đã cập nhật email test của người dùng" });
 
-    const updatedUser = { ...detailUser, email: editUserTestEmail.trim() };
+    const updatedUser = { ...detailUser, test_email: editUserTestEmail.trim() };
     setDetailUser(updatedUser);
     setUsers((prev) => prev.map((u) => (u.id === detailUser.id ? updatedUser : u)));
     fetchAllData();
@@ -840,7 +842,7 @@ const AdminDashboard = () => {
                                     navigate(`/admin/seller/${user.id}`);
                                   } else {
                                     setDetailUser(user);
-                                    setEditUserTestEmail(user.email || "");
+                                    setEditUserTestEmail((user as any).test_email || "");
                                     setShowUserDetail(true);
                                   }
                                 }}>
@@ -1330,14 +1332,22 @@ const AdminDashboard = () => {
                 <div className="w-full">
                   <div className="font-semibold text-lg">{detailUser.display_name}</div>
                   {myRole === "admin" ? (
-                    <div className="mt-2">
-                      <label className="text-xs text-muted-foreground block mb-1">Email test (chỉ lưu profile, không thay đổi đăng nhập)</label>
-                      <Input
-                        type="email"
-                        value={editUserTestEmail}
-                        onChange={(e) => setEditUserTestEmail(e.target.value)}
-                        className="w-full"
-                      />
+                    <div className="mt-2 space-y-2">
+                      <div>
+                        <label className="text-xs text-muted-foreground block mb-1">Email đăng nhập (auth)</label>
+                        <div className="text-sm font-mono bg-muted p-2 rounded text-ellipsis overflow-hidden">{detailUser.email}</div>
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground block mb-1">Email test (riêng cho admin test)</label>
+                        <Input
+                          type="email"
+                          value={editUserTestEmail}
+                          onChange={(e) => setEditUserTestEmail(e.target.value)}
+                          placeholder="email@example.com"
+                          className="w-full"
+                        />
+                        <p className="text-[10px] text-muted-foreground mt-1">Không ảnh hưởng đến email đăng nhập</p>
+                      </div>
                     </div>
                   ) : (
                     <div className="text-sm text-muted-foreground">{detailUser.email}</div>
@@ -1361,7 +1371,7 @@ const AdminDashboard = () => {
               <Button
                 variant="secondary"
                 onClick={handleSaveUserTestEmail}
-                disabled={!detailUser || editUserTestEmail.trim() === detailUser.email || !editUserTestEmail.trim()}
+                disabled={!detailUser || editUserTestEmail.trim() === ((detailUser as any).test_email || "") || !editUserTestEmail.trim()}
               >
                 Lưu email test
               </Button>
