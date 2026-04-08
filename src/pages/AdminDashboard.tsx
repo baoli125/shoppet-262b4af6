@@ -274,7 +274,7 @@ const AdminDashboard = () => {
     console.log("[handleSaveUserTestEmail] Updating - userId:", detailUser.id, "newTestEmail:", editUserTestEmail.trim());
     const { error } = await supabase
       .from("profiles")
-      .update({ test_email: editUserTestEmail.trim() })
+      .update({ test_email: editUserTestEmail.trim() } as any)
       .eq("id", detailUser.id);
 
     if (error) {
@@ -729,6 +729,7 @@ const AdminDashboard = () => {
   // Manager cannot: delete users, grant manager, delete admin
   const canDeleteUser = myRole === "admin";
   const canGrantManager = myRole === "admin";
+  const isReadOnlyMode = true;
 
   if (loading) return <div className="flex items-center justify-center min-h-screen">Đang tải...</div>;
   if (!myRole) return null;
@@ -791,9 +792,11 @@ const AdminDashboard = () => {
               <div className="flex items-center gap-2 mb-4">
                 <Search className="h-4 w-4 text-muted-foreground" />
                 <Input placeholder="Tìm kiếm người dùng..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="flex-1" />
-                <Button size="sm" onClick={() => setShowCreateUserDialog(true)}>
-                  <UserPlus className="h-4 w-4 mr-1" /> Tạo
-                </Button>
+                {!isReadOnlyMode && (
+                  <Button size="sm" onClick={() => setShowCreateUserDialog(true)}>
+                    <UserPlus className="h-4 w-4 mr-1" /> Tạo
+                  </Button>
+                )}
               </div>
               <div className="overflow-x-auto">
                  <Table>
@@ -835,22 +838,17 @@ const AdminDashboard = () => {
                         <TableRow key={user.id} className={user.is_deleted ? "opacity-60 bg-destructive/5" : ""}>
                           <TableCell className="font-medium">
                             <div className="flex items-center gap-1.5">
-                              {!isAdmin ? (
-                                <button className="text-left hover:text-primary hover:underline transition-colors" onClick={() => {
-                                  // Seller → navigate to full-page detail
-                                  if (userRoles[user.id]?.includes("seller")) {
-                                    navigate(`/admin/seller/${user.id}`);
-                                  } else {
-                                    setDetailUser(user);
-                                    setEditUserTestEmail((user as any).test_email || "");
-                                    setShowUserDetail(true);
-                                  }
-                                }}>
-                                  {user.display_name}
-                                </button>
-                              ) : (
-                                <span className="text-muted-foreground">{user.display_name}</span>
-                              )}
+                              <button className="text-left hover:text-primary hover:underline transition-colors" onClick={() => {
+                                if (userRoles[user.id]?.includes("seller")) {
+                                  navigate(`/admin/seller/${user.id}`);
+                                } else {
+                                  setDetailUser(user);
+                                  setEditUserTestEmail((user as any).test_email || "");
+                                  setShowUserDetail(true);
+                                }
+                              }}>
+                                {user.display_name}
+                              </button>
                               {user.is_deleted && <Badge variant="destructive" className="text-[10px] px-1.5 py-0">Đã xóa</Badge>}
                             </div>
                           </TableCell>
@@ -880,63 +878,17 @@ const AdminDashboard = () => {
                             )}
                           </TableCell>
                           <TableCell>
-                            <div className="flex gap-1 flex-wrap">
-                              {/* Đổi mật khẩu - không cho đổi admin nếu mình là manager */}
-                              {!(myRole === "manager" && isAdmin) && (
-                                <Button size="sm" variant="outline" onClick={() => { setPasswordUserId(user.id); setShowPasswordDialog(true); }} title="Đổi mật khẩu">
-                                  <Key className="h-3 w-3" />
-                                </Button>
-                              )}
-                              {/* Cấp/thu quyền seller - không cho admin */}
-                              {!isAdmin && !isSelf && (
-                                <Button
-                                  size="sm"
-                                  variant={userRoles[user.id]?.includes("seller") ? "destructive" : "default"}
-                                  onClick={() => confirmToggleRole(user.id, "seller")}
-                                  title={userRoles[user.id]?.includes("seller") ? "Thu quyền seller" : "Cấp quyền seller"}
-                                >
-                                  {userRoles[user.id]?.includes("seller") ? <UserX className="h-3 w-3" /> : <UserCheck className="h-3 w-3" />}
-                                </Button>
-                              )}
-                              {/* Cấp/thu quyền manager - chỉ admin */}
-                              {canGrantManager && !isAdmin && !isSelf && (
-                                <Button
-                                  size="sm"
-                                  variant={userRoles[user.id]?.includes("manager") ? "destructive" : "secondary"}
-                                  onClick={() => confirmToggleRole(user.id, "manager")}
-                                  title={userRoles[user.id]?.includes("manager") ? "Thu quyền manager" : "Cấp quyền manager"}
-                                >
-                                  <Shield className="h-3 w-3" />
-                                </Button>
-                              )}
-                              {/* Xóa / Khôi phục tài khoản - chỉ admin, không xóa admin khác */}
-                              {canDeleteUser && !isAdmin && !isSelf && (
-                                user.is_deleted ? (
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={async () => {
-                                      await supabase.from("profiles").update({ is_deleted: false, deleted_at: null, delete_reason: null, deleted_by: null }).eq("id", user.id);
-                                      await logActivity("restore_user", "user", user.id, user.display_name || "", `Khôi phục tài khoản: ${user.display_name}`);
-                                      toast({ title: "Thành công", description: "Đã khôi phục tài khoản" });
-                                      fetchAllData();
-                                    }}
-                                    title="Khôi phục tài khoản"
-                                  >
-                                    <RotateCcw className="h-3 w-3" />
-                                  </Button>
-                                ) : (
-                                  <Button
-                                    size="sm"
-                                    variant="destructive"
-                                    onClick={() => { setDeleteUserId(user.id); setShowDeleteDialog(true); }}
-                                    title="Xóa tài khoản"
-                                  >
-                                    <Trash2 className="h-3 w-3" />
-                                  </Button>
-                                )
-                              )}
-                            </div>
+                            <Button size="sm" variant="outline" onClick={() => {
+                              if (userRoles[user.id]?.includes("seller")) {
+                                navigate(`/admin/seller/${user.id}`);
+                              } else {
+                                setDetailUser(user);
+                                setEditUserTestEmail((user as any).test_email || "");
+                                setShowUserDetail(true);
+                              }
+                            }}>
+                              <Eye className="h-3 w-3 mr-1" /> Xem
+                            </Button>
                           </TableCell>
                         </TableRow>
                       );
@@ -1010,8 +962,8 @@ const AdminDashboard = () => {
                             {new Date(order.created_at).toLocaleString("vi-VN")}
                           </TableCell>
                           <TableCell>
-                            <Button size="sm" variant="outline" onClick={() => handleEditOrder(order)}>
-                              <Eye className="h-3 w-3 mr-1" /> Sửa
+                            <Button size="sm" variant="outline" onClick={() => { setDetailOrder(order); setShowOrderDetail(true); }}>
+                              <Eye className="h-3 w-3 mr-1" /> Xem
                             </Button>
                           </TableCell>
                         </TableRow>
@@ -1079,17 +1031,9 @@ const AdminDashboard = () => {
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            <div className="flex items-center gap-1">
-                              <Button size="sm" variant="outline" onClick={() => handleEditProduct(product)} title="Chỉnh sửa">
-                                <Pencil className="h-3 w-3" />
-                              </Button>
-                              <Button size="sm" variant="outline" onClick={() => { setMergeSourceId(product.id); setMergeTargetId(""); setMergeSearchQuery(""); setShowMergeDialog(true); }} title="Gộp vào sản phẩm khác">
-                                <Link2 className="h-3 w-3" />
-                              </Button>
-                              <Button size="sm" variant="destructive" onClick={() => { setDeleteProductId(product.id); setShowDeleteProductDialog(true); }} title="Xóa">
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
-                            </div>
+                            <Button size="sm" variant="outline" onClick={() => { setDetailProduct(product); setShowProductDetail(true); }}>
+                              <Eye className="h-3 w-3 mr-1" /> Xem
+                            </Button>
                           </TableCell>
                         </TableRow>
                       );
@@ -1331,27 +1275,16 @@ const AdminDashboard = () => {
                 {detailUser.avatar_url && <img src={detailUser.avatar_url} alt="" className="h-14 w-14 rounded-full object-cover border" />}
                 <div className="w-full">
                   <div className="font-semibold text-lg">{detailUser.display_name}</div>
-                  {myRole === "admin" ? (
-                    <div className="mt-2 space-y-2">
-                      <div>
-                        <label className="text-xs text-muted-foreground block mb-1">Email đăng nhập (auth)</label>
-                        <div className="text-sm font-mono bg-muted p-2 rounded text-ellipsis overflow-hidden">{detailUser.email}</div>
-                      </div>
-                      <div>
-                        <label className="text-xs text-muted-foreground block mb-1">Email test (riêng cho admin test)</label>
-                        <Input
-                          type="email"
-                          value={editUserTestEmail}
-                          onChange={(e) => setEditUserTestEmail(e.target.value)}
-                          placeholder="email@example.com"
-                          className="w-full"
-                        />
-                        <p className="text-[10px] text-muted-foreground mt-1">Không ảnh hưởng đến email đăng nhập</p>
-                      </div>
+                  <div className="mt-2 space-y-2">
+                    <div>
+                      <label className="text-xs text-muted-foreground block mb-1">Email đăng nhập</label>
+                      <div className="text-sm font-mono bg-muted p-2 rounded text-ellipsis overflow-hidden">{detailUser.email}</div>
                     </div>
-                  ) : (
-                    <div className="text-sm text-muted-foreground">{detailUser.email}</div>
-                  )}
+                    <div>
+                      <label className="text-xs text-muted-foreground block mb-1">Email test</label>
+                      <div className="text-sm bg-muted p-2 rounded text-ellipsis overflow-hidden">{(detailUser as any).test_email || "Chưa có"}</div>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3 text-sm">
@@ -1367,15 +1300,6 @@ const AdminDashboard = () => {
             </div>
           )}
           <DialogFooter>
-            {myRole === "admin" && (
-              <Button
-                variant="secondary"
-                onClick={handleSaveUserTestEmail}
-                disabled={!detailUser || editUserTestEmail.trim() === ((detailUser as any).test_email || "") || !editUserTestEmail.trim()}
-              >
-                Lưu email test
-              </Button>
-            )}
             <Button variant="outline" onClick={() => setShowUserDetail(false)}>Đóng</Button>
           </DialogFooter>
         </DialogContent>
@@ -1509,11 +1433,6 @@ const AdminDashboard = () => {
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowProductDetail(false)}>Đóng</Button>
-            {detailProduct && (
-              <Button onClick={() => { setShowProductDetail(false); handleEditProduct(detailProduct); }}>
-                <Pencil className="h-3 w-3 mr-1" /> Chỉnh sửa
-              </Button>
-            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
