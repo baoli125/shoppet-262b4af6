@@ -72,6 +72,15 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [userRoles, setUserRoles] = useState<Record<string, string[]>>({});
   const [editOrderData, setEditOrderData] = useState({ shipping_address: "", phone_number: "", customer_notes: "", status: "" });
+  // Product management states
+  const [productSuppliers, setProductSuppliers] = useState<Record<string, any[]>>({});
+  const [allSuppliers, setAllSuppliers] = useState<any[]>([]);
+  const [showEditProductDialog, setShowEditProductDialog] = useState(false);
+  const [editProductData, setEditProductData] = useState<any>(null);
+  const [showMergeDialog, setShowMergeDialog] = useState(false);
+  const [mergeSourceId, setMergeSourceId] = useState("");
+  const [mergeTargetId, setMergeTargetId] = useState("");
+  const [mergeSearchQuery, setMergeSearchQuery] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
 
