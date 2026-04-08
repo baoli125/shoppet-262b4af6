@@ -1307,7 +1307,6 @@ const AdminDashboard = () => {
                   {detailOrder.customer_notes && <InfoRow label="Ghi chú" value={detailOrder.customer_notes} full />}
                   {detailOrder.cancel_reason && <InfoRow label="Lý do hủy" value={detailOrder.cancel_reason} full />}
                   <InfoRow label="Ngày tạo" value={new Date(detailOrder.created_at).toLocaleDateString("vi-VN")} />
-                  <InfoRow label="Cập nhật" value={new Date(detailOrder.updated_at).toLocaleDateString("vi-VN")} />
                 </div>
                 {detailOrder.order_items?.length > 0 && (
                   <div>
