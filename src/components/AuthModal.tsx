@@ -39,8 +39,14 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
     setIsLoading(true);
 
     try {
+      // Nếu không chứa @, coi như username → thêm @shoppet.local
+      let loginEmail = email.trim();
+      if (!loginEmail.includes("@")) {
+        loginEmail = `${loginEmail.toLowerCase()}@shoppet.local`;
+      }
+
       const { error } = await supabase.auth.signInWithPassword({
-        email,
+        email: loginEmail,
         password,
       });
 
@@ -57,7 +63,7 @@ const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
     } catch (error: any) {
       toast({
         title: "Đăng nhập thất bại",
-        description: error.message || "Email hoặc mật khẩu không đúng",
+        description: error.message || "Tên đăng nhập/email hoặc mật khẩu không đúng",
         variant: "destructive",
       });
     } finally {
