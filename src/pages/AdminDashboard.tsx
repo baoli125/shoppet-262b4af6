@@ -356,6 +356,88 @@ const AdminDashboard = () => {
     setDeleteProductReason("");
   };
 
+  // Chỉnh sửa sản phẩm (giá, thông tin)
+  const handleEditProduct = (product: any) => {
+    setEditProductData({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      stock: product.stock || 0,
+      is_active: product.is_active,
+      description: product.description || "",
+      brand: product.brand || "",
+    });
+    setShowEditProductDialog(true);
+  };
+
+  const handleSaveProduct = async () => {
+    if (!editProductData) return;
+    const { error } = await supabase.from("products").update({
+      name: editProductData.name,
+      price: editProductData.price,
+      stock: editProductData.stock,
+      is_active: editProductData.is_active,
+      description: editProductData.description,
+      brand: editProductData.brand,
+    }).eq("id", editProductData.id);
+    if (error) {
+      toast({ title: "Lỗi", description: error.message, variant: "destructive" });
+    } else {
+      await logActivity("edit_product", "product", editProductData.id, editProductData.name, `Chỉnh sửa sản phẩm: ${editProductData.name}`);
+      toast({ title: "Thành công", description: "Đã cập nhật sản phẩm" });
+      setShowEditProductDialog(false);
+      setEditProductData(null);
+      fetchAllData();
+    }
+  };
+
+  // Gộp sản phẩm trùng: chuyển supplier từ source sang target, xóa source
+  const handleMergeProduct = async () => {
+    if (!mergeSourceId || !mergeTargetId || mergeSourceId === mergeTargetId) {
+      toast({ title: "Lỗi", description: "Vui lòng chọn sản phẩm đích khác sản phẩm nguồn", variant: "destructive" });
+      return;
+    }
+    const sourcePS = productSuppliers[mergeSourceId] || [];
+    const targetPS = productSuppliers[mergeTargetId] || [];
+    const targetSupplierIds = targetPS.map((ps: any) => ps.supplier_id);
+
+    for (const ps of sourcePS) {
+      if (targetSupplierIds.includes(ps.supplier_id)) continue;
+      await supabase.from("product_suppliers").insert({
+        product_id: mergeTargetId,
+        supplier_id: ps.supplier_id,
+        price: ps.price,
+        stock: ps.stock,
+      });
+    }
+
+    await supabase.from("cart_items").update({ product_id: mergeTargetId }).eq("product_id", mergeSourceId);
+    await supabase.from("product_suppliers").delete().eq("product_id", mergeSourceId);
+
+    const sourceProduct = products.find(p => p.id === mergeSourceId);
+    const targetProduct = products.find(p => p.id === mergeTargetId);
+    
+    if (sourceProduct?.seller_id) {
+      await supabase.from("deletion_logs").insert({
+        target_type: "product",
+        target_id: mergeSourceId,
+        target_name: sourceProduct?.name || "",
+        user_id: sourceProduct.seller_id,
+        reason: `Sản phẩm đã được gộp vào "${targetProduct?.name || mergeTargetId}"`,
+        deleted_by: currentUserId,
+      });
+    }
+    
+    await supabase.from("products").delete().eq("id", mergeSourceId);
+    await logActivity("merge_product", "product", mergeSourceId, sourceProduct?.name || "", `Gộp sản phẩm "${sourceProduct?.name}" vào "${targetProduct?.name}"`);
+    toast({ title: "Thành công", description: `Đã gộp sản phẩm vào "${targetProduct?.name}"` });
+    setShowMergeDialog(false);
+    setMergeSourceId("");
+    setMergeTargetId("");
+    setMergeSearchQuery("");
+    fetchAllData();
+  };
+
   const handleEditOrder = (order: any) => {
     setSelectedOrder(order);
     setEditOrderData({
