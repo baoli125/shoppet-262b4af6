@@ -1041,6 +1041,8 @@ const AdminDashboard = () => {
                   revoke_role: "Thu quyền",
                   edit_order: "Sửa đơn hàng",
                   delete_product: "Xóa sản phẩm",
+                  edit_product: "Sửa sản phẩm",
+                  merge_product: "Gộp sản phẩm",
                   update_order_status: "Cập nhật đơn hàng",
                 };
                 const targetTypeLabels: Record<string, string> = {
