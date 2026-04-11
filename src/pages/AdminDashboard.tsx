@@ -5,13 +5,13 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
-import { Users, ShieldCheck, Package, ShoppingCart, Search, Key, Trash2, UserCheck, UserX, Eye, LogOut, Shield, ArrowUp, ArrowDown, ArrowUpDown, Filter, Check, X, PawPrint, UserPlus, RefreshCw, RotateCcw, Clock, Pencil, Link2, Store } from "lucide-react";
+import { Users, ShieldCheck, Package, ShoppingCart, Search, Key, Trash2, UserCheck, UserX, Eye, LogOut, Shield, ArrowUp, ArrowDown, ArrowUpDown, Filter, Check, X, PawPrint, UserPlus, RefreshCw, RotateCcw, ScrollText, Clock, Pencil, Link2, Store } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -53,7 +53,6 @@ const AdminDashboard = () => {
   const [detailUser, setDetailUser] = useState<any>(null);
   const [detailOrder, setDetailOrder] = useState<any>(null);
   const [detailProduct, setDetailProduct] = useState<any>(null);
-  const [orderDateDraft, setOrderDateDraft] = useState("");
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [newPassword, setNewPassword] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
@@ -68,7 +67,6 @@ const AdminDashboard = () => {
   const [deleteProductReason, setDeleteProductReason] = useState("");
   const [roleAction, setRoleAction] = useState<{ userId: string; role: "seller" | "manager"; action: "grant" | "revoke" } | null>(null);
   const [deleteProductId, setDeleteProductId] = useState("");
-  const [editUserTestEmail, setEditUserTestEmail] = useState("");
   const [myRole, setMyRole] = useState<"admin" | "manager" | null>(null);
   const [currentUserId, setCurrentUserId] = useState("");
   const [loading, setLoading] = useState(true);
@@ -114,7 +112,7 @@ const AdminDashboard = () => {
   };
 
   const fetchAllData = async () => {
-    const [profilesRes, ordersRes, productsRes, rolesRes, petsRes, medicalRes, vaccinesRes, psRes, suppRes] = await Promise.all([
+    const [profilesRes, ordersRes, productsRes, rolesRes, petsRes, medicalRes, vaccinesRes, logsRes, psRes, suppRes] = await Promise.all([
       supabase.from("profiles").select("*").order("created_at", { ascending: false }),
       supabase.from("orders").select("*, order_items(*)").order("created_at", { ascending: false }),
       supabase.from("products").select("*").order("created_at", { ascending: false }),
@@ -122,6 +120,7 @@ const AdminDashboard = () => {
       supabase.from("pets").select("*"),
       supabase.from("medical_records").select("*").order("date", { ascending: false }),
       supabase.from("vaccines").select("*").order("date", { ascending: false }),
+      supabase.from("activity_logs").select("*").order("created_at", { ascending: false }).limit(500),
       supabase.from("product_suppliers").select("*, suppliers(*)"),
       supabase.from("suppliers").select("*"),
     ]);
@@ -161,6 +160,7 @@ const AdminDashboard = () => {
       });
       setPetVaccines(map);
     }
+    if (logsRes.data) setActivityLogs(logsRes.data);
     if (psRes.data) {
       const psMap: Record<string, any[]> = {};
       psRes.data.forEach((ps: any) => {
@@ -248,50 +248,6 @@ const AdminDashboard = () => {
       setCreateUserRole("user");
       fetchAllData();
     }
-  };
-
-  const handleSaveUserTestEmail = async () => {
-    console.log("[handleSaveUserTestEmail] Starting - detailUser:", detailUser, "editUserTestEmail:", editUserTestEmail);
-    
-    if (!detailUser) {
-      console.log("[handleSaveUserTestEmail] No detailUser, returning");
-      return;
-    }
-    
-    if (!editUserTestEmail.trim()) {
-      console.log("[handleSaveUserTestEmail] Email empty");
-      toast({ title: "Lỗi", description: "Email test không được để trống", variant: "destructive" });
-      return;
-    }
-    
-    const currentTestEmail = (detailUser as any).test_email || "";
-    if (editUserTestEmail.trim() === currentTestEmail) {
-      console.log("[handleSaveUserTestEmail] Email not changed - old:", currentTestEmail, "new:", editUserTestEmail.trim());
-      toast({ title: "Lưu không thay đổi", description: "Email test không thay đổi", variant: "default" });
-      return;
-    }
-
-    console.log("[handleSaveUserTestEmail] Updating - userId:", detailUser.id, "newTestEmail:", editUserTestEmail.trim());
-    const { error } = await supabase
-      .from("profiles")
-      .update({ test_email: editUserTestEmail.trim() } as any)
-      .eq("id", detailUser.id);
-
-    if (error) {
-      console.error("[handleSaveUserTestEmail] Supabase error:", error);
-      toast({ title: "Lỗi", description: error.message, variant: "destructive" });
-      return;
-    }
-
-    console.log("[handleSaveUserTestEmail] Update successful");
-    const oldTestEmail = currentTestEmail || "(chưa có)";
-    await logActivity("update_user_test_email", "user", detailUser.id, detailUser.display_name || "", `Cập nhật email test ${oldTestEmail} → ${editUserTestEmail.trim()}`);
-    toast({ title: "Thành công", description: "Đã cập nhật email test của người dùng" });
-
-    const updatedUser = { ...detailUser, test_email: editUserTestEmail.trim() };
-    setDetailUser(updatedUser);
-    setUsers((prev) => prev.map((u) => (u.id === detailUser.id ? updatedUser : u)));
-    fetchAllData();
   };
 
   const handleDeleteUser = async () => {
@@ -490,24 +446,19 @@ const AdminDashboard = () => {
       customer_notes: order.customer_notes || "",
       status: order.status || "pending",
     });
-    setOrderDateDraft(toDatetimeLocal(order.created_at));
     setShowOrderDialog(true);
   };
 
   const handleSaveOrder = async () => {
     if (!selectedOrder) return;
-    const updateData: any = {
-      shipping_address: editOrderData.shipping_address,
-      phone_number: editOrderData.phone_number,
-      customer_notes: editOrderData.customer_notes,
-      status: editOrderData.status as any,
-    };
-    if (orderDateDraft !== toDatetimeLocal(selectedOrder.created_at)) {
-      updateData.created_at = toISOStringFromLocal(orderDateDraft);
-    }
     const { error } = await supabase
       .from("orders")
-      .update(updateData)
+      .update({
+        shipping_address: editOrderData.shipping_address,
+        phone_number: editOrderData.phone_number,
+        customer_notes: editOrderData.customer_notes,
+        status: editOrderData.status as any,
+      })
       .eq("id", selectedOrder.id);
     if (error) {
       toast({ title: "Lỗi", description: error.message, variant: "destructive" });
@@ -517,7 +468,6 @@ const AdminDashboard = () => {
       if (selectedOrder.shipping_address !== editOrderData.shipping_address) changes.push("Địa chỉ giao hàng");
       if (selectedOrder.phone_number !== editOrderData.phone_number) changes.push("Số điện thoại");
       if (selectedOrder.customer_notes !== editOrderData.customer_notes) changes.push("Ghi chú");
-      if (orderDateDraft !== toDatetimeLocal(selectedOrder.created_at)) changes.push("Ngày đặt");
       await logActivity("edit_order", "order", selectedOrder.id, `#${selectedOrder.id.slice(0,8)}`, `Chỉnh sửa đơn hàng: ${changes.join(", ")}`);
       toast({ title: "Thành công", description: "Đã cập nhật đơn hàng" });
       setShowOrderDialog(false);
@@ -525,50 +475,9 @@ const AdminDashboard = () => {
     }
   };
 
-  const toDatetimeLocal = (isoDate: string) => {
-    if (!isoDate) return "";
-    const date = new Date(isoDate);
-    const tzOffset = date.getTimezoneOffset() * 60000;
-    return new Date(date.getTime() - tzOffset).toISOString().slice(0, 16);
-  };
-
-  const toISOStringFromLocal = (localDate: string) => {
-    if (!localDate) return "";
-    const date = new Date(localDate);
-    return date.toISOString();
-  };
-
-  const handleUpdateOrderDate = async (orderId: string, localDateValue: string) => {
-    const isoDate = toISOStringFromLocal(localDateValue);
-    if (!isoDate) {
-      toast({ title: "Lỗi", description: "Ngày đặt không hợp lệ.", variant: "destructive" });
-      return;
-    }
-
-    const { error } = await supabase.from("orders").update({ created_at: isoDate }).eq("id", orderId);
-    if (error) {
-      toast({ title: "Lỗi", description: error.message, variant: "destructive" });
-      return;
-    }
-
-    toast({ title: "Đã cập nhật ngày đặt" });
-    setShowOrderDialog(false);
-    fetchAllData();
-  };
-
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/");
-  };
-
-  const maskPhone = (phone: string) => {
-    if (!phone || phone.length <= 6) return phone;
-    return phone.slice(0, 3) + "*".repeat(phone.length - 6) + phone.slice(-3);
-  };
-
-  const maskAddress = (address: string) => {
-    if (!address || address.length <= 6) return address;
-    return address.slice(0, 3) + "*".repeat(Math.max(3, address.length - 6)) + address.slice(-3);
   };
 
   const toggleSort = (setter: React.Dispatch<React.SetStateAction<SortState>>, key: string) => {
@@ -729,7 +638,6 @@ const AdminDashboard = () => {
   // Manager cannot: delete users, grant manager, delete admin
   const canDeleteUser = myRole === "admin";
   const canGrantManager = myRole === "admin";
-  const isReadOnlyMode = true;
 
   if (loading) return <div className="flex items-center justify-center min-h-screen">Đang tải...</div>;
   if (!myRole) return null;
@@ -781,10 +689,11 @@ const AdminDashboard = () => {
         </div>
 
         <Tabs defaultValue="users">
-          <TabsList className="w-full grid grid-cols-3 mb-4">
+          <TabsList className="w-full grid grid-cols-4 mb-4">
             <TabsTrigger value="users">Người dùng</TabsTrigger>
             <TabsTrigger value="orders">Đơn hàng</TabsTrigger>
             <TabsTrigger value="products">Sản phẩm</TabsTrigger>
+            <TabsTrigger value="logs" className="gap-1"><ScrollText className="h-3.5 w-3.5" /> Logs</TabsTrigger>
           </TabsList>
 
           <TabsContent value="users">
@@ -792,11 +701,9 @@ const AdminDashboard = () => {
               <div className="flex items-center gap-2 mb-4">
                 <Search className="h-4 w-4 text-muted-foreground" />
                 <Input placeholder="Tìm kiếm người dùng..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="flex-1" />
-                {!isReadOnlyMode && (
-                  <Button size="sm" onClick={() => setShowCreateUserDialog(true)}>
-                    <UserPlus className="h-4 w-4 mr-1" /> Tạo
-                  </Button>
-                )}
+                <Button size="sm" onClick={() => setShowCreateUserDialog(true)}>
+                  <UserPlus className="h-4 w-4 mr-1" /> Tạo
+                </Button>
               </div>
               <div className="overflow-x-auto">
                  <Table>
@@ -838,17 +745,21 @@ const AdminDashboard = () => {
                         <TableRow key={user.id} className={user.is_deleted ? "opacity-60 bg-destructive/5" : ""}>
                           <TableCell className="font-medium">
                             <div className="flex items-center gap-1.5">
-                              <button className="text-left hover:text-primary hover:underline transition-colors" onClick={() => {
-                                if (userRoles[user.id]?.includes("seller")) {
-                                  navigate(`/admin/seller/${user.id}`);
-                                } else {
-                                  setDetailUser(user);
-                                  setEditUserTestEmail((user as any).test_email || "");
-                                  setShowUserDetail(true);
-                                }
-                              }}>
-                                {user.display_name}
-                              </button>
+                              {!isAdmin ? (
+                                <button className="text-left hover:text-primary hover:underline transition-colors" onClick={() => {
+                                  // Seller → navigate to full-page detail
+                                  if (userRoles[user.id]?.includes("seller")) {
+                                    navigate(`/admin/seller/${user.id}`);
+                                  } else {
+                                    setDetailUser(user);
+                                    setShowUserDetail(true);
+                                  }
+                                }}>
+                                  {user.display_name}
+                                </button>
+                              ) : (
+                                <span className="text-muted-foreground">{user.display_name}</span>
+                              )}
                               {user.is_deleted && <Badge variant="destructive" className="text-[10px] px-1.5 py-0">Đã xóa</Badge>}
                             </div>
                           </TableCell>
@@ -878,17 +789,63 @@ const AdminDashboard = () => {
                             )}
                           </TableCell>
                           <TableCell>
-                            <Button size="sm" variant="outline" onClick={() => {
-                              if (userRoles[user.id]?.includes("seller")) {
-                                navigate(`/admin/seller/${user.id}`);
-                              } else {
-                                setDetailUser(user);
-                                setEditUserTestEmail((user as any).test_email || "");
-                                setShowUserDetail(true);
-                              }
-                            }}>
-                              <Eye className="h-3 w-3 mr-1" /> Xem
-                            </Button>
+                            <div className="flex gap-1 flex-wrap">
+                              {/* Đổi mật khẩu - không cho đổi admin nếu mình là manager */}
+                              {!(myRole === "manager" && isAdmin) && (
+                                <Button size="sm" variant="outline" onClick={() => { setPasswordUserId(user.id); setShowPasswordDialog(true); }} title="Đổi mật khẩu">
+                                  <Key className="h-3 w-3" />
+                                </Button>
+                              )}
+                              {/* Cấp/thu quyền seller - không cho admin */}
+                              {!isAdmin && !isSelf && (
+                                <Button
+                                  size="sm"
+                                  variant={userRoles[user.id]?.includes("seller") ? "destructive" : "default"}
+                                  onClick={() => confirmToggleRole(user.id, "seller")}
+                                  title={userRoles[user.id]?.includes("seller") ? "Thu quyền seller" : "Cấp quyền seller"}
+                                >
+                                  {userRoles[user.id]?.includes("seller") ? <UserX className="h-3 w-3" /> : <UserCheck className="h-3 w-3" />}
+                                </Button>
+                              )}
+                              {/* Cấp/thu quyền manager - chỉ admin */}
+                              {canGrantManager && !isAdmin && !isSelf && (
+                                <Button
+                                  size="sm"
+                                  variant={userRoles[user.id]?.includes("manager") ? "destructive" : "secondary"}
+                                  onClick={() => confirmToggleRole(user.id, "manager")}
+                                  title={userRoles[user.id]?.includes("manager") ? "Thu quyền manager" : "Cấp quyền manager"}
+                                >
+                                  <Shield className="h-3 w-3" />
+                                </Button>
+                              )}
+                              {/* Xóa / Khôi phục tài khoản - chỉ admin, không xóa admin khác */}
+                              {canDeleteUser && !isAdmin && !isSelf && (
+                                user.is_deleted ? (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={async () => {
+                                      await supabase.from("profiles").update({ is_deleted: false, deleted_at: null, delete_reason: null, deleted_by: null }).eq("id", user.id);
+                                      await logActivity("restore_user", "user", user.id, user.display_name || "", `Khôi phục tài khoản: ${user.display_name}`);
+                                      toast({ title: "Thành công", description: "Đã khôi phục tài khoản" });
+                                      fetchAllData();
+                                    }}
+                                    title="Khôi phục tài khoản"
+                                  >
+                                    <RotateCcw className="h-3 w-3" />
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    onClick={() => { setDeleteUserId(user.id); setShowDeleteDialog(true); }}
+                                    title="Xóa tài khoản"
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                )
+                              )}
+                            </div>
                           </TableCell>
                         </TableRow>
                       );
@@ -962,8 +919,8 @@ const AdminDashboard = () => {
                             {new Date(order.created_at).toLocaleString("vi-VN")}
                           </TableCell>
                           <TableCell>
-                            <Button size="sm" variant="outline" onClick={() => { setDetailOrder(order); setShowOrderDetail(true); }}>
-                              <Eye className="h-3 w-3 mr-1" /> Xem
+                            <Button size="sm" variant="outline" onClick={() => handleEditOrder(order)}>
+                              <Eye className="h-3 w-3 mr-1" /> Sửa
                             </Button>
                           </TableCell>
                         </TableRow>
@@ -1031,9 +988,17 @@ const AdminDashboard = () => {
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            <Button size="sm" variant="outline" onClick={() => { setDetailProduct(product); setShowProductDetail(true); }}>
-                              <Eye className="h-3 w-3 mr-1" /> Xem
-                            </Button>
+                            <div className="flex items-center gap-1">
+                              <Button size="sm" variant="outline" onClick={() => handleEditProduct(product)} title="Chỉnh sửa">
+                                <Pencil className="h-3 w-3" />
+                              </Button>
+                              <Button size="sm" variant="outline" onClick={() => { setMergeSourceId(product.id); setMergeTargetId(""); setMergeSearchQuery(""); setShowMergeDialog(true); }} title="Gộp vào sản phẩm khác">
+                                <Link2 className="h-3 w-3" />
+                              </Button>
+                              <Button size="sm" variant="destructive" onClick={() => { setDeleteProductId(product.id); setShowDeleteProductDialog(true); }} title="Xóa">
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       );
@@ -1044,17 +1009,158 @@ const AdminDashboard = () => {
             </Card>
           </TabsContent>
 
+          <TabsContent value="logs">
+            <Card className="p-4">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-semibold flex items-center gap-2"><ScrollText className="h-4 w-4" /> Nhật ký hoạt động</h3>
+                <Button size="sm" variant="outline" onClick={fetchAllData}><RefreshCw className="h-3 w-3 mr-1" /> Làm mới</Button>
+              </div>
 
+              {/* Sub-tabs: Admin/Manager vs User */}
+              <div className="flex gap-2 mb-4">
+                <Button size="sm" variant={logTab === "admin" ? "default" : "outline"} onClick={() => { setLogTab("admin"); setLogActorFilter([]); setLogActionFilter([]); setLogTargetFilter([]); }}>
+                  Admin / Manager
+                </Button>
+                <Button size="sm" variant={logTab === "user" ? "default" : "outline"} onClick={() => { setLogTab("user"); setLogActorFilter([]); setLogActionFilter([]); setLogTargetFilter([]); }}>
+                  Người dùng
+                </Button>
+              </div>
+
+              {(() => {
+                const adminActions = ["create_user", "delete_user", "restore_user", "change_password", "grant_role", "revoke_role", "edit_order", "delete_product", "update_order_status", "edit_product", "merge_product"];
+                const userActions = ["create_account", "create_product"];
+
+                const actionLabels: Record<string, string> = {
+                  create_account: "Tạo tài khoản",
+                  create_product: "Thêm sản phẩm",
+                  create_user: "Tạo tài khoản (admin)",
+                  delete_user: "Xóa tài khoản",
+                  restore_user: "Khôi phục tài khoản",
+                  change_password: "Đổi mật khẩu",
+                  grant_role: "Cấp quyền",
+                  revoke_role: "Thu quyền",
+                  edit_order: "Sửa đơn hàng",
+                  delete_product: "Xóa sản phẩm",
+                  edit_product: "Sửa sản phẩm",
+                  merge_product: "Gộp sản phẩm",
+                  update_order_status: "Cập nhật đơn hàng",
+                };
+                const targetTypeLabels: Record<string, string> = {
+                  user: "Người dùng",
+                  product: "Sản phẩm",
+                  order: "Đơn hàng",
+                };
+
+                const relevantActions = logTab === "admin" ? adminActions : userActions;
+                const tabLogs = activityLogs.filter(l => relevantActions.includes(l.action));
+
+                // Build filter options from data
+                const uniqueActors = Array.from(new Set(tabLogs.map(l => l.actor_name || "System"))).sort((a, b) => a.localeCompare(b, "vi"));
+                const uniqueActions = Array.from(new Set(tabLogs.map(l => l.action)));
+                const uniqueTargets = Array.from(new Set(tabLogs.map(l => l.target_type))).sort();
+
+                // Apply filters
+                const filteredLogs = tabLogs.filter(l => {
+                  if (logActorFilter.length > 0 && !logActorFilter.includes(l.actor_name || "System")) return false;
+                  if (logActionFilter.length > 0 && !logActionFilter.includes(l.action)) return false;
+                  if (logTargetFilter.length > 0 && !logTargetFilter.includes(l.target_type)) return false;
+                  return true;
+                });
+
+                const sortedLogs = sortData(filteredLogs, logSort, (l, k) => {
+                  if (k === "created_at") return new Date(l.created_at).getTime();
+                  if (k === "actor") return (l.actor_name || "System").toLowerCase();
+                  if (k === "target") return (l.target_type || "").toLowerCase();
+                  return "";
+                });
+
+                return (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="cursor-pointer select-none" onClick={() => toggleSort(setLogSort, "created_at")}>
+                            <span className="flex items-center">Thời gian <SortIcon sortState={logSort} colKey="created_at" /></span>
+                          </TableHead>
+                          <TableHead>
+                            <div className="flex items-center gap-1">
+                              <span className="cursor-pointer select-none" onClick={() => toggleSort(setLogSort, "actor")}>
+                                <span className="flex items-center">Người thực hiện <SortIcon sortState={logSort} colKey="actor" /></span>
+                              </span>
+                              <FilterDropdown
+                                label=""
+                                options={uniqueActors}
+                                selected={logActorFilter}
+                                onToggle={(v) => toggleFilter(setLogActorFilter, v)}
+                              />
+                            </div>
+                          </TableHead>
+                          <TableHead>
+                            <FilterDropdown
+                              label="Hành động"
+                              options={uniqueActions}
+                              selected={logActionFilter}
+                              onToggle={(v) => toggleFilter(setLogActionFilter, v)}
+                              labelMap={actionLabels}
+                            />
+                          </TableHead>
+                          <TableHead>
+                            <div className="flex items-center gap-1">
+                              <span className="cursor-pointer select-none" onClick={() => toggleSort(setLogSort, "target")}>
+                                <span className="flex items-center">Đối tượng <SortIcon sortState={logSort} colKey="target" /></span>
+                              </span>
+                              <FilterDropdown
+                                label=""
+                                options={uniqueTargets}
+                                selected={logTargetFilter}
+                                onToggle={(v) => toggleFilter(setLogTargetFilter, v)}
+                                labelMap={targetTypeLabels}
+                              />
+                            </div>
+                          </TableHead>
+                          <TableHead>Chi tiết</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {sortedLogs.map((log: any) => (
+                          <TableRow key={log.id}>
+                            <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                              {new Date(log.created_at).toLocaleString("vi-VN")}
+                            </TableCell>
+                            <TableCell className="text-sm">{log.actor_name || "System"}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className="text-xs">{actionLabels[log.action] || log.action}</Badge>
+                            </TableCell>
+                            <TableCell className="text-xs">
+                              <span className="text-muted-foreground">{targetTypeLabels[log.target_type] || log.target_type}</span>
+                              {log.target_name && <span className="ml-1 font-medium">{log.target_name}</span>}
+                            </TableCell>
+                            <TableCell className="text-xs text-muted-foreground max-w-[300px] truncate" title={log.details}>
+                              {log.details}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                        {sortedLogs.length === 0 && (
+                          <TableRow>
+                            <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                              {logTab === "admin" ? "Chưa có hoạt động admin/manager nào" : "Chưa có hoạt động người dùng nào"}
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                );
+              })()}
+            </Card>
+          </TabsContent>
         </Tabs>
       </div>
 
       {/* Change Password Dialog */}
       <Dialog open={showPasswordDialog} onOpenChange={(open) => { setShowPasswordDialog(open); if (!open) { setNewPassword(""); setCurrentPassword(""); } }}>
         <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Đổi mật khẩu người dùng</DialogTitle>
-            <DialogDescription>Thay đổi mật khẩu cho người dùng được chọn</DialogDescription>
-          </DialogHeader>
+          <DialogHeader><DialogTitle>Đổi mật khẩu người dùng</DialogTitle></DialogHeader>
           <div className="space-y-4 py-2">
             <p className="text-sm text-muted-foreground">
               Người dùng: {users.find(u => u.id === passwordUserId)?.display_name || users.find(u => u.id === passwordUserId)?.email}
@@ -1080,10 +1186,7 @@ const AdminDashboard = () => {
       {/* Create User Dialog */}
       <Dialog open={showCreateUserDialog} onOpenChange={(open) => { setShowCreateUserDialog(open); if (!open) { setCreateUserEmail(""); setCreateUserPassword(""); setCreateUserRole("user"); } }}>
         <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Tạo tài khoản mới</DialogTitle>
-            <DialogDescription>Nhập thông tin để tạo tài khoản mới</DialogDescription>
-          </DialogHeader>
+          <DialogHeader><DialogTitle>Tạo tài khoản mới</DialogTitle></DialogHeader>
           <div className="space-y-4 py-2">
             <div>
               <label className="text-sm font-medium">Email <span className="text-destructive">*</span></label>
@@ -1123,10 +1226,7 @@ const AdminDashboard = () => {
       {/* Delete User Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={(open) => { setShowDeleteDialog(open); if (!open) setDeleteReason(""); }}>
         <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Xác nhận xóa tài khoản</DialogTitle>
-            <DialogDescription>Hành động này sẽ đánh dấu tài khoản là đã xóa</DialogDescription>
-          </DialogHeader>
+          <DialogHeader><DialogTitle>Xác nhận xóa tài khoản</DialogTitle></DialogHeader>
           <div className="py-2 space-y-3">
             <p className="text-sm">Bạn có chắc muốn xóa tài khoản <strong>{users.find(u => u.id === deleteUserId)?.display_name}</strong>?</p>
             <p className="text-sm text-muted-foreground">Tài khoản sẽ được đánh dấu là đã xóa. Người dùng có thể khôi phục khi đăng nhập lại.</p>
@@ -1150,10 +1250,7 @@ const AdminDashboard = () => {
       {/* Edit Order Dialog */}
       <Dialog open={showOrderDialog} onOpenChange={setShowOrderDialog}>
         <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Chỉnh sửa đơn hàng</DialogTitle>
-            <DialogDescription>Cập nhật thông tin đơn hàng</DialogDescription>
-          </DialogHeader>
+          <DialogHeader><DialogTitle>Chỉnh sửa đơn hàng</DialogTitle></DialogHeader>
           <div className="space-y-4 py-2">
             <div>
               <label className="text-sm font-medium">Trạng thái</label>
@@ -1179,14 +1276,6 @@ const AdminDashboard = () => {
             <div>
               <label className="text-sm font-medium">Ghi chú</label>
               <Input value={editOrderData.customer_notes} onChange={(e) => setEditOrderData(prev => ({ ...prev, customer_notes: e.target.value }))} />
-            </div>
-            <div>
-              <label className="text-sm font-medium">Ngày đặt</label>
-              <Input
-                type="datetime-local"
-                value={orderDateDraft}
-                onChange={(e) => setOrderDateDraft(e.target.value)}
-              />
             </div>
             {selectedOrder?.order_items && (
               <div>
@@ -1216,7 +1305,6 @@ const AdminDashboard = () => {
             <DialogTitle>
               {roleAction?.action === "grant" ? "Xác nhận cấp quyền" : "Xác nhận thu quyền"}
             </DialogTitle>
-            <DialogDescription>Xác nhận thay đổi vai trò cho người dùng</DialogDescription>
           </DialogHeader>
           <div className="py-2">
             <p className="text-sm">
@@ -1236,10 +1324,7 @@ const AdminDashboard = () => {
       {/* Delete Product Confirmation Dialog */}
       <Dialog open={showDeleteProductDialog} onOpenChange={(open) => { setShowDeleteProductDialog(open); if (!open) { setDeleteProductId(""); setDeleteProductReason(""); } }}>
         <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Xác nhận xóa sản phẩm</DialogTitle>
-            <DialogDescription>Hành động này không thể hoàn tác</DialogDescription>
-          </DialogHeader>
+          <DialogHeader><DialogTitle>Xác nhận xóa sản phẩm</DialogTitle></DialogHeader>
           <div className="py-2 space-y-3">
             <p className="text-sm">
               Bạn có chắc muốn xóa sản phẩm <strong>{products.find(p => p.id === deleteProductId)?.name}</strong>?
@@ -1265,31 +1350,19 @@ const AdminDashboard = () => {
       {/* User Detail Dialog */}
       <Dialog open={showUserDetail} onOpenChange={setShowUserDetail}>
         <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Chi tiết người dùng</DialogTitle>
-            <DialogDescription>Xem và quản lý thông tin người dùng</DialogDescription>
-          </DialogHeader>
+          <DialogHeader><DialogTitle>Chi tiết người dùng</DialogTitle></DialogHeader>
           {detailUser && (
             <div className="space-y-3 py-2">
               <div className="flex items-center gap-3">
                 {detailUser.avatar_url && <img src={detailUser.avatar_url} alt="" className="h-14 w-14 rounded-full object-cover border" />}
-                <div className="w-full">
+                <div>
                   <div className="font-semibold text-lg">{detailUser.display_name}</div>
-                  <div className="mt-2 space-y-2">
-                    <div>
-                      <label className="text-xs text-muted-foreground block mb-1">Email đăng nhập</label>
-                      <div className="text-sm font-mono bg-muted p-2 rounded text-ellipsis overflow-hidden">{detailUser.email}</div>
-                    </div>
-                    <div>
-                      <label className="text-xs text-muted-foreground block mb-1">Email test</label>
-                      <div className="text-sm bg-muted p-2 rounded text-ellipsis overflow-hidden">{(detailUser as any).test_email || "Chưa có"}</div>
-                    </div>
-                  </div>
+                  <div className="text-sm text-muted-foreground">{detailUser.email}</div>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 {myRole === "admin" && <InfoRow label="ID" value={detailUser.id} mono />}
-                <InfoRow label="Số điện thoại" value={maskPhone(detailUser.phone || "Chưa cập nhật")} />
+                <InfoRow label="Số điện thoại" value={detailUser.phone || "Chưa cập nhật"} />
                 <InfoRow label="Điểm" value={detailUser.points?.toString() || "0"} />
                 <InfoRow label="Vai trò" value={(userRoles[detailUser.id] ? sortRoles(userRoles[detailUser.id]) : ["user"]).join(", ")} />
                 <InfoRow label="Đã onboarding" value={detailUser.has_completed_onboarding ? "Có" : "Chưa"} />
@@ -1308,10 +1381,7 @@ const AdminDashboard = () => {
       {/* Order Detail Dialog */}
       <Dialog open={showOrderDetail} onOpenChange={setShowOrderDetail}>
         <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Chi tiết đơn hàng</DialogTitle>
-            <DialogDescription>Xem chi tiết thông tin đơn hàng</DialogDescription>
-          </DialogHeader>
+          <DialogHeader><DialogTitle>Chi tiết đơn hàng</DialogTitle></DialogHeader>
           {detailOrder && (() => {
             const buyer = users.find(u => u.id === detailOrder.user_id);
             const seller = users.find(u => u.id === detailOrder.seller_id);
@@ -1323,11 +1393,12 @@ const AdminDashboard = () => {
                   <InfoRow label="Khách hàng" value={buyer?.display_name || "N/A"} />
                   <InfoRow label="Nhà bán" value={seller?.display_name || "N/A"} />
                   <InfoRow label="Tổng tiền" value={formatPrice(detailOrder.total_amount)} />
-                  <InfoRow label="Số điện thoại" value={maskPhone(detailOrder.phone_number)} />
-                  <InfoRow label="Địa chỉ" value={maskAddress(detailOrder.shipping_address)} full />
+                  <InfoRow label="Số điện thoại" value={detailOrder.phone_number} />
+                  <InfoRow label="Địa chỉ" value={detailOrder.shipping_address} full />
                   {detailOrder.customer_notes && <InfoRow label="Ghi chú" value={detailOrder.customer_notes} full />}
                   {detailOrder.cancel_reason && <InfoRow label="Lý do hủy" value={detailOrder.cancel_reason} full />}
                   <InfoRow label="Ngày tạo" value={new Date(detailOrder.created_at).toLocaleDateString("vi-VN")} />
+                  <InfoRow label="Cập nhật" value={new Date(detailOrder.updated_at).toLocaleDateString("vi-VN")} />
                 </div>
                 {detailOrder.order_items?.length > 0 && (
                   <div>
@@ -1354,10 +1425,7 @@ const AdminDashboard = () => {
       {/* Product Detail Dialog - Enhanced with supplier info */}
       <Dialog open={showProductDetail} onOpenChange={setShowProductDetail}>
         <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Chi tiết sản phẩm</DialogTitle>
-            <DialogDescription>Xem chi tiết và quản lý thông tin sản phẩm</DialogDescription>
-          </DialogHeader>
+          <DialogHeader><DialogTitle>Chi tiết sản phẩm</DialogTitle></DialogHeader>
           {detailProduct && (
             <div className="space-y-3 py-2">
               {detailProduct.image_url && (
@@ -1433,6 +1501,11 @@ const AdminDashboard = () => {
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowProductDetail(false)}>Đóng</Button>
+            {detailProduct && (
+              <Button onClick={() => { setShowProductDetail(false); handleEditProduct(detailProduct); }}>
+                <Pencil className="h-3 w-3 mr-1" /> Chỉnh sửa
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1440,10 +1513,7 @@ const AdminDashboard = () => {
       {/* Edit Product Dialog */}
       <Dialog open={showEditProductDialog} onOpenChange={(open) => { setShowEditProductDialog(open); if (!open) setEditProductData(null); }}>
         <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Chỉnh sửa sản phẩm</DialogTitle>
-            <DialogDescription>Cập nhật thông tin sản phẩm</DialogDescription>
-          </DialogHeader>
+          <DialogHeader><DialogTitle>Chỉnh sửa sản phẩm</DialogTitle></DialogHeader>
           {editProductData && (
             <div className="space-y-4 py-2">
               <div>
@@ -1528,7 +1598,6 @@ const AdminDashboard = () => {
             <DialogTitle className="flex items-center gap-2">
               <Link2 className="h-5 w-5" /> Gộp sản phẩm trùng
             </DialogTitle>
-            <DialogDescription>Chọn sản phẩm nguồn và đích để gộp</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             {/* Sản phẩm nguồn */}
@@ -1626,7 +1695,6 @@ const AdminDashboard = () => {
             <DialogTitle className="flex items-center gap-2">
               <PawPrint className="h-5 w-5" /> Thú cưng đã đăng ký ({detailPets.length})
             </DialogTitle>
-            <DialogDescription>Xem thông tin chi tiết thú cưng của người dùng</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             {detailPets.map((pet) => (

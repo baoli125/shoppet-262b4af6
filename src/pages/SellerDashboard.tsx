@@ -159,30 +159,14 @@ const SellerDashboard = () => {
   const fetchData = async (userId: string) => {
     const [prodRes, orderRes] = await Promise.all([
       supabase.from("products").select("*").eq("seller_id", userId).order("created_at", { ascending: false }),
-      // Fetch orders that contain products from this seller
-      supabase.from("orders")
-        .select(`
-          *,
-          order_items (
-            *,
-            products (seller_id)
-          )
-        `)
-        .order("created_at", { ascending: false }),
+      supabase.from("orders").select("*, order_items(*)").eq("seller_id", userId).order("created_at", { ascending: false }),
     ]);
-
     setProducts(prodRes.data || []);
-
-    // Filter orders to only include those with items from this seller
-    const allOrders = orderRes.data || [];
-    const sellerOrders = allOrders.filter(order =>
-      order.order_items?.some((item: any) => item.products?.seller_id === userId)
-    );
-
-    setOrders(sellerOrders);
+    const ordersData = orderRes.data || [];
+    setOrders(ordersData);
 
     // Fetch buyer profiles separately
-    const buyerIds = [...new Set(sellerOrders.map(o => o.user_id))];
+    const buyerIds = [...new Set(ordersData.map(o => o.user_id))];
     if (buyerIds.length > 0) {
       const { data: buyerProfiles } = await supabase
         .from("public_profiles")
@@ -200,16 +184,7 @@ const SellerDashboard = () => {
     const pendingOrders = orders.filter(o => o.status === "pending").length;
     const shippingOrders = orders.filter(o => o.status === "shipping").length;
     const deliveredOrders = orders.filter(o => o.status === "delivered");
-    const deliveredCount = deliveredOrders.length;
-
-    // Calculate revenue only for seller's items in delivered orders
-    const calculateSellerRevenue = (order: any) => {
-      return order.order_items
-        ?.filter((item: any) => item.products?.seller_id === user?.id)
-        .reduce((sum: number, item: any) => sum + Number(item.subtotal), 0) || 0;
-    };
-
-    const totalRevenue = deliveredOrders.reduce((s, o) => s + calculateSellerRevenue(o), 0);
+    const totalRevenue = deliveredOrders.reduce((s, o) => s + Number(o.total_amount), 0);
     const todayOrders = orders.filter(o => o.created_at?.startsWith(today)).length;
     const lowStockProducts = products.filter(p => (p.stock || 0) <= 5).length;
     const outOfStockProducts = products.filter(p => (p.stock || 0) === 0).length;
@@ -223,7 +198,7 @@ const SellerDashboard = () => {
       const label = `T${d.getMonth() + 1}`;
       const amount = deliveredOrders
         .filter(o => o.created_at?.startsWith(key))
-        .reduce((s, o) => s + calculateSellerRevenue(o), 0);
+        .reduce((s, o) => s + Number(o.total_amount), 0);
       monthlyRevenue.push({ month: label, amount });
     }
 
@@ -321,7 +296,6 @@ const SellerDashboard = () => {
                   setOrderDateDraft(toDatetimeLocal(o.created_at));
                   setShowOrderDetail(true);
                 }}
-                userId={user?.id}
               />
             )}
             {section === "products" && (
@@ -332,7 +306,7 @@ const SellerDashboard = () => {
                 onDelete={handleDeleteProduct}
               />
             )}
-            {section === "revenue" && <RevenueSection stats={stats} orders={orders} userId={user?.id} />}
+            {section === "revenue" && <RevenueSection stats={stats} orders={orders} />}
           </main>
         </div>
       </div>
@@ -350,70 +324,64 @@ const SellerDashboard = () => {
       <Dialog open={showOrderDetail} onOpenChange={setShowOrderDetail}>
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Chi tiết đơn hàng</DialogTitle></DialogHeader>
-          {selectedOrder && (() => {
-            // Filter items for this seller
-            const sellerItems = selectedOrder.order_items?.filter((item: any) => item.products?.seller_id === user?.id) || [];
-            const sellerTotal = sellerItems.reduce((sum: number, item: any) => sum + Number(item.subtotal), 0);
-
-            return (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div><span className="text-muted-foreground text-xs">Mã đơn</span><p className="font-mono text-xs">{selectedOrder.id.slice(0, 8)}...</p></div>
-                  <div><span className="text-muted-foreground text-xs">Trạng thái</span><div><Badge className={`${STATUS_CONFIG[selectedOrder.status]?.color} text-white text-xs`}>{STATUS_CONFIG[selectedOrder.status]?.label}</Badge></div></div>
-                  <div><span className="text-muted-foreground text-xs">Khách hàng</span><p className="font-medium">{buyers[selectedOrder.user_id]?.display_name || "N/A"}</p></div>
-                  <div><span className="text-muted-foreground text-xs">Tiền hàng của bạn</span><p className="font-bold text-primary">{formatPrice(sellerTotal)}</p></div>
-                  <div className="col-span-2"><span className="text-muted-foreground text-xs">Địa chỉ</span><p>{selectedOrder.shipping_address}</p></div>
-                  <div><span className="text-muted-foreground text-xs">SĐT</span><p>{selectedOrder.phone_number}</p></div>
-                  <div className="col-span-2 space-y-2">
-                    <span className="text-muted-foreground text-xs">Ngày đặt</span>
-                    {hasSellerRole && isManager ? (
-                      <div className="space-y-2">
-                        <Input
-                          type="datetime-local"
-                          value={orderDateDraft}
-                          onChange={(e) => setOrderDateDraft(e.target.value)}
-                        />
-                        <Button
-                          size="sm"
-                          className="w-full"
-                          onClick={() => handleUpdateOrderDate(selectedOrder.id, orderDateDraft)}
-                        >
-                          Lưu ngày đặt
-                        </Button>
-                      </div>
-                    ) : (
-                      <p>{new Date(selectedOrder.created_at).toLocaleString("vi-VN")}</p>
-                    )}
-                  </div>
-                  {selectedOrder.customer_notes && <div className="col-span-2"><span className="text-muted-foreground text-xs">Ghi chú</span><p>{selectedOrder.customer_notes}</p></div>}
-                </div>
-                {sellerItems.length > 0 && (
-                  <div>
-                    <div className="text-sm font-medium mb-2">Sản phẩm của bạn</div>
-                    <div className="space-y-1">
-                      {sellerItems.map((item: any) => (
-                        <div key={item.id} className="flex justify-between text-sm bg-muted/50 rounded p-2">
-                          <span>{item.product_name} x{item.quantity}</span>
-                          <span className="font-medium">{formatPrice(item.subtotal)}</span>
-                        </div>
-                      ))}
+          {selectedOrder && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div><span className="text-muted-foreground text-xs">Mã đơn</span><p className="font-mono text-xs">{selectedOrder.id.slice(0, 8)}...</p></div>
+                <div><span className="text-muted-foreground text-xs">Trạng thái</span><div><Badge className={`${STATUS_CONFIG[selectedOrder.status]?.color} text-white text-xs`}>{STATUS_CONFIG[selectedOrder.status]?.label}</Badge></div></div>
+                <div><span className="text-muted-foreground text-xs">Khách hàng</span><p className="font-medium">{buyers[selectedOrder.user_id]?.display_name || "N/A"}</p></div>
+                <div><span className="text-muted-foreground text-xs">Tổng tiền</span><p className="font-bold text-primary">{formatPrice(selectedOrder.total_amount)}</p></div>
+                <div className="col-span-2"><span className="text-muted-foreground text-xs">Địa chỉ</span><p>{selectedOrder.shipping_address}</p></div>
+                <div><span className="text-muted-foreground text-xs">SĐT</span><p>{selectedOrder.phone_number}</p></div>
+                <div className="col-span-2 space-y-2">
+                  <span className="text-muted-foreground text-xs">Ngày đặt</span>
+                  {hasSellerRole && isManager ? (
+                    <div className="space-y-2">
+                      <Input
+                        type="datetime-local"
+                        value={orderDateDraft}
+                        onChange={(e) => setOrderDateDraft(e.target.value)}
+                      />
+                      <Button
+                        size="sm"
+                        className="w-full"
+                        onClick={() => handleUpdateOrderDate(selectedOrder.id, orderDateDraft)}
+                      >
+                        Lưu ngày đặt
+                      </Button>
                     </div>
-                  </div>
-                )}
-                {selectedOrder.status === "pending" && (
-                  <div className="flex gap-2">
-                    <Button className="flex-1" onClick={() => { handleUpdateOrderStatus(selectedOrder.id, "confirmed"); setShowOrderDetail(false); }}>Xác nhận</Button>
-                    <Button variant="destructive" className="flex-1" onClick={() => { handleUpdateOrderStatus(selectedOrder.id, "cancelled"); setShowOrderDetail(false); }}>Hủy đơn</Button>
-                  </div>
-                )}
-                {selectedOrder.status === "confirmed" && (
-                  <Button className="w-full" onClick={() => { handleUpdateOrderStatus(selectedOrder.id, "shipping"); setShowOrderDetail(false); }}>
-                    <Truck className="h-4 w-4 mr-2" /> Giao hàng
-                  </Button>
-                )}
+                  ) : (
+                    <p>{new Date(selectedOrder.created_at).toLocaleString("vi-VN")}</p>
+                  )}
+                </div>
+                {selectedOrder.customer_notes && <div className="col-span-2"><span className="text-muted-foreground text-xs">Ghi chú</span><p>{selectedOrder.customer_notes}</p></div>}
               </div>
-            );
-          })()}
+              {selectedOrder.order_items?.length > 0 && (
+                <div>
+                  <div className="text-sm font-medium mb-2">Sản phẩm</div>
+                  <div className="space-y-1">
+                    {selectedOrder.order_items.map((item: any) => (
+                      <div key={item.id} className="flex justify-between text-sm bg-muted/50 rounded p-2">
+                        <span>{item.product_name} x{item.quantity}</span>
+                        <span className="font-medium">{formatPrice(item.subtotal)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {selectedOrder.status === "pending" && (
+                <div className="flex gap-2">
+                  <Button className="flex-1" onClick={() => { handleUpdateOrderStatus(selectedOrder.id, "confirmed"); setShowOrderDetail(false); }}>Xác nhận</Button>
+                  <Button variant="destructive" className="flex-1" onClick={() => { handleUpdateOrderStatus(selectedOrder.id, "cancelled"); setShowOrderDetail(false); }}>Hủy đơn</Button>
+                </div>
+              )}
+              {selectedOrder.status === "confirmed" && (
+                <Button className="w-full" onClick={() => { handleUpdateOrderStatus(selectedOrder.id, "shipping"); setShowOrderDetail(false); }}>
+                  <Truck className="h-4 w-4 mr-2" /> Giao hàng
+                </Button>
+              )}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </SidebarProvider>
@@ -494,7 +462,7 @@ const StatCard = ({ icon: Icon, label, value, color, onClick }: any) => (
 );
 
 // ─── Orders Section ────────────────────────────────────
-const OrdersSection = ({ orders, buyers, onUpdateStatus, onViewDetail, userId }: any) => {
+const OrdersSection = ({ orders, buyers, onUpdateStatus, onViewDetail }: any) => {
   const [activeTab, setActiveTab] = useState("all");
   const tabs = [
     { key: "all", label: "Tất cả" },
@@ -541,46 +509,40 @@ const OrdersSection = ({ orders, buyers, onUpdateStatus, onViewDetail, userId }:
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredOrders.map((order: any) => {
-                // Calculate seller's portion of this order
-                const sellerItems = order.order_items?.filter((item: any) => item.products?.seller_id === userId) || [];
-                const sellerTotal = sellerItems.reduce((sum: number, item: any) => sum + Number(item.subtotal), 0);
-
-                return (
-                  <TableRow key={order.id} className="cursor-pointer hover:bg-muted/50" onClick={() => onViewDetail(order)}>
-                    <TableCell className="font-mono text-xs">#{order.id.slice(0, 8)}</TableCell>
-                    <TableCell>
-                      <div>
-                        <p className="text-sm font-medium">{buyers[order.user_id]?.display_name || "N/A"}</p>
-                        <p className="text-xs text-muted-foreground">{buyers[order.user_id]?.email}</p>
-                      </div>
-                    </TableCell>
-                    <TableCell className="font-semibold">{formatPrice(sellerTotal)}</TableCell>
-                    <TableCell>
-                      <Badge className={`${STATUS_CONFIG[order.status]?.color} text-white text-xs`}>
-                        {STATUS_CONFIG[order.status]?.label || order.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{new Date(order.created_at).toLocaleString("vi-VN")}</TableCell>
-                    <TableCell onClick={e => e.stopPropagation()}>
-                      <div className="flex gap-1">
-                        {order.status === "pending" && (
-                          <>
-                            <Button size="sm" variant="default" onClick={() => onUpdateStatus(order.id, "confirmed")} className="text-xs h-7">Xác nhận</Button>
-                            <Button size="sm" variant="destructive" onClick={() => onUpdateStatus(order.id, "cancelled")} className="text-xs h-7">Hủy</Button>
-                          </>
-                        )}
-                        {order.status === "confirmed" && (
-                          <Button size="sm" onClick={() => onUpdateStatus(order.id, "shipping")} className="text-xs h-7"><Truck className="h-3 w-3 mr-1" />Giao hàng</Button>
-                        )}
-                        {order.status === "shipping" && (
-                          <Button size="sm" variant="outline" onClick={() => onUpdateStatus(order.id, "delivered")} className="text-xs h-7"><CheckCircle className="h-3 w-3 mr-1" />Đã giao</Button>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
+              {filteredOrders.map((order: any) => (
+                <TableRow key={order.id} className="cursor-pointer hover:bg-muted/50" onClick={() => onViewDetail(order)}>
+                  <TableCell className="font-mono text-xs">#{order.id.slice(0, 8)}</TableCell>
+                  <TableCell>
+                    <div>
+                      <p className="text-sm font-medium">{buyers[order.user_id]?.display_name || "N/A"}</p>
+                      <p className="text-xs text-muted-foreground">{buyers[order.user_id]?.email}</p>
+                    </div>
+                  </TableCell>
+                  <TableCell className="font-semibold">{formatPrice(order.total_amount)}</TableCell>
+                  <TableCell>
+                    <Badge className={`${STATUS_CONFIG[order.status]?.color} text-white text-xs`}>
+                      {STATUS_CONFIG[order.status]?.label || order.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{new Date(order.created_at).toLocaleString("vi-VN")}</TableCell>
+                  <TableCell onClick={e => e.stopPropagation()}>
+                    <div className="flex gap-1">
+                      {order.status === "pending" && (
+                        <>
+                          <Button size="sm" variant="default" onClick={() => onUpdateStatus(order.id, "confirmed")} className="text-xs h-7">Xác nhận</Button>
+                          <Button size="sm" variant="destructive" onClick={() => onUpdateStatus(order.id, "cancelled")} className="text-xs h-7">Hủy</Button>
+                        </>
+                      )}
+                      {order.status === "confirmed" && (
+                        <Button size="sm" onClick={() => onUpdateStatus(order.id, "shipping")} className="text-xs h-7"><Truck className="h-3 w-3 mr-1" />Giao hàng</Button>
+                      )}
+                      {order.status === "shipping" && (
+                        <Button size="sm" variant="outline" onClick={() => onUpdateStatus(order.id, "delivered")} className="text-xs h-7"><CheckCircle className="h-3 w-3 mr-1" />Đã giao</Button>
+                      )}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
               {filteredOrders.length === 0 && (
                 <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Không có đơn hàng nào</TableCell></TableRow>
               )}
@@ -667,21 +629,21 @@ const ProductsSection = ({ products, onAdd, onEdit, onDelete }: any) => {
 };
 
 // ─── Revenue Section ───────────────────────────────────
-const RevenueSection = ({ stats, orders, userId }: any) => {
+const RevenueSection = ({ stats, orders }: any) => {
   const maxRevenue = Math.max(...stats.monthlyRevenue.map((m: any) => m.amount), 1);
 
   // Top products by revenue
   const productRevenue = useMemo(() => {
     const map: Record<string, { name: string; revenue: number; quantity: number }> = {};
     orders.filter((o: any) => o.status === "delivered").forEach((o: any) => {
-      o.order_items?.filter((item: any) => item.products?.seller_id === userId).forEach((item: any) => {
+      o.order_items?.forEach((item: any) => {
         if (!map[item.product_name]) map[item.product_name] = { name: item.product_name, revenue: 0, quantity: 0 };
         map[item.product_name].revenue += Number(item.subtotal);
         map[item.product_name].quantity += item.quantity;
       });
     });
     return Object.values(map).sort((a, b) => b.revenue - a.revenue).slice(0, 10);
-  }, [orders, userId]);
+  }, [orders]);
 
   return (
     <div className="space-y-6">
