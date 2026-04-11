@@ -57,7 +57,7 @@ NGÔN NGỮ: Bạn PHẢI trả lời bằng ĐÚNG ngôn ngữ mà người dù
     - Hỏi thông tin cần thiết: loài, tuổi, cân nặng (nếu chưa có)
     - Nếu khẩn cấp (khó thở, chảy máu, co giật, không ăn >24h): BẮT BUỘC khuyên đến bác sỹ thú y NGAY
 
-    ${languageRule}`,
+    ${languageRule}
 
 SAU KHI TRẢ LỜI: Thêm dấu phân cách "---FOLLOW_UP---" và liệt kê 3-4 câu hỏi gợi ý liên quan để người dùng hỏi tiếp (mỗi câu một dòng, không đánh số). Câu hỏi gợi ý PHẢI cùng ngôn ngữ với câu trả lời.`;
 
